@@ -359,21 +359,42 @@ const MarketPage = ({ selectedCrypto, selectedTimeframe, onCryptoChange, onTimef
   }
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") return
+
+    // Check if script already exists
+    const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]')
+    if (existingScript) {
+      // Script already loaded, initialize widget
+      if ((window as any).TradingView) {
+        setTimeout(initTradingViewWidget, 100)
+      } else {
+        // Wait for script to load
+        existingScript.addEventListener("load", () => {
+          setTimeout(initTradingViewWidget, 100)
+        })
+      }
+      return
+    }
+
     const script = document.createElement("script")
     script.src = "https://s3.tradingview.com/tv.js"
     script.async = true
+    script.defer = true
     script.onload = () => {
       console.log("[v0] TradingView script loaded")
       setTimeout(initTradingViewWidget, 100)
     }
-    script.onerror = () => {
-      console.error("[v0] Failed to load TradingView script")
+    script.onerror = (error) => {
+      console.error("[v0] Failed to load TradingView script:", error)
       setWidgetLoaded(true) // Show fallback
     }
+
+    // Add script to head
     document.head.appendChild(script)
 
     return () => {
-      // Cleanup
+      // Cleanup widget instance
       if (widgetInstance && typeof widgetInstance.remove === "function") {
         try {
           widgetInstance.remove()
@@ -381,6 +402,7 @@ const MarketPage = ({ selectedCrypto, selectedTimeframe, onCryptoChange, onTimef
           console.error("[v0] Error removing widget:", error)
         }
       }
+      // Don't remove script as it might be used by other components
     }
   }, [])
 

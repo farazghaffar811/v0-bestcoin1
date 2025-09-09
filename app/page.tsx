@@ -1866,11 +1866,23 @@ const HomePage = () => {
     window.open(telegramLink, "_blank")
   }
 
+  const resetAllStates = () => {
+    setShowRechargeMessage(false)
+    setShowWithdrawalPage(false)
+    setShowWithdrawalHistory(false)
+    setShowTradingModal(false)
+    setShowSettings(false)
+    setSearchQuery("")
+    setFilteredCryptos([])
+  }
+
   const checkAuthAndNavigate = (targetPage: string) => {
     if (!user && targetPage !== "home") {
       router.push("/login")
       return
     }
+
+    resetAllStates()
     setActiveNav(targetPage)
   }
 
@@ -1880,21 +1892,13 @@ const HomePage = () => {
       return
     }
 
-    // Set the selected crypto and navigate to market
+    resetAllStates()
     setSelectedCrypto(cryptoId)
     setActiveNav("market")
-
-    // Clear any search state
-    setSearchQuery("")
-    setFilteredCryptos([])
   }
 
   const handleBackNavigation = () => {
-    // Clear search state
-    setSearchQuery("")
-    setFilteredCryptos([])
-
-    // Navigate back to home
+    resetAllStates()
     setActiveNav("home")
   }
 
@@ -2441,11 +2445,11 @@ const HomePage = () => {
       {renderCurrentPage()}
 
       {/* Bottom Navigation */}
-      {activeNav !== "market" && (
+      {activeNav !== "market" && !showRechargeMessage && !showWithdrawalPage && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
           <div className="grid grid-cols-5 py-2">
             <button
-              onClick={() => handleBackNavigation()}
+              onClick={() => checkAuthAndNavigate("home")}
               className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
             >
               <img

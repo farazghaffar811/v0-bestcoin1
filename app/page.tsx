@@ -23,125 +23,252 @@ interface TradeData {
   quantity: number
 }
 
-const CryptoIcon = ({ symbol }: { symbol: string }) => {
-  const [hasError, setHasError] = useState(false)
+const CryptoIcon = ({ symbol, size = 32 }: { symbol: string; size?: number }) => {
+  const [imageError, setImageError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  const specificIcons: { [key: string]: string } = {
-    psg: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251768/psg_klhcdq.svg",
-    juv: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/juv_adcbwo.svg",
-    atm: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/atm_db7snq.svg",
-    link: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/link_xkqhpt.svg",
-    ksm: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/ksm_nbfxyr.svg",
-    eos: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/eos_ojnk5a.svg",
-    bts: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/bts_hxkgas.svg",
+  // Cloudinary URLs for specific currencies
+  const cloudinaryIcons: { [key: string]: string } = {
+    PSG: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251768/psg_klhcdq.svg",
+    JUV: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/juv_adcbwo.svg",
+    ATM: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/atm_db7snq.svg",
+    LINK: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/link_xkqhpt.svg",
+    KSM: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/ksm_nbfxyr.svg",
+    EOS: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/eos_ojnk5a.svg",
+    BTS: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/bts_hxkgas.svg",
   }
 
-  const getIconUrl = (symbol: string) => {
-    if (!symbol) return null
-    const lowerSymbol = symbol.toLowerCase()
-
-    // Check specific icons first (Cloudinary)
-    if (specificIcons[lowerSymbol]) {
-      return specificIcons[lowerSymbol]
-    }
-
-    // Use CoinGecko API for real cryptocurrency icons
-    const coinGeckoIds: { [key: string]: string } = {
-      btc: "bitcoin",
-      eth: "ethereum",
-      doge: "dogecoin",
-      chz: "chiliz",
-      ltc: "litecoin",
-      ada: "cardano",
-      dot: "polkadot",
-      sol: "solana",
-      matic: "polygon",
-      avax: "avalanche-2",
-      uni: "uniswap",
-      aave: "aave",
-      comp: "compound-governance-token",
-      mkr: "maker",
-      snx: "havven",
-      yfi: "yearn-finance",
-      sushi: "sushi",
-      crv: "curve-dao-token",
-      bal: "balancer",
-      ren: "republic-protocol",
-      knc: "kyber-network-crystal",
-      zrx: "0x",
-      bat: "basic-attention-token",
-      omg: "omisego",
-      lrc: "loopring",
-      ant: "aragon",
-      mana: "decentraland",
-      sand: "the-sandbox",
-      axs: "axie-infinity",
-      enj: "enjincoin",
-      gala: "gala",
-      flow: "flow",
-      icp: "internet-computer",
-      near: "near",
-      algo: "algorand",
-      atom: "cosmos",
-      luna: "terra-luna",
-      ftm: "fantom",
-      one: "harmony",
-      hbar: "hedera-hashgraph",
-      vet: "vechain",
-      theta: "theta-token",
-      xtz: "tezos",
-      waves: "waves",
-      neo: "neo",
-      qtum: "qtum",
-      ont: "ontology",
-      zil: "zilliqa",
-      icx: "icon",
-      trx: "tron",
-      xlm: "stellar",
-      xrp: "ripple",
-      bch: "bitcoin-cash",
-      etc: "ethereum-classic",
-      dash: "dash",
-      zec: "zcash",
-      xmr: "monero",
-    }
-
-    const coinGeckoId = coinGeckoIds[lowerSymbol] || lowerSymbol
-    return `https://assets.coingecko.com/coins/images/${coinGeckoId}/small/${coinGeckoId}.png`
+  // CoinGecko mapping for other currencies
+  const coinGeckoMapping: { [key: string]: string } = {
+    BTC: "bitcoin",
+    ETH: "ethereum",
+    BNB: "binancecoin",
+    XRP: "ripple",
+    ADA: "cardano",
+    SOL: "solana",
+    DOT: "polkadot",
+    DOGE: "dogecoin",
+    AVAX: "avalanche-2",
+    SHIB: "shiba-inu",
+    MATIC: "matic-network",
+    LTC: "litecoin",
+    UNI: "uniswap",
+    ATOM: "cosmos",
+    FTT: "ftx-token",
+    NEAR: "near",
+    ALGO: "algorand",
+    BCH: "bitcoin-cash",
+    VET: "vechain",
+    ICP: "internet-computer",
+    FIL: "filecoin",
+    TRX: "tron",
+    ETC: "ethereum-classic",
+    XLM: "stellar",
+    MANA: "decentraland",
+    SAND: "the-sandbox",
+    AXS: "axie-infinity",
+    THETA: "theta-token",
+    AAVE: "aave",
+    MKR: "maker",
+    COMP: "compound-governance-token",
+    YFI: "yearn-finance",
+    SNX: "havven",
+    CRV: "curve-dao-token",
+    SUSHI: "sushi",
+    BAL: "balancer",
+    REN: "republic-protocol",
+    KNC: "kyber-network-crystal",
+    ZRX: "0x",
+    OMG: "omisego",
+    BAT: "basic-attention-token",
+    REP: "augur",
+    GNT: "golem",
+    STORJ: "storj",
+    ANT: "aragon",
+    DNT: "district0x",
+    CVC: "civic",
+    MTL: "metal",
+    QTUM: "qtum",
+    LSK: "lisk",
+    WAVES: "waves",
+    STRAT: "stratis",
+    ARK: "ark",
+    KMD: "komodo",
+    DCR: "decred",
+    PIVX: "pivx",
+    VTC: "vertcoin",
+    MONA: "monacoin",
+    DGB: "digibyte",
+    SYS: "syscoin",
+    GRS: "groestlcoin",
+    PART: "particl",
+    NAV: "navcoin",
+    BLOCK: "blocknet",
+    NXT: "nxt",
+    BURST: "burst",
+    XEM: "nem",
+    MIOTA: "iota",
+    XMR: "monero",
+    DASH: "dash",
+    ZEC: "zcash",
+    XTZ: "tezos",
+    ONT: "ontology",
+    NEO: "neo",
+    GAS: "gas",
+    QTUM: "qtum",
+    ICX: "icon",
+    ZIL: "zilliqa",
+    SC: "siacoin",
+    DENT: "dent",
+    HOT: "holo",
+    ENJ: "enjincoin",
+    NPXS: "pundi-x",
+    WAN: "wanchain",
+    IOST: "iostoken",
+    POLY: "polymath",
+    KEY: "selfkey",
+    STORM: "storm",
+    TNT: "tierion",
+    FUEL: "etherparty",
+    POWR: "power-ledger",
+    REQ: "request-network",
+    SUB: "substratum",
+    MITH: "mithril",
+    OST: "ost",
+    NCASH: "nucleus-vision",
+    COFI: "coinfi",
+    DRGN: "dragonchain",
+    GTO: "gifto",
+    APPC: "appcoins",
+    RLC: "iexec-rlc",
+    ELF: "aelf",
+    AION: "aion",
+    NEBL: "neblio",
+    HPB: "high-performance-blockchain",
+    BLUZELLE: "bluzelle",
+    WABI: "tael",
+    LRC: "loopring",
+    VIBE: "vibe",
+    INS: "insolar",
+    PIVX: "pivx",
+    XVG: "verge",
+    STEEM: "steem",
+    ARDR: "ardor",
+    KIN: "kin",
+    LOOM: "loom-network",
+    MAID: "maidsafecoin",
+    SALT: "salt",
+    BNT: "bancor",
+    ICN: "iconomi",
+    PAY: "tenx",
+    MTH: "monetha",
+    EDG: "edgeless",
+    MLN: "melon",
+    TAAS: "taas",
+    TKN: "tokencard",
+    HMQ: "humaniq",
+    WINGS: "wings",
+    RCN: "ripio-credit-network",
+    SNGLS: "singulardtv",
+    TRST: "wetrust",
+    CFI: "cofound-it",
+    BQX: "ethos",
+    ADT: "adtoken",
+    FUN: "funfair",
+    CDT: "blox",
+    TRX: "tron",
+    VEN: "vechain",
+    POWR: "power-ledger",
+    REQ: "request-network",
+    SUB: "substratum",
+    MITH: "mithril",
+    OST: "ost",
+    NCASH: "nucleus-vision",
+    COFI: "coinfi",
+    DRGN: "dragonchain",
+    GTO: "gifto",
+    APPC: "appcoins",
+    RLC: "iexec-rlc",
+    ELF: "aelf",
+    AION: "aion",
+    NEBL: "neblio",
+    HPB: "high-performance-blockchain",
+    BLUZELLE: "bluzelle",
+    WABI: "tael",
+    LRC: "loopring",
+    VIBE: "vibe",
+    INS: "insolar",
   }
 
-  // Show fallback immediately if no symbol
+  const getIconUrl = () => {
+    const upperSymbol = symbol?.toUpperCase() || ""
+
+    // First check Cloudinary icons
+    if (cloudinaryIcons[upperSymbol]) {
+      return cloudinaryIcons[upperSymbol]
+    }
+
+    // Then check CoinGecko mapping
+    const coinGeckoId = coinGeckoMapping[upperSymbol]
+    if (coinGeckoId) {
+      return `https://assets.coingecko.com/coins/images/1/large/${coinGeckoId}.png`
+    }
+
+    // Fallback to CoinGecko search by symbol
+    return `https://assets.coingecko.com/coins/images/1/large/${symbol?.toLowerCase() || "bitcoin"}.png`
+  }
+
+  const handleImageLoad = () => {
+    setIsLoading(false)
+    setImageError(false)
+  }
+
+  const handleImageError = () => {
+    setIsLoading(false)
+    setImageError(true)
+  }
+
   if (!symbol) {
     return (
-      <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-bold">
-        ??
+      <div className="rounded-full flex items-center justify-center bg-gray-400" style={{ width: size, height: size }}>
+        <span className="text-white text-xs font-bold">?</span>
       </div>
     )
   }
 
-  // Show fallback if error occurred
-  if (hasError) {
+  if (imageError) {
+    // Fallback colored circle with symbol
+    const colors = [
+      "bg-blue-500",
+      "bg-green-500",
+      "bg-purple-500",
+      "bg-red-500",
+      "bg-yellow-500",
+      "bg-indigo-500",
+      "bg-pink-500",
+      "bg-teal-500",
+    ]
+    const colorIndex = (symbol.charCodeAt(0) + symbol.charCodeAt(symbol.length - 1)) % colors.length
+    const bgColor = colors[colorIndex]
+
     return (
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-        style={{ backgroundColor: `hsl(${((symbol?.charCodeAt(0) || 0) * 137.5) % 360}, 70%, 50%)` }}
-      >
-        {symbol?.slice(0, 2).toUpperCase() || "??"}
+      <div className={`rounded-full flex items-center justify-center ${bgColor}`} style={{ width: size, height: size }}>
+        <span className="text-white text-xs font-bold">{symbol.slice(0, 2).toUpperCase()}</span>
       </div>
     )
   }
-
-  const iconUrl = getIconUrl(symbol)
 
   return (
-    <img
-      src={iconUrl || "/placeholder.svg"}
-      alt={symbol}
-      className="w-8 h-8 rounded-full object-cover"
-      onError={() => {
-        setHasError(true)
-      }}
-    />
+    <div className="relative" style={{ width: size, height: size }}>
+      <img
+        src={getIconUrl() || "/placeholder.svg"}
+        alt={symbol}
+        className="w-full h-full rounded-full object-cover"
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+        style={{ width: size, height: size }}
+      />
+    </div>
   )
 }
 
@@ -1666,6 +1793,9 @@ const HomePage = () => {
   const [bankDetails, setBankDetails] = useState<any[]>([])
   const [isLoadingBankDetails, setIsLoadingBankDetails] = useState(true)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredCryptos, setFilteredCryptos] = useState<CryptoPrice[]>([])
+
   useEffect(() => {
     initializeAuth()
     fetchCryptoPrices()
@@ -1750,24 +1880,22 @@ const HomePage = () => {
       return
     }
 
-    const cryptoSymbolMap: { [key: string]: string } = {
-      bitcoin: "BTCUSDT",
-      ethereum: "ETHUSDT",
-      dogecoin: "DOGEUSDT",
-      chiliz: "CHZUSDT",
-      "psg-fan-token": "PSGUSDT",
-      "atletico-madrid": "ATMUSDT",
-      "juventus-fan-token": "JUVUSDT",
-      kusama: "KSMUSDT",
-      litecoin: "LTCUSDT",
-      eos: "EOSUSDT",
-      bitshares: "BTSUSDT",
-      chainlink: "LINKUSDT",
-    }
-
-    const symbol = cryptoSymbolMap[cryptoId] || "BTCUSDT"
-    setSelectedCrypto(symbol)
+    // Set the selected crypto and navigate to market
+    setSelectedCrypto(cryptoId)
     setActiveNav("market")
+
+    // Clear any search state
+    setSearchQuery("")
+    setFilteredCryptos([])
+  }
+
+  const handleBackNavigation = () => {
+    // Clear search state
+    setSearchQuery("")
+    setFilteredCryptos([])
+
+    // Navigate back to home
+    setActiveNav("home")
   }
 
   const fetchCryptoPrices = async () => {
@@ -2210,6 +2338,57 @@ const HomePage = () => {
 
             {/* Crypto List */}
             <div className="bg-white mt-2">
+              {/* Search Input */}
+              <div className="relative px-4 py-3">
+                <input
+                  type="text"
+                  placeholder="Search cryptocurrencies"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const query = e.target.value
+                    setSearchQuery(query)
+
+                    if (query) {
+                      const filtered = cryptoPrices.filter(
+                        (crypto) =>
+                          crypto.symbol.toLowerCase().includes(query.toLowerCase()) ||
+                          crypto.name.toLowerCase().includes(query.toLowerCase()),
+                      )
+                      setFilteredCryptos(filtered)
+                    } else {
+                      setFilteredCryptos([])
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+
+                {/* Search Results */}
+                {/* Updated search input to handle navigation properly */}
+                {searchQuery && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                    {filteredCryptos.length > 0 ? (
+                      filteredCryptos.map((crypto) => (
+                        <button
+                          key={crypto.id}
+                          onClick={() => {
+                            handleCryptoSelect(crypto.symbol.toUpperCase())
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                        >
+                          <CryptoIcon symbol={crypto.symbol} size={24} />
+                          <div>
+                            <div className="font-medium text-gray-900">{crypto.symbol.toUpperCase()}</div>
+                            <div className="text-sm text-gray-500">{crypto.name}</div>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-center">No cryptocurrencies found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {cryptoPrices.map((crypto, index) => (
                 <div
                   key={crypto.id}
@@ -2266,7 +2445,7 @@ const HomePage = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
           <div className="grid grid-cols-5 py-2">
             <button
-              onClick={() => setActiveNav("home")}
+              onClick={() => handleBackNavigation()}
               className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
             >
               <img

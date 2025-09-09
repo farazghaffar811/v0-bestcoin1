@@ -36,7 +36,10 @@ export default function LoginPage() {
 
   const handleCustomerSupport = () => {
     if (telegramLink) {
-      window.open(telegramLink, "_blank")
+      window.open(telegramLink, "_blank", "noopener,noreferrer")
+    } else {
+      // Fallback if no telegram link is set
+      window.open("https://t.me/support", "_blank", "noopener,noreferrer")
     }
   }
 

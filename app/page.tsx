@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
-import { Home, X } from "lucide-react"
+import { Home } from "lucide-react"
 
 interface CryptoPrice {
   id: string
@@ -130,54 +130,6 @@ const CryptoIcon = ({ symbol, size = 32 }: { symbol: string; size?: number }) =>
     STORM: "storm",
     TNT: "tierion",
     FUEL: "etherparty",
-    POWR: "power-ledger",
-    REQ: "request-network",
-    SUB: "substratum",
-    MITH: "mithril",
-    OST: "ost",
-    NCASH: "nucleus-vision",
-    COFI: "coinfi",
-    DRGN: "dragonchain",
-    GTO: "gifto",
-    APPC: "appcoins",
-    RLC: "iexec-rlc",
-    ELF: "aelf",
-    AION: "aion",
-    NEBL: "neblio",
-    HPB: "high-performance-blockchain",
-    BLUZELLE: "bluzelle",
-    WABI: "tael",
-    LRC: "loopring",
-    VIBE: "vibe",
-    INS: "insolar",
-    PIVX: "pivx",
-    XVG: "verge",
-    STEEM: "steem",
-    ARDR: "ardor",
-    KIN: "kin",
-    LOOM: "loom-network",
-    MAID: "maidsafecoin",
-    SALT: "salt",
-    BNT: "bancor",
-    ICN: "iconomi",
-    PAY: "tenx",
-    MTH: "monetha",
-    EDG: "edgeless",
-    MLN: "melon",
-    TAAS: "taas",
-    TKN: "tokencard",
-    HMQ: "humaniq",
-    WINGS: "wings",
-    RCN: "ripio-credit-network",
-    SNGLS: "singulardtv",
-    TRST: "wetrust",
-    CFI: "cofound-it",
-    BQX: "ethos",
-    ADT: "adtoken",
-    FUN: "funfair",
-    CDT: "blox",
-    TRX: "tron",
-    VEN: "vechain",
     POWR: "power-ledger",
     REQ: "request-network",
     SUB: "substratum",
@@ -324,9 +276,18 @@ interface MarketPageProps {
   selectedTimeframe: string
   onCryptoChange: (crypto: string) => void
   onTimeframeChange: (timeframe: string) => void
+  resetAllStates: () => void
+  setActiveNav: (nav: string) => void
 }
 
-const MarketPage = ({ selectedCrypto, selectedTimeframe, onCryptoChange, onTimeframeChange }: MarketPageProps) => {
+const MarketPage = ({
+  selectedCrypto,
+  selectedTimeframe,
+  onCryptoChange,
+  onTimeframeChange,
+  resetAllStates,
+  setActiveNav,
+}: MarketPageProps) => {
   const [showTradingModal, setShowTradingModal] = useState(false)
   const [tradingDirection, setTradingDirection] = useState<"buy_up" | "buy_down">("buy_up")
   const [orderAmount, setOrderAmount] = useState("")
@@ -660,11 +621,12 @@ const MarketPage = ({ selectedCrypto, selectedTimeframe, onCryptoChange, onTimef
       <div className="flex items-center justify-between px-4 py-3 bg-slate-800">
         <div className="flex items-center gap-4">
           <svg
-            className="w-6 h-6 text-white cursor-pointer hover:text-cyan-400 transition-colors"
+            className="w-6 h-6 text-white cursor-pointer hover:text-gray-300 transition-colors"
             fill="currentColor"
             viewBox="0 0 24 24"
             onClick={() => {
-              router.push("/")
+              resetAllStates()
+              setActiveNav("home")
             }}
           >
             <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
@@ -689,7 +651,8 @@ const MarketPage = ({ selectedCrypto, selectedTimeframe, onCryptoChange, onTimef
         <div
           className="text-sm text-gray-300 cursor-pointer hover:text-white transition-colors"
           onClick={() => {
-            router.push("/?page=order")
+            resetAllStates()
+            setActiveNav("order")
           }}
         >
           Spot Orders →
@@ -1363,6 +1326,9 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
+  const [showAuthentication, setShowAuthentication] = useState(false)
+  const [showUserMessages, setShowUserMessages] = useState(false)
+  const [showHelpCenter, setShowHelpCenter] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -1416,6 +1382,18 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     }
   }, [user?.id, supabase])
 
+  const handleAuthenticationClick = () => {
+    setShowAuthentication(true)
+  }
+
+  const handleUserMessagesClick = () => {
+    setShowUserMessages(true)
+  }
+
+  const handleHelpCenterClick = () => {
+    setShowHelpCenter(true)
+  }
+
   const handleSettingsClick = () => {
     setShowSettings(true)
   }
@@ -1437,6 +1415,18 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     setShowSettings(false)
   }
 
+  if (showAuthentication) {
+    return <AuthenticationPage onBack={() => setShowAuthentication(false)} user={user} />
+  }
+
+  if (showUserMessages) {
+    return <UserMessagesPage onBack={() => setShowUserMessages(false)} user={user} />
+  }
+
+  if (showHelpCenter) {
+    return <HelpCenterPage onBack={() => setShowHelpCenter(false)} />
+  }
+
   if (showSettings) {
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
   }
@@ -1453,7 +1443,7 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header with user profile */}
       <div
         className="py-12 px-4 text-white relative"
@@ -1494,9 +1484,9 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
       <div className="px-4 py-2 space-y-1">
         {[
           { icon: "💳", label: "Collection Information", action: handleCollectionInfoClick },
-          { icon: "🛡️", label: "Authentication" },
-          { icon: "💬", label: "User Message" },
-          { icon: "❓", label: "Help Center" },
+          { icon: "🛡️", label: "Authentication", action: handleAuthenticationClick },
+          { icon: "💬", label: "User Message", action: handleUserMessagesClick },
+          { icon: "❓", label: "Help Center", action: handleHelpCenterClick },
           { icon: "⚙️", label: "Settings", action: handleSettingsClick },
           { icon: "🚪", label: "Logout", action: handleLogout },
         ].map((item, index) => (
@@ -1521,242 +1511,277 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   )
 }
 
-const CollectionInfoPage = ({
-  onBack,
-  onAddCollection,
-  showAddForm,
-  user,
-}: {
-  onBack: () => void
-  onAddCollection: () => void
-  showAddForm: boolean
-  user: User | null
-}) => {
-  const [bankDetails, setBankDetails] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+const AuthenticationPage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {
+  const [userInfo, setUserInfo] = useState<any>(null)
+  const [formData, setFormData] = useState({
+    full_name: "",
+    phone_number: "",
+    address: "",
+    photo_url: "",
+  })
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    fetchBankDetails()
+    const fetchUserInfo = async () => {
+      try {
+        const response = await fetch("/api/user-info")
+        const data = await response.json()
+        if (data.userInfo) {
+          setUserInfo(data.userInfo)
+          setFormData({
+            full_name: data.userInfo.full_name || "",
+            phone_number: data.userInfo.phone_number || "",
+            address: data.userInfo.address || "",
+            photo_url: data.userInfo.photo_url || "",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching user info:", error)
+      }
+    }
+
+    fetchUserInfo()
   }, [])
 
-  const fetchBankDetails = async () => {
+  const handleSave = async () => {
+    setIsSaving(true)
     try {
-      setIsLoading(true)
-      const response = await fetch("/api/bank-details")
-      const data = await response.json()
+      const response = await fetch("/api/user-info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
       if (response.ok) {
-        setBankDetails(data.bankDetails || [])
+        const data = await response.json()
+        setUserInfo(data.userInfo)
+        alert("Information saved successfully!")
       } else {
-        console.error("Error fetching bank details:", data.error)
+        alert("Failed to save information")
       }
     } catch (error) {
-      console.error("Error fetching bank details:", error)
+      console.error("Error saving user info:", error)
+      alert("Error saving information")
     } finally {
-      setIsLoading(false)
+      setIsSaving(false)
     }
   }
 
-  const handleSaveSuccess = () => {
-    fetchBankDetails()
-    onBack()
-  }
-
-  if (showAddForm) {
-    return <AddCollectionInfoPage onBack={onBack} onSaveSuccess={handleSaveSuccess} user={user} />
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
-        <button onClick={onBack} className="p-2">
-          <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-semibold text-gray-800">Collection Information</h1>
-        <div className="w-10"></div>
+      <div className="bg-white px-4 py-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-900">Authentication</h1>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="p-4 pb-24">
-        {isLoading ? (
-          <div className="text-center py-8">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        ) : bankDetails.length > 0 ? (
-          <div className="space-y-3">
-            {bankDetails.map((detail) => (
-              <div key={detail.id} className="bg-white rounded-lg p-4 shadow-sm flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
-                      {detail.bind_bank?.charAt(0).toUpperCase() || "B"}
-                    </span>
-                  </div>
-                  <span className="text-gray-800 font-medium">{detail.bind_bank?.toLowerCase() || "Unknown Bank"}</span>
-                </div>
-                <span className="text-gray-500">
-                  {detail.bank_card_number.slice(0, 4)}****{detail.bank_card_number.slice(-4)}
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-4">No bank details added yet</div>
-            <div className="text-sm text-gray-400 mb-6">Add your bank card information for withdrawals</div>
-            <button
-              onClick={onAddCollection}
-              className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              Add Your First Card
-            </button>
-          </div>
-        )}
-      </div>
+      {/* Form */}
+      <div className="p-4 space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+          <input
+            type="text"
+            value={formData.full_name}
+            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            placeholder="Enter your full name"
+          />
+        </div>
 
-      {/* Add Collection Button - Always visible */}
-      <div className="fixed bottom-4 left-4 right-4 z-10">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+          <input
+            type="tel"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            placeholder="Enter your phone number"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <textarea
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            placeholder="Enter your address"
+            rows={3}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Photo URL</label>
+          <input
+            type="url"
+            value={formData.photo_url}
+            onChange={(e) => setFormData({ ...formData, photo_url: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            placeholder="Enter photo URL"
+          />
+        </div>
+
         <button
-          onClick={onAddCollection}
-          className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
+          onClick={handleSave}
+          disabled={isSaving}
+          className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
         >
-          Add Collection Information
+          {isSaving ? "Saving..." : "Save Information"}
         </button>
       </div>
     </div>
   )
 }
 
-const AddCollectionInfoPage = ({
-  onBack,
-  onSaveSuccess,
-  user,
-}: {
-  onBack: () => void
-  onSaveSuccess: () => void
-  user: User | null
-}) => {
-  const [formData, setFormData] = useState({
-    binding_type: "Bank Card",
-    currency: "ZAR",
-    account_holder_name: "",
-    bind_bank: "",
-    bank_card_number: "",
-  })
+const UserMessagesPage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {
+  const [messages, setMessages] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const handleSave = async () => {
-    if (!formData.account_holder_name || !formData.bind_bank || !formData.bank_card_number) {
-      alert("Please fill in all required fields")
-      return
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        const response = await fetch("/api/user-messages")
+        const data = await response.json()
+        if (data.messages) {
+          setMessages(data.messages)
+        }
+      } catch (error) {
+        console.error("Error fetching messages:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
+    fetchMessages()
+  }, [])
+
+  const markAsRead = async (messageId: string) => {
     try {
-      const response = await fetch("/api/bank-details", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+      await fetch("/api/user-messages", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messageId }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        alert("Bank details saved successfully!")
-        onSaveSuccess()
-      } else {
-        alert("Error saving bank details: " + data.error)
-      }
+      setMessages(messages.map((msg) => (msg.id === messageId ? { ...msg, is_read: true } : msg)))
     } catch (error) {
-      console.error("Error saving bank details:", error)
-      alert("Error saving bank details")
+      console.error("Error marking message as read:", error)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
-        <button onClick={onBack} className="p-2">
-          <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-semibold text-gray-800">Add Collection Information</h1>
-        <div className="w-10"></div>
+      <div className="bg-white px-4 py-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-900">User Messages</h1>
+        </div>
       </div>
 
-      {/* Form */}
-      <div className="p-4 space-y-6 pb-24">
-        {/* Binding Type */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Binding Type</label>
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">Bank Card</div>
-        </div>
+      {/* Messages */}
+      <div className="p-4 space-y-4">
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="text-gray-500">Loading messages...</div>
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-500">No messages yet</div>
+          </div>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
+              className={`bg-white rounded-lg p-4 shadow-sm ${!message.is_read ? "border-l-4 border-cyan-500" : ""}`}
+              onClick={() => !message.is_read && markAsRead(message.id)}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <span className="text-sm text-gray-500">{new Date(message.created_at).toLocaleDateString()}</span>
+                {!message.is_read && <span className="bg-cyan-500 text-white text-xs px-2 py-1 rounded-full">New</span>}
+              </div>
+              <p className="text-gray-800">{message.message}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
 
-        {/* Currency */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Currency
-          </label>
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">ZAR</div>
-        </div>
+const HelpCenterPage = ({ onBack }: { onBack: () => void }) => {
+  const helpSections = [
+    {
+      title: "Getting Started",
+      content:
+        "Welcome to BestCoin! To get started, please complete your profile authentication and add your bank details for seamless transactions.",
+    },
+    {
+      title: "Trading Guide",
+      content:
+        "Our platform offers cryptocurrency trading with up/down predictions. Select your preferred crypto, choose the direction, set your amount, and place your trade.",
+    },
+    {
+      title: "Deposits & Withdrawals",
+      content:
+        "To recharge your account, please contact your teacher. For withdrawals, ensure you have added your bank details in Collection Information.",
+    },
+    {
+      title: "Account Security",
+      content:
+        "Keep your account secure by using a strong password and never sharing your login credentials. Contact support if you notice any suspicious activity.",
+    },
+    {
+      title: "Customer Support",
+      content:
+        "Need help? Our support team is available 24/7. Click the customer support icon to connect with us via Telegram for immediate assistance.",
+    },
+    {
+      title: "Trading Tips",
+      content:
+        "Start with small amounts to understand the platform. Monitor market trends and never invest more than you can afford to lose.",
+    },
+  ]
 
-        {/* Account Holder Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Account Holder Name
-          </label>
-          <input
-            type="text"
-            value={formData.account_holder_name}
-            onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter account holder name"
-          />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white px-4 py-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-900">Help Center</h1>
         </div>
+      </div>
 
-        {/* Bind Bank */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Bind Bank
-          </label>
-          <input
-            type="text"
-            value={formData.bind_bank}
-            onChange={(e) => setFormData({ ...formData, bind_bank: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter bank name"
-          />
-        </div>
+      {/* Help Content */}
+      <div className="p-4 space-y-4">
+        {helpSections.map((section, index) => (
+          <div key={index} className="bg-white rounded-lg p-4 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{section.title}</h3>
+            <p className="text-gray-700 leading-relaxed">{section.content}</p>
+          </div>
+        ))}
 
-        {/* Bank Card Number */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            value={formData.bank_card_number}
-            onChange={(e) => setFormData({ ...formData, bank_card_number: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter bank card number"
-          />
-        </div>
-
-        <div className="pt-6">
-          <button
-            onClick={handleSave}
-            className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
-          >
-            Save Details
+        {/* Contact Support */}
+        <div className="bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg p-6 text-white">
+          <h3 className="text-lg font-semibold mb-2">Still Need Help?</h3>
+          <p className="mb-4">Our support team is here to assist you with any questions or concerns.</p>
+          <button className="bg-white text-cyan-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+            Contact Support
           </button>
         </div>
       </div>
@@ -1764,774 +1789,321 @@ const AddCollectionInfoPage = ({
   )
 }
 
-const HomePage = () => {
-  const [activeNav, setActiveNav] = useState("home")
-  const [selectedCrypto, setSelectedCrypto] = useState("BTCUSDT")
-  const [selectedTimeframe, setSelectedTimeframe] = useState("1M")
-  const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([])
+interface CollectionInfoPageProps {
+  onBack: () => void
+  onAddCollection: () => void
+  showAddForm: boolean
+  user: User | null
+}
+
+const CollectionInfoPage = ({ onBack, onAddCollection, showAddForm, user }: CollectionInfoPageProps) => {
+  const [bankDetails, setBankDetails] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [showTradingModal, setShowTradingModal] = useState(false)
-  const [tradingDirection, setTradingDirection] = useState<"up" | "down">("up")
-  const [selectedTradingTime, setSelectedTradingTime] = useState(60)
-  const [tradeAmount, setTradeAmount] = useState("")
-  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [activeOrderTab, setActiveOrderTab] = useState<"position" | "closing">("position")
-  const [showSettings, setShowSettings] = useState(false)
-  const [telegramLink, setTelegramLink] = useState("https://t.me/support")
-  const router = useRouter()
-  const supabase = createBrowserClient()
-
-  const [showRechargeMessage, setShowRechargeMessage] = useState(false)
-  const [showWithdrawalPage, setShowWithdrawalPage] = useState(false)
-  const [showWithdrawalHistory, setShowWithdrawalHistory] = useState(false)
-  const [withdrawals, setWithdrawals] = useState([])
-  const [withdrawalAmount, setWithdrawalAmount] = useState("")
-  const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
-  const [bankDetails, setBankDetails] = useState<any[]>([])
-  const [isLoadingBankDetails, setIsLoadingBankDetails] = useState(true)
-
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filteredCryptos, setFilteredCryptos] = useState<CryptoPrice[]>([])
+  const [isSaving, setIsSaving] = useState(false)
+  const [formData, setFormData] = useState({
+    bank_name: "",
+    account_name: "",
+    account_number: "",
+    swift_code: "",
+  })
 
   useEffect(() => {
-    initializeAuth()
-    fetchCryptoPrices()
-    fetchTelegramLink()
-    fetchBankDetails()
+    const fetchBankDetails = async () => {
+      try {
+        const response = await fetch("/api/bank-details")
+        const data = await response.json()
+        if (data.bankDetails) {
+          setBankDetails(data.bankDetails)
+          setFormData({
+            bank_name: data.bankDetails.bank_name || "",
+            account_name: data.bankDetails.account_name || "",
+            account_number: data.bankDetails.account_number || "",
+            swift_code: data.bankDetails.swift_code || "",
+          })
+        }
+      } catch (error) {
+        console.error("Error fetching bank details:", error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
 
-    const interval = setInterval(fetchCryptoPrices, 10000)
-    return () => clearInterval(interval)
+    fetchBankDetails()
   }, [])
 
-  const initializeAuth = async () => {
-    setIsLoading(true)
+  const handleSave = async () => {
+    setIsSaving(true)
     try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+      const response = await fetch("/api/bank-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
 
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchProfile(session.user.id)
-      }
-    } catch (error) {
-      console.error("[v0] Auth init error:", error)
-    } finally {
-      setIsLoading(false)
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        await fetchProfile(session.user.id)
-      }
-    })
-  }
-
-  const fetchProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
-
-      if (error) {
-        console.error("[v0] Error fetching profile:", error)
+      if (response.ok) {
+        const data = await response.json()
+        setBankDetails(data.bankDetails)
+        alert("Bank details saved successfully!")
       } else {
-        setProfile(data)
+        alert("Failed to save bank details")
       }
     } catch (error) {
-      console.error("[v0] Error fetching profile:", error)
+      console.error("Error saving bank details:", error)
+      alert("Error saving bank details")
+    } finally {
+      setIsSaving(false)
     }
   }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white px-4 py-6 shadow-sm">
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="p-2">
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+          </button>
+          <h1 className="text-xl font-semibold text-gray-900">Collection Information</h1>
+        </div>
+      </div>
+
+      {/* Bank Details */}
+      <div className="p-4 space-y-4">
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="text-gray-500">Loading bank details...</div>
+          </div>
+        ) : showAddForm ? (
+          /* Add Bank Details Form */
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
+              <input
+                type="text"
+                value={formData.bank_name}
+                onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Enter bank name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account Name</label>
+              <input
+                type="text"
+                value={formData.account_name}
+                onChange={(e) => setFormData({ ...formData, account_name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Enter account name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Account Number</label>
+              <input
+                type="text"
+                value={formData.account_number}
+                onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Enter account number"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Swift Code</label>
+              <input
+                type="text"
+                value={formData.swift_code}
+                onChange={(e) => setFormData({ ...formData, swift_code: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Enter swift code"
+              />
+            </div>
+
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-3 rounded-lg font-semibold disabled:opacity-50"
+            >
+              {isSaving ? "Saving..." : "Save Bank Details"}
+            </button>
+          </div>
+        ) : bankDetails ? (
+          /* Display Bank Details */
+          <div className="bg-white rounded-lg p-4 shadow-sm">
+            <div className="flex justify-between items-start mb-2">
+              <span className="text-sm text-gray-500">Bank Details</span>
+            </div>
+            <p className="text-gray-800">Bank Name: {bankDetails.bank_name}</p>
+            <p className="text-gray-800">Account Name: {bankDetails.account_name}</p>
+            <p className="text-gray-800">Account Number: {bankDetails.account_number}</p>
+            <p className="text-gray-800">Swift Code: {bankDetails.swift_code}</p>
+          </div>
+        ) : (
+          /* No Bank Details */
+          <div className="text-center py-8">
+            <div className="text-gray-500">No bank details yet</div>
+            <button
+              onClick={onAddCollection}
+              className="bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-3 rounded-lg font-semibold"
+            >
+              Add Bank Details
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function Page({ searchParams }: { searchParams?: { page?: string } }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [activeNav, setActiveNav] = useState<string>("home")
+  const [selectedCrypto, setSelectedCrypto] = useState<string>("BTCUSDT")
+  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("1M")
+
+  const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+    })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/login")
   }
 
-  const fetchTelegramLink = async () => {
-    try {
-      const response = await fetch("/api/settings")
-      if (response.ok) {
-        const data = await response.json()
-        setTelegramLink(data.telegram_link || "https://t.me/support")
-      }
-    } catch (error) {
-      console.log("[v0] Error fetching telegram link:", error)
-    }
+  const handleCryptoChange = (crypto: string) => {
+    setSelectedCrypto(crypto)
   }
 
-  const handleCustomerSupportClick = () => {
-    window.open(telegramLink, "_blank")
+  const handleTimeframeChange = (timeframe: string) => {
+    setSelectedTimeframe(timeframe)
   }
 
   const resetAllStates = () => {
-    setShowRechargeMessage(false)
-    setShowWithdrawalPage(false)
-    setShowWithdrawalHistory(false)
-    setShowTradingModal(false)
-    setShowSettings(false)
-    setSearchQuery("")
-    setFilteredCryptos([])
+    setSelectedCrypto("BTCUSDT")
+    setSelectedTimeframe("1M")
   }
 
-  const checkAuthAndNavigate = (targetPage: string) => {
-    if (!user && targetPage !== "home") {
-      router.push("/login")
-      return
-    }
+  const renderPage = () => {
+    const page = searchParams?.page
 
-    resetAllStates()
-    setActiveNav(targetPage)
-  }
-
-  const handleCryptoSelect = (cryptoId: string) => {
     if (!user) {
-      router.push("/login")
-      return
-    }
-
-    resetAllStates()
-    setSelectedCrypto(cryptoId)
-    setActiveNav("market")
-  }
-
-  const handleBackNavigation = () => {
-    resetAllStates()
-    setActiveNav("home")
-  }
-
-  const fetchCryptoPrices = async () => {
-    try {
-      console.log("[v0] Fetching crypto prices from internal API...")
-      const response = await fetch("/api/crypto")
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
-      console.log("[v0] Successfully fetched crypto data:", data)
-
-      setCryptoPrices(data)
-    } catch (error) {
-      console.error("[v0] Error fetching crypto prices:", error)
-      const fallbackData: CryptoPrice[] = [
-        {
-          id: "bitcoin",
-          symbol: "BTC/USDT",
-          name: "Bitcoin",
-          current_price: 111123.1906,
-          price_change_percentage_24h: 0.26,
-        },
-        {
-          id: "ethereum",
-          symbol: "ETH/USDT",
-          name: "Ethereum",
-          current_price: 4322.3957,
-          price_change_percentage_24h: 0.61,
-        },
-        {
-          id: "dogecoin",
-          symbol: "DOGE/USDT",
-          name: "Dogecoin",
-          current_price: 0.216,
-          price_change_percentage_24h: 3.15,
-        },
-        {
-          id: "chiliz",
-          symbol: "CHZUSDT",
-          name: "Chiliz",
-          current_price: 0.0393,
-          price_change_percentage_24h: 1.32,
-        },
-        {
-          id: "psg-fan-token",
-          symbol: "PSGUSDT",
-          name: "PSG Fan Token",
-          current_price: 1.8153,
-          price_change_percentage_24h: 0.69,
-        },
-        {
-          id: "atletico-madrid",
-          symbol: "ATMUSDT",
-          name: "Atletico Madrid Fan Token",
-          current_price: 1.265,
-          price_change_percentage_24h: -0.64,
-        },
-        {
-          id: "juventus-fan-token",
-          symbol: "JUVUSDT",
-          name: "Juventus Fan Token",
-          current_price: 1.1484,
-          price_change_percentage_24h: 1.58,
-        },
-        {
-          id: "kusama",
-          symbol: "KSMUSDT",
-          name: "Kusama",
-          current_price: 15.3358,
-          price_change_percentage_24h: 5.37,
-        },
-        {
-          id: "litecoin",
-          symbol: "LTCUSDT",
-          name: "Litecoin",
-          current_price: 112.7811,
-          price_change_percentage_24h: 2.92,
-        },
-        {
-          id: "eos",
-          symbol: "EOSUSDT",
-          name: "EOS",
-          current_price: 0.7262,
-          price_change_percentage_24h: -0.93,
-        },
-        {
-          id: "bitshares",
-          symbol: "BTSUSDT",
-          name: "BitShares",
-          current_price: 9.4785,
-          price_change_percentage_24h: 1.08,
-        },
-        {
-          id: "chainlink",
-          symbol: "LINKUSDT",
-          name: "Chainlink",
-          current_price: 23.4146,
-          price_change_percentage_24h: 2.49,
-        },
-      ]
-      setCryptoPrices(fallbackData)
-    }
-  }
-
-  const formatPrice = (price: number, symbol: string) => {
-    if (symbol.includes("DOGE") || symbol.includes("CHZ")) {
-      return price.toFixed(4)
-    }
-    return price.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    })
-  }
-
-  const formatPercentage = (percentage: number) => {
-    const sign = percentage >= 0 ? "+" : ""
-    return `${sign}${percentage.toFixed(2)}%`
-  }
-
-  const handleRechargeClick = () => {
-    setShowRechargeMessage(true)
-    setTimeout(() => setShowRechargeMessage(false), 3000)
-  }
-
-  const handleWithdrawalClick = () => {
-    setShowWithdrawalPage(true)
-    fetchWithdrawals()
-  }
-
-  const fetchWithdrawals = async () => {
-    try {
-      const response = await fetch("/api/withdrawals")
-      if (response.ok) {
-        const data = await response.json()
-        setWithdrawals(data.withdrawals || [])
-      }
-    } catch (error) {
-      console.error("Error fetching withdrawals:", error)
-    }
-  }
-
-  const handleWithdrawalSubmit = async () => {
-    if (!withdrawalAmount || Number.parseFloat(withdrawalAmount) <= 0) {
-      alert("Please enter a valid amount")
-      return
-    }
-
-    if (Number.parseFloat(withdrawalAmount) > (profile?.available_balance || 0)) {
-      alert("Insufficient balance")
-      return
-    }
-
-    setIsSubmittingWithdrawal(true)
-    try {
-      const response = await fetch("/api/withdrawals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Number.parseFloat(withdrawalAmount),
-          bank_details: bankDetails[0] || null,
-        }),
-      })
-
-      if (response.ok) {
-        alert("Withdrawal request submitted successfully")
-        setWithdrawalAmount("")
-        fetchWithdrawals()
-        fetchProfile() // Refresh balance
-      } else {
-        const error = await response.json()
-        alert(error.error || "Failed to submit withdrawal request")
-      }
-    } catch (error) {
-      console.error("Error submitting withdrawal:", error)
-      alert("Failed to submit withdrawal request")
-    } finally {
-      setIsSubmittingWithdrawal(false)
-    }
-  }
-
-  const fetchBankDetails = async () => {
-    try {
-      setIsLoadingBankDetails(true)
-      console.log("[v0] Fetching bank details for withdrawal...")
-      const response = await fetch("/api/bank-details")
-      const data = await response.json()
-      console.log("[v0] Bank details API response:", data)
-
-      if (response.ok) {
-        setBankDetails(data.bankDetails || [])
-        console.log("[v0] Bank details set:", data.bankDetails || [])
-      } else {
-        console.error("[v0] Error fetching bank details:", data.error)
-      }
-    } catch (error) {
-      console.error("[v0] Error fetching bank details:", error)
-    } finally {
-      setIsLoadingBankDetails(false)
-    }
-  }
-
-  const renderCurrentPage = () => {
-    if (showRechargeMessage) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
-            <div className="mb-4">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Recharge Information</h3>
-              <p className="text-gray-600">To recharge, kindly contact your teacher</p>
-            </div>
-            <button
-              onClick={() => setShowRechargeMessage(false)}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              OK
-            </button>
-          </div>
+        <div className="grid h-screen place-items-center">
+          <Badge variant="outline">
+            <a href="/login">Login</a> to continue
+          </Badge>
         </div>
       )
     }
 
-    if (showWithdrawalPage) {
-      return (
-        <div className="min-h-screen bg-gray-50">
-          {/* Header */}
-          <div className="bg-white shadow-sm">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <button onClick={() => setShowWithdrawalPage(false)}>
-                  <Home className="w-6 h-6 text-gray-600" />
-                </button>
-                <h1 className="text-lg font-semibold text-gray-900">Withdrawal</h1>
-              </div>
-              <button
-                onClick={() => setShowWithdrawalHistory(true)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                History
-              </button>
-            </div>
-          </div>
-
-          {/* Withdrawal Form */}
-          <div className="p-4 space-y-6">
-            {/* Available Balance */}
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-sm text-gray-600 mb-1">Available Balance</div>
-              <div className="text-2xl font-bold text-gray-900">
-                {profile?.available_balance?.toFixed(2) || "0.00"} {profile?.preferred_currency || "ZAR"}
-              </div>
-            </div>
-
-            {/* Withdrawal Amount */}
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Withdrawal Amount</label>
-              <input
-                type="number"
-                value={withdrawalAmount}
-                onChange={(e) => setWithdrawalAmount(e.target.value)}
-                placeholder="Enter amount"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            </div>
-
-            {/* Bank Details */}
-            {console.log("[v0] Rendering bank details section, bankDetails.length:", bankDetails.length)}
-            {bankDetails.length > 0 && (
-              <div className="bg-white rounded-lg p-4 shadow-sm">
-                <div className="text-sm font-medium text-gray-700 mb-2">Withdrawal Account</div>
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-green-600 font-medium text-sm">
-                      {bankDetails[0]?.bind_bank?.charAt(0)?.toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">{bankDetails[0]?.bind_bank}</div>
-                    <div className="text-sm text-gray-500">****{bankDetails[0]?.bank_card_number?.slice(-4)}</div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              onClick={handleWithdrawalSubmit}
-              disabled={isSubmittingWithdrawal || !withdrawalAmount || bankDetails.length === 0}
-              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmittingWithdrawal ? "Submitting..." : "Submit Withdrawal Request"}
-            </button>
-
-            {bankDetails.length === 0 && (
-              <div className="text-center text-sm text-gray-500">
-                {isLoadingBankDetails
-                  ? "Loading bank details..."
-                  : "Please add bank details in Collection Information to withdraw"}
-                {console.log("[v0] No bank details available, isLoading:", isLoadingBankDetails)}
-              </div>
-            )}
-          </div>
-
-          {/* Withdrawal History Modal */}
-          {showWithdrawalHistory && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b">
-                  <h3 className="text-lg font-semibold">Withdrawal History</h3>
-                  <button onClick={() => setShowWithdrawalHistory(false)} className="text-gray-400 hover:text-gray-600">
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-                <div className="p-4 max-h-96 overflow-y-auto">
-                  {withdrawals.length > 0 ? (
-                    <div className="space-y-3">
-                      {withdrawals.map((withdrawal) => (
-                        <div key={withdrawal.id} className="border rounded-lg p-3">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="font-medium">
-                              {withdrawal.amount} {profile?.preferred_currency || "ZAR"}
-                            </div>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                withdrawal.status === "approved"
-                                  ? "bg-green-100 text-green-800"
-                                  : withdrawal.status === "rejected"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {new Date(withdrawal.created_at).toLocaleDateString()}
-                          </div>
-                          {withdrawal.admin_notes && (
-                            <div className="text-sm text-gray-600 mt-1">Note: {withdrawal.admin_notes}</div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center text-gray-500 py-8">No withdrawal history found</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )
-    }
-
-    switch (activeNav) {
+    switch (page) {
       case "order":
         return <OrderPage />
-      case "market":
-        return (
-          <MarketPage
-            selectedCrypto={selectedCrypto}
-            selectedTimeframe="1M"
-            onCryptoChange={(crypto) => setSelectedCrypto(crypto)}
-            onTimeframeChange={() => {}}
-          />
-        )
       case "asset":
-        return <AssetPage profile={profile} />
-      case "my":
-        return <MyPage user={user} handleLogout={handleLogout} />
+        return <AssetPage />
       default:
-        return (
-          <div className="min-h-screen bg-gray-50">
-            {/* Top Price Cards */}
-            <div className="bg-white px-4 py-6">
-              <div className="grid grid-cols-3 gap-4">
-                {cryptoPrices.slice(0, 3).map((crypto) => (
-                  <div key={crypto.id} className="text-center">
-                    <div className="text-sm font-medium text-gray-900 mb-1">{crypto.symbol}</div>
-                    <div className="text-lg font-semibold text-cyan-500 mb-1">
-                      {formatPrice(crypto.current_price, crypto.symbol)}
-                    </div>
-                    <div className="text-sm font-medium text-green-500">
-                      {formatPercentage(crypto.price_change_percentage_24h)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            {/* Updated recharge and withdrawal buttons with click handlers */}
-            <div className="grid grid-cols-3 gap-8">
-              <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Recharge</span>
-              </button>
-
-              <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
-              </button>
-
-              <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Customer Service</span>
-              </button>
-            </div>
-
-            {/* Crypto List */}
-            <div className="bg-white mt-2">
-              {/* Search Input */}
-              <div className="relative px-4 py-3">
-                <input
-                  type="text"
-                  placeholder="Search cryptocurrencies"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const query = e.target.value
-                    setSearchQuery(query)
-
-                    if (query) {
-                      const filtered = cryptoPrices.filter(
-                        (crypto) =>
-                          crypto.symbol.toLowerCase().includes(query.toLowerCase()) ||
-                          crypto.name.toLowerCase().includes(query.toLowerCase()),
-                      )
-                      setFilteredCryptos(filtered)
-                    } else {
-                      setFilteredCryptos([])
-                    }
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-
-                {/* Search Results */}
-                {/* Updated search input to handle navigation properly */}
-                {searchQuery && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                    {filteredCryptos.length > 0 ? (
-                      filteredCryptos.map((crypto) => (
-                        <button
-                          key={crypto.id}
-                          onClick={() => {
-                            handleCryptoSelect(crypto.symbol.toUpperCase())
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
-                        >
-                          <CryptoIcon symbol={crypto.symbol} size={24} />
-                          <div>
-                            <div className="font-medium text-gray-900">{crypto.symbol.toUpperCase()}</div>
-                            <div className="text-sm text-gray-500">{crypto.name}</div>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-3 text-gray-500 text-center">No cryptocurrencies found</div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {cryptoPrices.map((crypto, index) => (
-                <div
-                  key={crypto.id}
-                  className="flex items-center px-4 py-4 border-b border-gray-100 last:border-b-0 ms-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => handleCryptoSelect(crypto.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <CryptoIcon symbol={crypto.symbol.replace("USDT", "")} />
-                    <span className="font-medium text-gray-900">{crypto.symbol}</span>
-                  </div>
-
-                  <div className="flex-1 text-center">
-                    <span
-                      className={`font-semibold ${crypto.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}`}
-                    >
-                      {formatPrice(crypto.current_price, crypto.symbol)}
-                    </span>
-                  </div>
-
-                  <div>
-                    <Badge
-                      className={`${crypto.price_change_percentage_24h >= 0 ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"} text-white px-2 py-1 text-xs font-medium`}
-                    >
-                      {formatPercentage(crypto.price_change_percentage_24h)}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom padding to account for fixed navigation */}
-            <div className="h-20"></div>
-          </div>
-        )
+        if (activeNav === "home") {
+          return (
+            <MarketPage
+              selectedCrypto={selectedCrypto}
+              selectedTimeframe={selectedTimeframe}
+              onCryptoChange={handleCryptoChange}
+              onTimeframeChange={handleTimeframeChange}
+              resetAllStates={resetAllStates}
+              setActiveNav={setActiveNav}
+            />
+          )
+        } else if (activeNav === "asset") {
+          return <AssetPage />
+        } else if (activeNav === "my") {
+          return <MyPage user={user} handleLogout={handleLogout} />
+        } else {
+          return (
+            <MarketPage
+              selectedCrypto={selectedCrypto}
+              selectedTimeframe={selectedTimeframe}
+              onCryptoChange={handleCryptoChange}
+              onTimeframeChange={handleTimeframeChange}
+              resetAllStates={resetAllStates}
+              setActiveNav={setActiveNav}
+            />
+          )
+        }
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {renderCurrentPage()}
-
-      {/* Bottom Navigation */}
-      {activeNav !== "market" && !showRechargeMessage && !showWithdrawalPage && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-          <div className="grid grid-cols-5 py-2">
-            <button
-              onClick={() => checkAuthAndNavigate("home")}
-              className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "home"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                }
-                alt="Home"
-                className="w-6 h-6"
-                style={{ filter: activeNav === "home" ? "none" : "brightness(0)" }}
-              />
-              <span className="text-xs mt-1 font-medium">Home</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("order")}
-              className={`flex flex-col items-center py-2 ${activeNav === "order" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "order"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-on-MTJ5rFnAkPPMIOaPirW7vitrvdV4K1.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-B8U7Mm78bhIOdQcpzf7xk2A5OFHsbM.png"
-                }
-                alt="Order"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Order</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("market")}
-              className={`flex flex-col items-center py-2 ${activeNav === "market" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/jy-cE3iJPz5tVy8uo4AkVuvrdVIJHlxAy.png"
-                alt="Market"
-                className="w-6 h-6"
-                style={{
-                  filter: activeNav === "market" ? "sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)" : "none",
+    <>
+      {renderPage()}
+      {user && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+          <ul className="flex justify-around p-4">
+            <li className="text-center">
+              <a
+                href="#"
+                onClick={() => {
+                  setActiveNav("home")
+                  router.push("/")
                 }}
-              />
-              <span className="text-xs mt-1">Market</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("asset")}
-              className={`flex flex-col items-center py-2 ${activeNav === "asset" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "asset"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-on-wnj7RxQeGjwlsw5XIS9yhtjYImfVqC.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-1pqynjOg1eAbvDW7cctRuJvWvADoKB.png"
-                }
-                alt="Asset"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Asset</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("my")}
-              className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "my"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-yPiEf0s1WVMnnCrl6rfOtbgWJAqHch.png"
-                }
-                alt="My"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">My</span>
-            </button>
-          </div>
-        </div>
+                className={`block ${activeNav === "home" ? "text-blue-600" : "text-gray-600"}`}
+              >
+                <Home className="mx-auto h-6 w-6" />
+                Home
+              </a>
+            </li>
+            <li className="text-center">
+              <a
+                href="#"
+                onClick={() => {
+                  setActiveNav("asset")
+                  router.push("/?page=asset")
+                }}
+                className={`block ${activeNav === "asset" ? "text-blue-600" : "text-gray-600"}`}
+              >
+                <svg className="mx-auto h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 6v6m0 0v6m0-6h6m-6 0H6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Asset
+              </a>
+            </li>
+            <li className="text-center">
+              <a
+                href="#"
+                onClick={() => {
+                  setActiveNav("my")
+                  router.push("/?page=my")
+                }}
+                className={`block ${activeNav === "my" ? "text-blue-600" : "text-gray-600"}`}
+              >
+                <svg className="mx-auto h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                My
+              </a>
+            </li>
+          </ul>
+        </nav>
       )}
-    </div>
+    </>
   )
 }
-
-export default HomePage

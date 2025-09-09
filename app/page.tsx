@@ -36,56 +36,47 @@ const CryptoIcon = ({ symbol }: { symbol: string }) => {
     bts: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/bts_hxkgas.svg",
   }
 
-  const coinGeckoIds: { [key: string]: string } = {
-    btc: "bitcoin",
-    eth: "ethereum",
-    doge: "dogecoin",
-    chz: "chiliz",
-    ltc: "litecoin",
-    bts: "bitshares",
-  }
-
   const getIconUrl = (symbol: string) => {
     if (!symbol) return null
     const lowerSymbol = symbol.toLowerCase()
 
+    // Check specific icons first (Cloudinary)
     if (specificIcons[lowerSymbol]) {
       return specificIcons[lowerSymbol]
     }
 
-    const coinGeckoId = coinGeckoIds[lowerSymbol] || lowerSymbol
-    return `https://assets.coingecko.com/coins/images/${getCoinGeckoImageId(coinGeckoId)}/small/${coinGeckoId}.png`
-  }
-
-  const getCoinGeckoImageId = (coinId: string): number => {
-    const idMap: { [key: string]: number } = {
-      bitcoin: 1,
-      ethereum: 279,
-      dogecoin: 5,
-      chiliz: 8834,
-      litecoin: 2,
-      bitshares: 463,
+    // Fallback to CoinGecko
+    const coinGeckoIds: { [key: string]: string } = {
+      btc: "bitcoin",
+      eth: "ethereum",
+      doge: "dogecoin",
+      chz: "chiliz",
+      ltc: "litecoin",
     }
-    return idMap[coinId] || 1
+
+    const coinGeckoId = coinGeckoIds[lowerSymbol] || lowerSymbol
+    return `https://assets.coingecko.com/coins/images/1/small/${coinGeckoId}.png`
   }
 
   if (hasError) {
     return (
       <div
         className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
-        style={{ backgroundColor: `hsl(${(symbol.charCodeAt(0) * 137.5) % 360}, 70%, 50%)` }}
+        style={{ backgroundColor: `hsl(${((symbol?.charCodeAt(0) || 0) * 137.5) % 360}, 70%, 50%)` }}
       >
-        {symbol.slice(0, 2).toUpperCase()}
+        {symbol?.slice(0, 2).toUpperCase() || "??"}
       </div>
     )
   }
 
+  const iconUrl = getIconUrl(symbol)
   return (
     <img
-      src={getIconUrl(symbol) || "/placeholder.svg"}
+      src={iconUrl || "/placeholder.svg"}
       alt={symbol}
       className="w-8 h-8 rounded-full"
       onError={() => setHasError(true)}
+      onLoad={() => setHasError(false)}
     />
   )
 }
@@ -963,6 +954,9 @@ const AssetPage = ({ profile }: { profile: any }) => {
     { code: "USD", name: "US Dollar" },
   ]
 
+  const displayBalance = profile?.frozen_balance > 0 ? profile.frozen_balance : profile?.available_balance || 0
+  const balanceLabel = profile?.frozen_balance > 0 ? "Frozen" : "Available Balance"
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div
@@ -982,7 +976,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
         <div className="mb-4">
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
           <div className="text-3xl font-bold mb-2">
-            {profile?.available_balance?.toFixed(4) || "0.0000"} <span className="text-lg font-normal">USDT</span>
+            {displayBalance.toFixed(4)} <span className="text-lg font-normal">USDT</span>
           </div>
           <div className="relative">
             <div
@@ -990,7 +984,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>
-                ≈ {profile?.available_balance?.toFixed(4) || "0.0000"} {selectedCurrency}
+                ≈ {displayBalance.toFixed(4)} {selectedCurrency}
               </span>
               <svg
                 className={`w-4 h-4 ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -1078,17 +1072,19 @@ const AssetPage = ({ profile }: { profile: any }) => {
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {profile?.available_balance?.toFixed(4) || "0.0000"}
+              {profile?.frozen_balance > 0 ? "0.0000" : profile?.available_balance?.toFixed(4) || "0.0000"}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-blue-500 mb-1">0.0000</div>
+            <div className="text-lg font-semibold text-blue-500 mb-1">
+              {profile?.frozen_balance?.toFixed(4) || "0.0000"}
+            </div>
             <div className="text-xs text-gray-500">Frozen</div>
           </div>
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {profile?.available_balance?.toFixed(4) || "0.0000"}
+              {((profile?.available_balance || 0) + (profile?.frozen_balance || 0)).toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Balance</div>
           </div>
@@ -1288,8 +1284,16 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
             <div className="text-sm opacity-90">UID: {userProfile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
             <div className="text-sm font-medium text-yellow-300">Credit Score: {userProfile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              Available Balance: {userProfile?.available_balance?.toFixed(4) || "0.0000"}{" "}
-              {userProfile?.preferred_currency || "USD"}
+              {userProfile?.frozen_balance > 0 ? (
+                <>
+                  Frozen Balance: {userProfile.frozen_balance.toFixed(4)} {userProfile?.preferred_currency || "USD"}
+                </>
+              ) : (
+                <>
+                  Available Balance: {userProfile?.available_balance?.toFixed(4) || "0.0000"}{" "}
+                  {userProfile?.preferred_currency || "USD"}
+                </>
+              )}
             </div>
           </div>
         </div>

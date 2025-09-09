@@ -7,9 +7,9 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const supabase = await createClient()
     const adminSupabase = await createAdminClient()
-    const { credit_score, available_balance } = await request.json()
+    const { credit_score, available_balance, frozen_balance } = await request.json()
 
-    console.log("[v0] Update data received:", { credit_score, available_balance })
+    console.log("[v0] Update data received:", { credit_score, available_balance, frozen_balance })
 
     // Check if user is admin
     const {
@@ -48,6 +48,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         uid: Math.floor(Math.random() * 9000000000) + 1000000000, // Generate random UID
         credit_score,
         available_balance,
+        frozen_balance: frozen_balance || 0,
         preferred_currency: "ZAR",
         role: "user",
         created_at: new Date().toISOString(),
@@ -78,6 +79,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const updateData = {
       credit_score,
       available_balance,
+      frozen_balance: frozen_balance || 0,
       updated_at: new Date().toISOString(),
     }
 

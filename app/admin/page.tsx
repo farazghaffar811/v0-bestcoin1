@@ -13,11 +13,13 @@ interface User {
   available_balance?: number
   uid?: string
   preferred_currency?: string
+  frozen_balance?: number
 }
 
 interface EditUserData {
   credit_score: number
   available_balance: number
+  frozen_balance: number
 }
 
 interface Trade {
@@ -93,7 +95,7 @@ export default function AdminDashboard() {
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [newPassword, setNewPassword] = useState("")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0 })
+  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0 })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
     binding_type: "",
@@ -295,6 +297,7 @@ export default function AdminDashboard() {
     setEditData({
       credit_score: user.credit_score || 0,
       available_balance: user.available_balance || 0,
+      frozen_balance: user.frozen_balance || 0,
     })
   }
 
@@ -328,6 +331,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           credit_score: editData.credit_score,
           available_balance: editData.available_balance,
+          frozen_balance: editData.frozen_balance,
         }),
       })
 
@@ -337,7 +341,12 @@ export default function AdminDashboard() {
       setUsers(
         users.map((user) =>
           user.id === editingUser.id
-            ? { ...user, credit_score: editData.credit_score, available_balance: editData.available_balance }
+            ? {
+                ...user,
+                credit_score: editData.credit_score,
+                available_balance: editData.available_balance,
+                frozen_balance: editData.frozen_balance,
+              }
             : user,
         ),
       )
@@ -1112,6 +1121,39 @@ export default function AdminDashboard() {
                     className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
                   >
                     +100
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance</label>
+                <div className="flex items-center space-x-2 mb-2">
+                  <input
+                    type="number"
+                    value={editData.frozen_balance}
+                    onChange={(e) =>
+                      setEditData((prev) => ({ ...prev, frozen_balance: Number.parseFloat(e.target.value) || 0 }))
+                    }
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    min="0"
+                    step="0.0001"
+                  />
+                </div>
+                <div className="text-xs text-gray-500 mb-2">
+                  When frozen balance &gt; 0, user will see frozen balance instead of available balance
+                </div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => setEditData((prev) => ({ ...prev, frozen_balance: prev.available_balance }))}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded text-xs"
+                  >
+                    Freeze All
+                  </button>
+                  <button
+                    onClick={() => setEditData((prev) => ({ ...prev, frozen_balance: 0 }))}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs"
+                  >
+                    Unfreeze
                   </button>
                 </div>
               </div>

@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [rememberPassword, setRememberPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [telegramLink, setTelegramLink] = useState<string>("")
   const router = useRouter()
@@ -43,39 +42,26 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Login button clicked, starting authentication process")
-    console.log("[v0] Email:", email, "Password length:", password.length)
-
     const supabase = createClient()
-    setIsLoading(true)
     setError(null)
 
     try {
-      console.log("[v0] Attempting Supabase signInWithPassword...")
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) {
-        console.log("[v0] Supabase auth error:", error.message)
         throw error
       }
 
-      console.log("[v0] Login successful, checking admin status...")
       if (email === "bestcoin1@gmail.com") {
-        console.log("[v0] Admin user detected, redirecting to admin dashboard")
         router.push("/admin")
       } else {
-        console.log("[v0] Regular user, redirecting to home page")
         router.push("/")
       }
     } catch (error: unknown) {
-      console.log("[v0] Login error caught:", error)
       setError(error instanceof Error ? error.message : "An error occurred")
-    } finally {
-      setIsLoading(false)
-      console.log("[v0] Login process completed")
     }
   }
 
@@ -167,14 +153,13 @@ export default function LoginPage() {
           {/* Login Button */}
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full py-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white font-semibold rounded-full hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white font-semibold rounded-full hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
             style={{
               background: "linear-gradient(to right, #facc15, #f97316, #ef4444)",
               color: "#ffffff",
             }}
           >
-            {isLoading ? "Logging in..." : "Login"}
+            Login
           </button>
 
           {/* Register Link */}

@@ -45,6 +45,7 @@ const CryptoIcon = ({ symbol }: { symbol: string }) => {
       return specificIcons[lowerSymbol]
     }
 
+    // Use CoinGecko API for real cryptocurrency icons
     const coinGeckoIds: { [key: string]: string } = {
       btc: "bitcoin",
       eth: "ethereum",
@@ -88,189 +89,37 @@ const CryptoIcon = ({ symbol }: { symbol: string }) => {
       hbar: "hedera-hashgraph",
       vet: "vechain",
       theta: "theta-token",
-      tfuel: "theta-fuel",
       xtz: "tezos",
-      egld: "elrond-erd-2",
       waves: "waves",
       neo: "neo",
       qtum: "qtum",
       ont: "ontology",
       zil: "zilliqa",
       icx: "icon",
-      iost: "iostoken",
       trx: "tron",
       xlm: "stellar",
       xrp: "ripple",
       bch: "bitcoin-cash",
-      bsv: "bitcoin-sv",
       etc: "ethereum-classic",
       dash: "dash",
       zec: "zcash",
       xmr: "monero",
-      dcr: "decred",
-      sc: "siacoin",
-      dgb: "digibyte",
-      rdd: "reddcoin",
-      vtc: "vertcoin",
-      blk: "blackcoin",
-      via: "viacoin",
-      ftc: "feathercoin",
-      ppc: "peercoin",
-      nmc: "namecoin",
-      aur: "auroracoin",
-      rby: "rubycoin",
-      grc: "gridcoin-research",
-      nvc: "novacoin",
-      trc: "terracoin",
-      qrk: "quark",
-      mec: "megacoin",
-      emc: "emercoin",
-      pot: "potcoin",
-      anc: "anoncoin",
-      net: "netcoin",
-      ifc: "infinitecoin",
-      crc: "craftcoin",
-      frc: "freicoin",
-      nxt: "nxt",
-      burst: "burst",
-      xcp: "counterparty",
-      bts: "bitshares",
-      xem: "nem",
-      steem: "steem",
-      ardr: "ardor",
-      lsk: "lisk",
-      fct: "factom",
-      game: "gamecredits",
-      lbc: "library-credit",
-      dcn: "dentacoin",
-      storj: "storj",
-      fun: "funfair",
-      cvc: "civic",
-      dnt: "district0x",
-      snt: "status",
-      bnt: "bancor",
-      gno: "gnosis",
-      gup: "matchpool",
-      tkn: "tokencard",
-      hmq: "humaniq",
-      wings: "wings",
-      rlt: "roulettecoin",
-      xaur: "xaurum",
-      plu: "pluton",
-      dice: "etheroll",
-      vsl: "vslice",
-      vsm: "versioncoin",
-      dbix: "dubaicoin-dbix",
-      edr: "endor-protocol-token",
-      ixt: "insurex",
-      adt: "adtoken",
-      ast: "airswap",
-      cdt: "blox",
-      tnt: "tierion",
-      trst: "wetrust",
-      ark: "ark",
-      kmd: "komodo",
-      gbyte: "byteball",
-      sys: "syscoin",
-      lmc: "lomocoin",
-      gxs: "gxchain",
-      part: "particl",
-      bay: "bitbay",
-      block: "blocknet",
-      via: "viacoin",
-      vtc: "vertcoin",
-      mona: "monacoin",
-      xzc: "zcoin",
-      pivx: "pivx",
-      ok: "okcash",
-      synx: "syndicate",
-      pink: "pinkcoin",
-      iop: "internet-of-people",
-      gbx: "gobyte",
-      nxs: "nexus",
-      xby: "xtrabytes",
-      html: "htmlcoin",
-      xp: "experience-points",
-      pac: "paccoin",
-      dmd: "diamond",
-      nav: "navcoin",
-      vrc: "vericoin",
-      vrm: "verium",
-      xst: "stealth",
-      ion: "ion",
-      radium: "radium",
-      slr: "solarcoin",
-      nsr: "nushares",
-      nbt: "nubits",
-      unity: "supernet-unity",
-      xco: "excoin",
-      str: "stellar",
-      neos: "neoscoin",
-      clr: "clears",
-      kore: "korecoin",
-      xbc: "bitcoin-plus",
-      jbs: "jumbucks",
-      jw: "jewels",
-      mag: "magnet",
-      tiger: "tigercoin",
-      bqc: "bbqcoin",
-      xpm: "primecoin",
-      anc: "anoncoin",
-      i0c: "i0coin",
-      ixc: "ixcoin",
-      dvc: "devcoin",
-      btb: "bitbar",
-      yac: "yacoin",
-      csc: "casinocoin",
-      tix: "blocktix",
-      xel: "elastic",
-      part: "particl",
-      zen: "zencash",
-      zny: "bitzeny",
-      btg: "bitcoin-gold",
-      bcd: "bitcoin-diamond",
-      sbtc: "super-bitcoin",
-      bch: "bitcoin-cash",
-      btx: "bitcore",
-      bcx: "bitcoinx",
-      btp: "bitcoin-private",
-      btf: "bitcoin-faith",
-      bca: "bitcoin-atom",
-      bci: "bitcoin-interest",
-      btw: "bitcoin-world",
-      btcp: "bitcoin-private",
-      btcz: "bitcoinz",
-      btcs: "bitcoin-scrypt",
-      btcr: "bitcurrency",
-      btcu: "bitcoin-unlimited",
-      btcc: "bitconnect",
-      btcd: "bitcoindark",
-      btce: "bitcoin-fast",
-      btcf: "bitcoin-faith",
-      btcg: "bitcoin-green",
-      btch: "bitcoin-hush",
-      btci: "bitcoin-interest",
-      btcl: "bitcoin-lightning",
-      btcm: "bitcoinmoon",
-      btcn: "bitcoinote",
-      btco: "bitcoin-ore",
-      btcp: "bitcoin-private",
-      btcq: "bitcoin-quark",
-      btcr: "bitcurrency",
-      btcs: "bitcoin-scrypt",
-      btct: "bitcoin-turbo",
-      btcu: "bitcoin-unlimited",
-      btcv: "bitcoin-vault",
-      btcw: "bitcoin-world",
-      btcx: "bitcoinx",
-      btcy: "bitcoin-yovi",
-      btcz: "bitcoinz",
     }
 
     const coinGeckoId = coinGeckoIds[lowerSymbol] || lowerSymbol
-    return `https://assets.coingecko.com/coins/images/1/small/${coinGeckoId}.png`
+    return `https://assets.coingecko.com/coins/images/${coinGeckoId}/small/${coinGeckoId}.png`
   }
 
+  // Show fallback immediately if no symbol
+  if (!symbol) {
+    return (
+      <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-xs font-bold">
+        ??
+      </div>
+    )
+  }
+
+  // Show fallback if error occurred
   if (hasError) {
     return (
       <div
@@ -283,13 +132,15 @@ const CryptoIcon = ({ symbol }: { symbol: string }) => {
   }
 
   const iconUrl = getIconUrl(symbol)
+
   return (
     <img
       src={iconUrl || "/placeholder.svg"}
       alt={symbol}
-      className="w-8 h-8 rounded-full"
-      onError={() => setHasError(true)}
-      onLoad={() => setHasError(false)}
+      className="w-8 h-8 rounded-full object-cover"
+      onError={() => {
+        setHasError(true)
+      }}
     />
   )
 }
@@ -1668,7 +1519,6 @@ const AddCollectionInfoPage = ({
     bind_bank: "",
     bank_card_number: "",
   })
-  const [isLoading, setIsLoading] = useState(false)
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -1681,7 +1531,6 @@ const AddCollectionInfoPage = ({
     }
 
     try {
-      setIsLoading(true)
       const response = await fetch("/api/bank-details", {
         method: "POST",
         headers: {
@@ -1701,8 +1550,6 @@ const AddCollectionInfoPage = ({
     } catch (error) {
       console.error("Error saving bank details:", error)
       alert("Error saving bank details")
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -1780,26 +1627,12 @@ const AddCollectionInfoPage = ({
         <div className="pt-6">
           <button
             onClick={handleSave}
-            disabled={isLoading}
-            className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+            className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all"
           >
-            {isLoading ? "Saving Details..." : "Save Details"}
+            Save Details
           </button>
         </div>
       </div>
-
-      {/* Save Button */}
-      {/*
-      <div className="fixed bottom-4 left-4 right-4 z-50">
-        <button
-          onClick={handleSave}
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 border-2 border-white"
-        >
-          {isLoading ? "Saving Details..." : "Save Details"}
-        </button>
-      </div>
-      */}
     </div>
   )
 }
@@ -2384,7 +2217,7 @@ const HomePage = () => {
                   onClick={() => handleCryptoSelect(crypto.id)}
                 >
                   <div className="flex items-center gap-3">
-                    <CryptoIcon id={crypto.id} />
+                    <CryptoIcon symbol={crypto.symbol.replace("USDT", "")} />
                     <span className="font-medium text-gray-900">{crypto.symbol}</span>
                   </div>
 
@@ -2418,7 +2251,6 @@ const HomePage = () => {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>

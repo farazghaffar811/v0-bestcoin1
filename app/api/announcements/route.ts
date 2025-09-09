@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = cookies()
     const supabase = createServerClient(
@@ -25,16 +25,21 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { data: userInfo, error } = await supabase.from("user_info").select("*").eq("user_id", user.id).single()
+    // Fetch user's announcements
+    const { data: announcements, error } = await supabase
+      .from("announcements")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
 
-    if (error && error.code !== "PGRST116") {
-      console.error("Error fetching user info:", error)
-      return NextResponse.json({ error: "Failed to fetch user info" }, { status: 500 })
+    if (error) {
+      console.error("Error fetching announcements:", error)
+      return NextResponse.json({ error: "Failed to fetch announcements" }, { status: 500 })
     }
 
-    return NextResponse.json({ userInfo: userInfo || null })
+    return NextResponse.json({ announcements })
   } catch (error) {
-    console.error("Error in user info API:", error)
+    console.error("Error in announcements API:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -62,29 +67,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { full_name, phone_number, address, photo_url } = await request.json()
+    const { announcementId } = await request.json()
 
-    const { data, error } = await supabase
-      .from("user_info")
-      .upsert({
-        user_id: user.id,
-        full_name,
-        phone_number,
-        address,
-        photo_url,
-        updated_at: new Date().toISOString(),
-      })
-      .select()
-      .single()
+    // Mark announcement as read
+    const { error } = await supabase
+      .from("announcements")
+      .update({ is_read: true })
+      .eq("id", announcementId)
+      .eq("user_id", user.id)
 
     if (error) {
-      console.error("Error saving user info:", error)
-      return NextResponse.json({ error: "Failed to save user info" }, { status: 500 })
+      console.error("Error marking announcement as read:", error)
+      return NextResponse.json({ error: "Failed to mark as read" }, { status: 500 })
     }
 
-    return NextResponse.json({ userInfo: data })
+    return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error in user info API:", error)
+    console.error("Error in announcements API:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

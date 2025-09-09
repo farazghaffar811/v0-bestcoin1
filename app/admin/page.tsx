@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { X } from "lucide-react"
 
 interface User {
   id: string
@@ -109,12 +108,44 @@ export default function AdminDashboard() {
   const [withdrawalNotes, setWithdrawalNotes] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
   const [isUpdatingTelegram, setIsUpdatingTelegram] = useState(false)
+  const [router] = useState(useRouter())
+  const supabase = createClient()
+
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [selectedUserForAnnouncement, setSelectedUserForAnnouncement] = useState<any>(null)
   const [announcementMessage, setAnnouncementMessage] = useState("")
-  const [isSendingAnnouncement, setIsSendingAnnouncement] = useState(false)
-  const [router] = useState(useRouter())
-  const supabase = createClient()
+
+  const handleSendAnnouncement = (user: any) => {
+    setSelectedUserForAnnouncement(user)
+    setShowAnnouncementModal(true)
+  }
+
+  const handleAnnouncementSubmit = async () => {
+    if (!selectedUserForAnnouncement || !announcementMessage.trim()) return
+
+    try {
+      const response = await fetch("/api/admin/announcements", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: selectedUserForAnnouncement.id,
+          message: announcementMessage.trim(),
+        }),
+      })
+
+      if (response.ok) {
+        setShowAnnouncementModal(false)
+        setAnnouncementMessage("")
+        setSelectedUserForAnnouncement(null)
+        alert("Announcement sent successfully!")
+      } else {
+        alert("Failed to send announcement")
+      }
+    } catch (error) {
+      console.error("Error sending announcement:", error)
+      alert("Error sending announcement")
+    }
+  }
 
   useEffect(() => {
     checkAdminAccess()
@@ -465,46 +496,6 @@ export default function AdminDashboard() {
       alert("Failed to change password")
     } finally {
       setIsChangingPassword(false)
-    }
-  }
-
-  const handleSendAnnouncement = (user: any) => {
-    setSelectedUserForAnnouncement(user)
-    setShowAnnouncementModal(true)
-    setAnnouncementMessage("")
-  }
-
-  const sendAnnouncement = async () => {
-    if (!announcementMessage.trim() || !selectedUserForAnnouncement) {
-      alert("Please enter a message")
-      return
-    }
-
-    setIsSendingAnnouncement(true)
-    try {
-      const response = await fetch("/api/admin/send-message", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: selectedUserForAnnouncement.id,
-          message: announcementMessage.trim(),
-        }),
-      })
-
-      if (response.ok) {
-        alert("Message sent successfully!")
-        setShowAnnouncementModal(false)
-        setAnnouncementMessage("")
-        setSelectedUserForAnnouncement(null)
-      } else {
-        const error = await response.json()
-        alert(`Failed to send message: ${error.error}`)
-      }
-    } catch (error) {
-      console.error("Error sending announcement:", error)
-      alert("Error sending message")
-    } finally {
-      setIsSendingAnnouncement(false)
     }
   }
 
@@ -916,6 +907,7 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(user.created_at).toLocaleDateString()}
                           </td>
+                          {/* Added announcement button to user actions */}
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button
                               onClick={() => handleEditUser(user)}
@@ -924,16 +916,16 @@ export default function AdminDashboard() {
                               Edit
                             </button>
                             <button
-                              onClick={() => handleSendAnnouncement(user)}
+                              onClick={() => handleChangePassword(user)}
                               className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
                             >
-                              Announcement
+                              Change Password
                             </button>
                             <button
-                              onClick={() => handleChangePassword(user)}
+                              onClick={() => handleSendAnnouncement(user)}
                               className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors"
                             >
-                              Change Password
+                              Send Message
                             </button>
                           </td>
                         </tr>
@@ -1357,50 +1349,29 @@ export default function AdminDashboard() {
       {showAnnouncementModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Send Announcement</h3>
+            <h3 className="text-lg font-semibold mb-4">Send Message to {selectedUserForAnnouncement?.email}</h3>
+            <textarea
+              value={announcementMessage}
+              onChange={(e) => setAnnouncementMessage(e.target.value)}
+              placeholder="Enter your message..."
+              className="w-full p-3 border border-gray-300 rounded-lg resize-none h-32 mb-4"
+            />
+            <div className="flex gap-2">
               <button
-                onClick={() => {
-                  setShowAnnouncementModal(false)
-                  setAnnouncementMessage("")
-                  setSelectedUserForAnnouncement(null)
-                }}
-                className="text-gray-400 hover:text-gray-600"
+                onClick={handleAnnouncementSubmit}
+                className="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
-                <X className="w-6 h-6" />
+                Send Message
               </button>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Sending message to: <span className="font-semibold">{selectedUserForAnnouncement?.email}</span>
-              </p>
-              <textarea
-                value={announcementMessage}
-                onChange={(e) => setAnnouncementMessage(e.target.value)}
-                placeholder="Type your announcement message here..."
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                rows={4}
-              />
-            </div>
-
-            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowAnnouncementModal(false)
                   setAnnouncementMessage("")
                   setSelectedUserForAnnouncement(null)
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
                 Cancel
-              </button>
-              <button
-                onClick={sendAnnouncement}
-                disabled={isSendingAnnouncement || !announcementMessage.trim()}
-                className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {isSendingAnnouncement ? "Sending..." : "Send Message"}
               </button>
             </div>
           </div>

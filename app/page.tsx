@@ -27,18 +27,15 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
   const [iconSrc, setIconSrc] = useState<string>("")
   const [hasError, setHasError] = useState(false)
 
- useEffect(() => {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (supabaseUrl && symbol) {
-    const lowerSymbol = symbol.toLowerCase()
-    const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`
-
-    setIconSrc(iconUrl)
-    setHasError(false)
-  }
-}, [symbol])
-
-
+   useEffect(() => {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (supabaseUrl && symbol) {
+      const lowerSymbol = symbol.toLowerCase()
+      const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`
+      setIconSrc(iconUrl)
+      setHasError(false)
+    }
+  }, [symbol])
 
   const handleError = () => {
     setHasError(true)

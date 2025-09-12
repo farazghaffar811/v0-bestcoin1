@@ -23,192 +23,30 @@ interface TradeData {
   quantity: number
 }
 
-const CryptoIcon = ({ symbol, size = 32 }: { symbol: string; size?: number }) => {
-  const [imageError, setImageError] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; className?: string }) => {
+  const [iconSrc, setIconSrc] = useState<string>("")
+  const [hasError, setHasError] = useState(false)
 
-  // Cloudinary URLs for specific currencies
-  const cloudinaryIcons: { [key: string]: string } = {
-    PSG: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251768/psg_klhcdq.svg",
-    JUV: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/juv_adcbwo.svg",
-    ATM: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/atm_db7snq.svg",
-    LINK: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/link_xkqhpt.svg",
-    KSM: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/ksm_nbfxyr.svg",
-    EOS: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/eos_ojnk5a.svg",
-    BTS: "https://res.cloudinary.com/dwnt025iw/image/upload/v1757251766/bts_hxkgas.svg",
-  }
-
-  // Real cryptocurrency icons from CoinGecko with correct URLs
-  const cryptoIcons: { [key: string]: string } = {
-    BTC: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
-    ETH: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
-    BNB: "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png",
-    XRP: "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
-    ADA: "https://coin-images.coingecko.com/coins/images/975/large/cardano.png",
-    SOL: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
-    DOT: "https://coin-images.coingecko.com/coins/images/12171/large/polkadot.png",
-    DOGE: "https://coin-images.coingecko.com/coins/images/5/large/dogecoin.png",
-    AVAX: "https://coin-images.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png",
-    SHIB: "https://coin-images.coingecko.com/coins/images/11939/large/shiba.png",
-    MATIC: "https://coin-images.coingecko.com/coins/images/4713/large/matic-token-icon.png",
-    LTC: "https://coin-images.coingecko.com/coins/images/2/large/litecoin.png",
-    UNI: "https://coin-images.coingecko.com/coins/images/12504/large/uniswap-uni.png",
-    ATOM: "https://coin-images.coingecko.com/coins/images/1481/large/cosmos_hub.png",
-    NEAR: "https://coin-images.coingecko.com/coins/images/10365/large/near_icon.png",
-    ALGO: "https://coin-images.coingecko.com/coins/images/4380/large/download.png",
-    BCH: "https://coin-images.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png",
-    VET: "https://coin-images.coingecko.com/coins/images/1077/large/VeChain-Logo-768x725.png",
-    ICP: "https://coin-images.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png",
-    FIL: "https://coin-images.coingecko.com/coins/images/12817/large/filecoin.png",
-    TRX: "https://coin-images.coingecko.com/coins/images/1094/large/tron-logo.png",
-    ETC: "https://coin-images.coingecko.com/coins/images/453/large/ethereum-classic-logo.png",
-    XLM: "https://coin-images.coingecko.com/coins/images/100/large/Stellar_symbol_black_RGB.png",
-    MANA: "https://coin-images.coingecko.com/coins/images/878/large/decentraland-mana.png",
-    SAND: "https://coin-images.coingecko.com/coins/images/12129/large/sandbox_logo.jpg",
-    AXS: "https://coin-images.coingecko.com/coins/images/13029/large/axie_infinity_logo.png",
-    THETA: "https://coin-images.coingecko.com/coins/images/2538/large/theta-token-logo.png",
-    AAVE: "https://coin-images.coingecko.com/coins/images/12645/large/AAVE.png",
-    MKR: "https://coin-images.coingecko.com/coins/images/1364/large/Mark_Maker.png",
-    COMP: "https://coin-images.coingecko.com/coins/images/10775/large/COMP.png",
-    YFI: "https://coin-images.coingecko.com/coins/images/11849/large/yfi-192x192.png",
-    SNX: "https://coin-images.coingecko.com/coins/images/3406/large/SNX.png",
-    CRV: "https://coin-images.coingecko.com/coins/images/12124/large/Curve.png",
-    SUSHI: "https://coin-images.coingecko.com/coins/images/12271/large/512x512_Logo_no_chop.png",
-    BAL: "https://coin-images.coingecko.com/coins/images/11683/large/Balancer.png",
-    ZRX: "https://coin-images.coingecko.com/coins/images/863/large/0x.png",
-    BAT: "https://coin-images.coingecko.com/coins/images/677/large/basic-attention-token.png",
-    QTUM: "https://coin-images.coingecko.com/coins/images/684/large/Qtum_Logo_blue_2x.png",
-    LSK: "https://coin-images.coingecko.com/coins/images/385/large/Lisk_Symbol_-_Blue.png",
-    WAVES: "https://coin-images.coingecko.com/coins/images/425/large/waves.png",
-    DCR: "https://coin-images.coingecko.com/coins/images/329/large/decred.png",
-    DGB: "https://coin-images.coingecko.com/coins/images/63/large/digibyte.png",
-    XEM: "https://coin-images.coingecko.com/coins/images/242/large/NEM_WC_Logo_200px.png",
-    XMR: "https://coin-images.coingecko.com/coins/images/69/large/monero_logo.png",
-    DASH: "https://coin-images.coingecko.com/coins/images/19/large/dash-logo.png",
-    ZEC: "https://coin-images.coingecko.com/coins/images/486/large/circle-zcash-color.png",
-    XTZ: "https://coin-images.coingecko.com/coins/images/976/large/Tezos-logo.png",
-    ONT: "https://coin-images.coingecko.com/coins/images/3447/large/ONT.png",
-    NEO: "https://coin-images.coingecko.com/coins/images/480/large/NEO_512_512.png",
-    ICX: "https://coin-images.coingecko.com/coins/images/1060/large/icon-icx-logo.png",
-    ZIL: "https://coin-images.coingecko.com/coins/images/2687/large/Zilliqa-logo.png",
-    SC: "https://coin-images.coingecko.com/coins/images/289/large/siacoin.png",
-    ENJ: "https://coin-images.coingecko.com/coins/images/1102/large/enjin-coin-logo.png",
-    IOST: "https://coin-images.coingecko.com/coins/images/4027/large/IOST.png",
-    HOT: "https://coin-images.coingecko.com/coins/images/3348/large/Holologo_Profile.png",
-    REN: "https://coin-images.coingecko.com/coins/images/3139/large/REN.png",
-    KNC: "https://coin-images.coingecko.com/coins/images/947/large/kyber-logo.png",
-    OMG: "https://coin-images.coingecko.com/coins/images/776/large/OMG_Network.jpg",
-    REP: "https://coin-images.coingecko.com/coins/images/309/large/REP.png",
-    STORJ: "https://coin-images.coingecko.com/coins/images/949/large/storj.png",
-    ANT: "https://coin-images.coingecko.com/coins/images/681/large/JelZ58cv_400x400.png",
-    CVC: "https://coin-images.coingecko.com/coins/images/776/large/civic.png",
-    MTL: "https://coin-images.coingecko.com/coins/images/763/large/Metal.png",
-    ARK: "https://coin-images.coingecko.com/coins/images/484/large/ark.png",
-    KMD: "https://coin-images.coingecko.com/coins/images/424/large/komodo.png",
-    PIVX: "https://coin-images.coingecko.com/coins/images/408/large/pivx.png",
-    VTC: "https://coin-images.coingecko.com/coins/images/99/large/vertcoin.png",
-    MONA: "https://coin-images.coingecko.com/coins/images/213/large/monacoin.png",
-    SYS: "https://coin-images.coingecko.com/coins/images/119/large/syscoin.png",
-    GRS: "https://coin-images.coingecko.com/coins/images/84/large/groestlcoin.png",
-    NAV: "https://coin-images.coingecko.com/coins/images/344/large/navcoin.png",
-    NXT: "https://coin-images.coingecko.com/coins/images/34/large/nxt.png",
-    BURST: "https://coin-images.coingecko.com/coins/images/282/large/burst.png",
-    MIOTA: "https://coin-images.coingecko.com/coins/images/692/large/IOTA_Swirl.png",
-    GAS: "https://coin-images.coingecko.com/coins/images/715/large/gas.png",
-    DENT: "https://coin-images.coingecko.com/coins/images/1152/large/gLCEA2G.png",
-    WAN: "https://coin-images.coingecko.com/coins/images/3687/large/wanchain-logo.png",
-    POLY: "https://coin-images.coingecko.com/coins/images/2784/large/inKkF01.png",
-    STORM: "https://coin-images.coingecko.com/coins/images/1230/large/Screen_Shot_2018-02-05_at_9.40.29_PM.png",
-    POWR: "https://coin-images.coingecko.com/coins/images/1104/large/power-ledger.png",
-    REQ: "https://coin-images.coingecko.com/coins/images/1031/large/Request_icon_green.png",
-    SUB: "https://coin-images.coingecko.com/coins/images/1062/large/substrat.png",
-    OST: "https://coin-images.coingecko.com/coins/images/1796/large/Simple_Token.png",
-    RLC: "https://coin-images.coingecko.com/coins/images/646/large/pL1VuXm.png",
-    ELF: "https://coin-images.coingecko.com/coins/images/2299/large/V85_aABx_400x400.jpg",
-    AION: "https://coin-images.coingecko.com/coins/images/1780/large/aion.png",
-    NEBL: "https://coin-images.coingecko.com/coins/images/1955/large/neblio.png",
-    LRC: "https://coin-images.coingecko.com/coins/images/913/large/LRC.png",
-    VIBE: "https://coin-images.coingecko.com/coins/images/1090/large/vibe.png",
-    CHZ: "https://coin-images.coingecko.com/coins/images/8834/large/Chiliz.png",
-  }
-
-  const getIconUrl = () => {
-    const upperSymbol = symbol?.toUpperCase() || ""
-    const cleanSymbol = upperSymbol.replace("/USDT", "").replace("/USD", "").replace("/BTC", "").replace("/ETH", "")
-
-    console.log("[v0] Getting icon for symbol:", cleanSymbol)
-
-    // First priority: Cloudinary icons for specific currencies
-    if (cloudinaryIcons[cleanSymbol]) {
-      console.log("[v0] Using Cloudinary icon for:", cleanSymbol)
-      return cloudinaryIcons[cleanSymbol]
+  useEffect(() => {
+    // Use Supabase storage bucket for currency icons
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    if (supabaseUrl) {
+      const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${symbol.toLowerCase()}.svg`
+      setIconSrc(iconUrl)
+      setHasError(false)
     }
+  }, [symbol])
 
-    // Second priority: Real cryptocurrency icons
-    if (cryptoIcons[cleanSymbol]) {
-      console.log("[v0] Using real crypto icon for:", cleanSymbol)
-      return cryptoIcons[cleanSymbol]
-    }
-
-    // Fallback: Try CoinGecko generic URL
-    console.log("[v0] Using fallback icon for:", cleanSymbol)
-    return `https://coin-images.coingecko.com/coins/images/1/large/${cleanSymbol.toLowerCase()}.png`
+  const handleError = () => {
+    setHasError(true)
   }
 
-  const handleImageLoad = () => {
-    console.log("[v0] Icon loaded successfully for:", symbol)
-    setIsLoading(false)
-    setImageError(false)
+  // Only show icon if we have a valid source and no error
+  if (!iconSrc || hasError) {
+    return null
   }
 
-  const handleImageError = () => {
-    console.log("[v0] Icon failed to load for:", symbol)
-    setIsLoading(false)
-    setImageError(true)
-  }
-
-  if (!symbol) {
-    return (
-      <div className="rounded-full flex items-center justify-center bg-gray-400" style={{ width: size, height: size }}>
-        <span className="text-white text-xs font-bold">?</span>
-      </div>
-    )
-  }
-
-  if (imageError) {
-    // Fallback colored circle with symbol
-    const colors = [
-      "bg-blue-500",
-      "bg-green-500",
-      "bg-purple-500",
-      "bg-red-500",
-      "bg-yellow-500",
-      "bg-indigo-500",
-      "bg-pink-500",
-      "bg-teal-500",
-    ]
-    const colorIndex = (symbol.charCodeAt(0) + symbol.charCodeAt(symbol.length - 1)) % colors.length
-    const bgColor = colors[colorIndex]
-
-    return (
-      <div className={`rounded-full flex items-center justify-center ${bgColor}`} style={{ width: size, height: size }}>
-        <span className="text-white text-xs font-bold">{symbol.slice(0, 2).toUpperCase()}</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <img
-        src={getIconUrl() || "/placeholder.svg"}
-        alt={symbol}
-        className="w-full h-full rounded-full object-cover"
-        onLoad={handleImageLoad}
-        onError={handleImageError}
-        style={{ width: size, height: size }}
-      />
-    </div>
-  )
+  return <img src={iconSrc || "/placeholder.svg"} alt={symbol} className={className} onError={handleError} />
 }
 
 const getCoinGeckoImageId = (id: string): string => {
@@ -1095,8 +933,10 @@ const AssetPage = ({ profile }: { profile: any }) => {
     { code: "USD", name: "US Dollar" },
   ]
 
-  const displayBalance = profile?.frozen_balance > 0 ? profile.frozen_balance : profile?.available_balance || 0
-  const balanceLabel = profile?.frozen_balance > 0 ? "Frozen" : "Available Balance"
+  const displayBalance = profile?.available_balance
+    ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
+    : 0
+  const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1213,21 +1053,21 @@ const AssetPage = ({ profile }: { profile: any }) => {
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {profile?.frozen_balance > 0 ? "0.0000" : profile?.available_balance?.toFixed(4) || "0.0000"}
+              {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-blue-500 mb-1">
+            <div className="text-lg font-semibold text-red-500 mb-1">
               {profile?.frozen_balance?.toFixed(4) || "0.0000"}
             </div>
-            <div className="text-xs text-gray-500">Frozen</div>
+            <div className="text-xs text-gray-500">Frozen Balance</div>
           </div>
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {((profile?.available_balance || 0) + (profile?.frozen_balance || 0)).toFixed(4)}
+              {(profile?.available_balance || 0).toFixed(4)}
             </div>
-            <div className="text-xs text-gray-500">Balance</div>
+            <div className="text-xs text-gray-500">Total Balance</div>
           </div>
         </div>
       </div>
@@ -1483,7 +1323,10 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
             <div className="text-sm opacity-90">
               {userProfile?.frozen_balance > 0 ? (
                 <>
-                  Frozen Balance: {userProfile.frozen_balance.toFixed(4)} {userProfile?.preferred_currency || "USD"}
+                  Available:{" "}
+                  {Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0)).toFixed(4)}{" "}
+                  {userProfile?.preferred_currency || "USD"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
+                  {userProfile?.preferred_currency || "USD"}
                 </>
               ) : (
                 <>
@@ -2168,8 +2011,14 @@ const HomePage = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance</div>
               <div className="text-2xl font-bold text-gray-900">
-                {profile?.available_balance?.toFixed(2) || "0.00"} {profile?.preferred_currency || "ZAR"}
+                {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(2)}{" "}
+                {profile?.preferred_currency || "ZAR"}
               </div>
+              {profile?.frozen_balance > 0 && (
+                <div className="text-sm text-red-600 mt-1">
+                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
+                </div>
+              )}
             </div>
 
             {/* Withdrawal Amount */}

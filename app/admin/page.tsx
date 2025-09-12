@@ -359,6 +359,9 @@ export default function AdminDashboard() {
     try {
       setIsUpdating(true)
 
+      const maxFrozenBalance = editData.available_balance || 0
+      const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
+
       const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: "PUT",
         headers: {
@@ -367,7 +370,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           credit_score: editData.credit_score,
           available_balance: editData.available_balance,
-          frozen_balance: editData.frozen_balance,
+          frozen_balance: adjustedFrozenBalance,
         }),
       })
 
@@ -381,7 +384,7 @@ export default function AdminDashboard() {
                 ...user,
                 credit_score: editData.credit_score,
                 available_balance: editData.available_balance,
-                frozen_balance: editData.frozen_balance,
+                frozen_balance: adjustedFrozenBalance,
               }
             : user,
         ),
@@ -1183,7 +1186,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="text-xs text-gray-500 mb-2">
-                  When frozen balance &gt; 0, user will see frozen balance instead of available balance
+                  Frozen balance will be deducted from available balance. User will see: Available = Total - Frozen
                 </div>
                 <div className="flex space-x-2">
                   <button

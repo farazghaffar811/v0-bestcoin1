@@ -28,14 +28,15 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
   const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
-    // Use Supabase storage bucket for currency icons
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    if (supabaseUrl) {
-      const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${symbol.toLowerCase()}.svg`
-      setIconSrc(iconUrl)
-      setHasError(false)
-    }
-  }, [symbol])
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (supabaseUrl && symbol) {
+    const lowerSymbol = symbol.toLowerCase()
+    const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}/${lowerSymbol}.svg`
+    setIconSrc(iconUrl)
+    setHasError(false)
+  }
+}, [symbol])
+
 
   const handleError = () => {
     setHasError(true)

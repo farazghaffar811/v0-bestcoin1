@@ -967,7 +967,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
 
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0
+    : 0;
   const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
   const convertedBalance = selectedCurrency === 'USDT' 

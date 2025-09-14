@@ -28,7 +28,7 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
   const [hasError, setHasError] = useState(false)
 
    useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseUrl = "https://kqzdmamamdcqrklbohua"
     if (supabaseUrl && symbol) {
       const lowerSymbol = symbol.toLowerCase()
       const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`

@@ -972,7 +972,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
 
   const convertedBalance = selectedCurrency === 'USDT' 
     ? displayBalance 
-    : displayBalance * exchangeRates[selectedCurrency];
+    : displayBalance * exchangeRates[selectedCurrency]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1038,6 +1038,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
             )}
           </div>
         </div>
+      </div>
 
       {/* Action Buttons */}
       <div className="bg-white px-4 py-6 border-t border-gray-100">
@@ -1113,8 +1114,8 @@ const AssetPage = ({ profile }: { profile: any }) => {
     </div>
   )
 }
-\
-const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {\
+
+const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {
   const handleExitLogin = async () => {
     await handleLogout()
   }
@@ -1144,16 +1145,16 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
     </div>
   )
 }
-\
-const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {\
+
+const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) => {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {\
-    const fetchAnnouncements = async () => {\
-      try {\
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
         const response = await fetch("/api/announcements")
-        if (response.ok) {\
+        if (response.ok) {
           const data = await response.json()
           setAnnouncements(data.announcements || [])
         }
@@ -1167,14 +1168,14 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     fetchAnnouncements()
   }, [])
 
-  const markAsRead = async (announcementId: string) => {\
-    try {\
+  const markAsRead = async (announcementId: string) => {
+    try {
       await fetch("/api/announcements", {
-        method: \"POST",
-        headers: { "Content-Type": \"application/json" },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ announcementId }),
       })
-\
+
       setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
     } catch (error) {
       console.error("Error marking as read:", error)
@@ -1226,28 +1227,28 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     </div>
   )
 }
-\
-const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {\
+
+const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void }) => {
   const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
   const [showUserMessage, setShowUserMessage] = useState(false)
-  const supabase = createClient()
+  const supabase = createBrowserClient()
 
-  useEffect(() => {\
-    const fetchUserProfile = async () => {\
+  useEffect(() => {
+    const fetchUserProfile = async () => {
       if (!user?.id) {
-        console.log("[v0] No user ID available for profile fetch")\
+        console.log("[v0] No user ID available for profile fetch")
         return
       }
 
       try {
-        console.log("[v0] Fetching user profile for ID:", user.id)\
+        console.log("[v0] Fetching user profile for ID:", user.id)
         const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
         if (error && error.code !== "PGRST116") {
-          console.error("[v0] Error fetching profile:", error)\
+          console.error("[v0] Error fetching profile:", error)
           return
         }
 
@@ -1261,26 +1262,26 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     fetchUserProfile()
     if (user?.id) {
       console.log("[v0] Setting up real-time subscription for user:", user.id)
-      // Set up real-time subscription for profile changes\
+      // Set up real-time subscription for profile changes
       const subscription = supabase
         .channel("profile-changes")
         .on(
           "postgres_changes",
           {
-            event: \"UPDATE",
+            event: "UPDATE",
             schema: "public",
             table: "profiles",
             filter: `id=eq.${user.id}`,
           },
           (payload) => {
-            console.log("[v0] Profile updated via subscription:", payload)\
+            console.log("[v0] Profile updated via subscription:", payload)
             setUserProfile(payload.new)
           },
         )
         .subscribe()
 
       return () => {
-        console.log("[v0] Unsubscribing from profile changes")\
+        console.log("[v0] Unsubscribing from profile changes")
         subscription.unsubscribe()
       }
     }
@@ -1295,7 +1296,7 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   }
 
   const handleBackFromCollection = () => {
-    setShowCollectionInfo(false)\
+    setShowCollectionInfo(false)
     setShowAddCollection(false)
   }
 
@@ -1315,11 +1316,11 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     setShowUserMessage(false)
   }
 
-  if (showSettings) {\
+  if (showSettings) {
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
   }
 
-  if (showCollectionInfo) {\
+  if (showCollectionInfo) {
     return (
       <CollectionInfoPage
         onBack={handleBackFromCollection}
@@ -1330,7 +1331,7 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     )
   }
 
-  if (showUserMessage) {\
+  if (showUserMessage) {
     return <UserMessagePage onBack={handleBackFromUserMessage} user={user} />
   }
 
@@ -1412,11 +1413,11 @@ const CollectionInfoPage = ({
   showAddForm,
   user,
 }: {
-  onBack: () => void\
+  onBack: () => void
   onAddCollection: () => void
   showAddForm: boolean
-  user: User | null
-}) => {\
+  user: any
+}) => {
   const [bankDetails, setBankDetails] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -1522,7 +1523,7 @@ const AddCollectionInfoPage = ({
 }: {
   onBack: () => void
   onSaveSuccess: () => void
-  user: User | null
+  user: any
 }) => {
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
@@ -1625,7 +1626,7 @@ const AddCollectionInfoPage = ({
         {/* Bank Card Number */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>
+            <span className="text-red-500">*</span>Bank Card Number
           </label>
           <input
             type="text"
@@ -1655,7 +1656,7 @@ const HomePage = () => {
   const [selectedTimeframe, setSelectedTimeframe] = useState("1M")
   const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [showTradingModal, setShowTradingModal] = useState(false)
   const [tradingDirection, setTradingDirection] = useState<"up" | "down">("up")
@@ -1672,7 +1673,7 @@ const HomePage = () => {
   const [showRechargeMessage, setShowRechargeMessage] = useState(false)
   const [showWithdrawalPage, setShowWithdrawalPage] = useState(false)
   const [showWithdrawalHistory, setShowWithdrawalHistory] = useState(false)
-  const [withdrawals, setWithdrawals = useState([])
+  const [withdrawals, setWithdrawals] = useState([])
   const [withdrawalAmount, setWithdrawalAmount] = useState("")
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
   const [bankDetails, setBankDetails] = useState<any[]>([])
@@ -1956,7 +1957,7 @@ const HomePage = () => {
         alert("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
-        fetchProfile() // Refresh balance
+        // fetchProfile() // Refresh balance
       } else {
         const error = await response.json()
         alert(error.error || "Failed to submit withdrawal request")
@@ -2120,7 +2121,7 @@ const HomePage = () => {
                 <div className="p-4 max-h-96 overflow-y-auto">
                   {withdrawals.length > 0 ? (
                     <div className="space-y-3">
-                      {withdrawals.map((withdrawal) => (
+                      {withdrawals.map((withdrawal: any) => (
                         <div key={withdrawal.id} className="border rounded-lg p-3">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">
@@ -2197,39 +2198,40 @@ const HomePage = () => {
             </div>
 
             {/* Action Buttons */}
-            {/* Updated recharge and withdrawal buttons with click handlers */}
-            <div className="grid grid-cols-3 gap-8">
-              <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Recharge</span>
-              </button>
+            <div className="bg-white px-4 py-6 border-t border-gray-100">
+              <div className="grid grid-cols-3 gap-8">
+                <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Recharge</span>
+                </button>
 
-              <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
-              </button>
+                <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
+                </button>
 
-              <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
-                <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                    />
-                  </svg>
-                </div>
-                <span className="text-sm text-gray-800 font-medium">Customer Service</span>
-              </button>
+                <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Customer Service</span>
+                </button>
+              </div>
             </div>
 
             {/* Crypto List */}
@@ -2259,7 +2261,6 @@ const HomePage = () => {
                 />
 
                 {/* Search Results */}
-                {/* Updated search input to handle navigation properly */}
                 {searchQuery && (
                   <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
                     {filteredCryptos.length > 0 ? (
@@ -2271,7 +2272,7 @@ const HomePage = () => {
                           }}
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
                         >
-                          <CryptoIcon symbol={crypto.symbol} size={24} />
+                          <CryptoIcon symbol={crypto.symbol} className="w-6 h-6" />
                           <div>
                             <div className="font-medium text-gray-900">{crypto.symbol.toUpperCase()}</div>
                             <div className="text-sm text-gray-500">{crypto.name}</div>

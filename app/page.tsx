@@ -965,16 +965,20 @@ const AssetPage = ({ profile }: { profile: any }) => {
     return () => clearInterval(interval)
   }, [])
 
+   // ✅ Balance calculation
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0
-  const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
+    : 0;
+
+  const balanceLabel = profile?.frozen_balance > 0 
+    ? "Available (After Frozen)" 
+    : "Available Balance";
 
   const convertedBalance = (
-  selectedCurrency === 'USDT'
-    ? displayBalance
-    : displayBalance * exchangeRates[selectedCurrency]
-);
+    selectedCurrency === 'USDT'
+      ? displayBalance
+      : displayBalance * (exchangeRates[selectedCurrency] || 1)
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">

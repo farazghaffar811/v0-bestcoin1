@@ -965,20 +965,14 @@ const AssetPage = ({ profile }: { profile: any }) => {
     return () => clearInterval(interval)
   }, [])
 
-   // ✅ Balance calculation
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0;
+    : 0
+  const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
-  const balanceLabel = profile?.frozen_balance > 0 
-    ? "Available (After Frozen)" 
-    : "Available Balance";
-
-  const convertedBalance = (
-    selectedCurrency === 'USDT'
-      ? displayBalance
-      : displayBalance * (exchangeRates[selectedCurrency] || 1)
-  );
+  const convertedBalance = selectedCurrency === 'USDT' 
+    ? displayBalance 
+    : displayBalance * exchangeRates[selectedCurrency]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1678,7 +1672,7 @@ const HomePage = () => {
   const [showRechargeMessage, setShowRechargeMessage] = useState(false)
   const [showWithdrawalPage, setShowWithdrawalPage] = useState(false)
   const [showWithdrawalHistory, setShowWithdrawalHistory] = useState(false)
-  const [withdrawals, setWithdrawals] = useState([])
+  const [withdrawals, setWithdrawals = useState([])
   const [withdrawalAmount, setWithdrawalAmount] = useState("")
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
   const [bankDetails, setBankDetails] = useState<any[]>([])
@@ -1990,7 +1984,7 @@ const HomePage = () => {
         console.error("[v0] Error fetching bank details:", data.error)
       }
     } catch (error) {
-      console.error("[v0] Error fetching bank details:", error)
+      console.error("Error fetching bank details:", error)
     } finally {
       setIsLoadingBankDetails(false)
     }

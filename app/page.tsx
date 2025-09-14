@@ -1113,7 +1113,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
     </div>
   )
 }
-\
+
 const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {\
   const handleExitLogin = async () => {
     await handleLogout()
@@ -1144,7 +1144,7 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
     </div>
   )
 }
-\
+
 const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {\
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -1174,7 +1174,7 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
         headers: { "Content-Type": \"application/json" },
         body: JSON.stringify({ announcementId }),
       })
-\
+
       setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
     } catch (error) {
       console.error("Error marking as read:", error)
@@ -1226,7 +1226,7 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     </div>
   )
 }
-\
+
 const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {\
   const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)

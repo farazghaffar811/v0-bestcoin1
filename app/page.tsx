@@ -1671,7 +1671,7 @@ const HomePage = () => {
   const [showRechargeMessage, setShowRechargeMessage] = useState(false)
   const [showWithdrawalPage, setShowWithdrawalPage] = useState(false)
   const [showWithdrawalHistory, setShowWithdrawalHistory] = useState(false)
-  const [withdrawals, setWithdrawals = useState([])
+ const [withdrawals, setWithdrawals] = useState<any[]>([]
   const [withdrawalAmount, setWithdrawalAmount] = useState("")
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
   const [bankDetails, setBankDetails] = useState<any[]>([])

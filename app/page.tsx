@@ -970,9 +970,11 @@ const AssetPage = ({ profile }: { profile: any }) => {
     : 0
   const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
-  const convertedBalance = selectedCurrency === 'USDT' 
-    ? displayBalance 
-    : displayBalance * exchangeRates[selectedCurrency];
+  const convertedBalance = (
+  selectedCurrency === 'USDT'
+    ? displayBalance
+    : displayBalance * exchangeRates[selectedCurrency]
+);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -28,21 +28,19 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
   const [hasError, setHasError] = useState(false)
 
     useEffect(() => {
-  const supabaseUrl = "https://kqzdmamamdcqrklbohua.supabase.co"
+    const supabaseUrl = "https://kqzdmamamdcqrklbohua.supabase.co"
 
-  console.log("Raw symbol prop:", symbol)
+    if (supabaseUrl && symbol) {
+      const lowerSymbol = symbol.toLowerCase().replace(/\/+$/, "").trim()
+      const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`
 
-  if (supabaseUrl && symbol) {
-    const lowerSymbol = symbol.toLowerCase().trim()
-    console.log("Lowercase symbol:", lowerSymbol)
+      console.log("Sanitized Symbol:", lowerSymbol)
+      console.log("Final Icon URL:", iconUrl)
 
-    const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`
-    console.log("Final Icon URL:", iconUrl)
-
-    setIconSrc(iconUrl)
-    setHasError(false)
-  }
-}, [symbol])
+      setIconSrc(iconUrl)
+      setHasError(false)
+    }
+  }, [symbol])
 
 
 

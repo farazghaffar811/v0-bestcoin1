@@ -47,6 +47,11 @@ export async function PUT(request: NextRequest) {
 
     const { key, value } = await request.json()
 
+    if (!key || value === undefined || value === null) {
+      console.log("[v0] Missing required fields:", { key, value })
+      return NextResponse.json({ error: "Key and value are required" }, { status: 400 })
+    }
+
     // Check authentication
     const supabase = await createClient()
     const {
@@ -69,14 +74,32 @@ export async function PUT(request: NextRequest) {
 
     const adminSupabase = await createAdminClient()
 
-    const { data, error } = await adminSupabase
+    // First, ensure the settings table exists and has the required structure
+    const { data: existingSettings, error: checkError } = await adminSupabase
       .from("settings")
-      .upsert({ key, value, updated_at: new Date().toISOString() })
+      .select("*")
+      .eq("key", key)
+      .single()
+
+    console.log("[v0] Existing setting check:", { existingSettings, checkError })
+
+    const { data, error: updateError } = await adminSupabase
+      .from("settings")
+      .upsert(
+        {
+          key,
+          value,
+          updated_at: new Date().toISOString(),
+        },
+        {
+          onConflict: "key",
+        },
+      )
       .select()
 
-    if (error) {
-      console.log("[v0] Error updating setting:", error.message)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (updateError) {
+      console.log("[v0] Error updating setting:", updateError.message, updateError.details, updateError.hint)
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
 
     console.log("[v0] Setting updated successfully:", data)

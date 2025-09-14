@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase/client"
-import type { User } from "@supabase/supabase-js"
 import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
 import { Home, X } from "lucide-react"
@@ -27,7 +25,7 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
   const [iconSrc, setIconSrc] = useState<string>("")
   const [hasError, setHasError] = useState(false)
 
-    useEffect(() => {
+  useEffect(() => {
     const supabaseUrl = "https://kqzdmamamdcqrklbohua.supabase.co"
 
     if (supabaseUrl && symbol) {
@@ -41,8 +39,6 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
       setHasError(false)
     }
   }, [symbol])
-
-
 
   const handleError = () => {
     setHasError(true)
@@ -933,6 +929,11 @@ const OrderPage = () => {
 const AssetPage = ({ profile }: { profile: any }) => {
   const [selectedCurrency, setSelectedCurrency] = useState("ZAR")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
+    ZAR: 18.5, // Default ZAR to USD rate
+    USDT: 1.0, // USDT to USD rate
+    USD: 1.0   // USD to USD rate
+  })
 
   const currencies = [
     { code: "ZAR", name: "South African Rand" },
@@ -940,10 +941,38 @@ const AssetPage = ({ profile }: { profile: any }) => {
     { code: "USD", name: "US Dollar" },
   ]
 
+  useEffect(() => {
+    const fetchExchangeRates = async () => {
+      try {
+        // Using a free exchange rate API
+        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+        const data = await response.json()
+        
+        setExchangeRates({
+          ZAR: data.rates.ZAR || 18.5,
+          USDT: 1.0,
+          USD: 1.0
+        })
+      } catch (error) {
+        console.log('[v0] Error fetching exchange rates:', error)
+        // Keep default rates if API fails
+      }
+    }
+
+    fetchExchangeRates()
+    // Update rates every 5 minutes
+    const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
     : 0
   const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
+
+  const convertedBalance = selectedCurrency === 'USDT' 
+    ? displayBalance 
+    : displayBalance * exchangeRates[selectedCurrency]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -972,7 +1001,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>
-                ≈ {displayBalance.toFixed(4)} {selectedCurrency}
+                ≈ {convertedBalance.toFixed(4)} {selectedCurrency}
               </span>
               <svg
                 className={`w-4 h-4 ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -996,6 +1025,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
                       selectedCurrency === currency.code ? "bg-blue-50 text-blue-600" : "text-gray-700"
                     }`}
                     onClick={() => {
+                      console.log('[v0] Currency changed to:', currency.code)
                       setSelectedCurrency(currency.code)
                       setIsDropdownOpen(false)
                     }}
@@ -1008,7 +1038,6 @@ const AssetPage = ({ profile }: { profile: any }) => {
             )}
           </div>
         </div>
-      </div>
 
       {/* Action Buttons */}
       <div className="bg-white px-4 py-6 border-t border-gray-100">
@@ -1084,8 +1113,8 @@ const AssetPage = ({ profile }: { profile: any }) => {
     </div>
   )
 }
-
-const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {
+\
+const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {\
   const handleExitLogin = async () => {
     await handleLogout()
   }
@@ -1115,16 +1144,16 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
     </div>
   )
 }
-
-const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {
+\
+const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {\
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
+  useEffect(() => {\
+    const fetchAnnouncements = async () => {\
+      try {\
         const response = await fetch("/api/announcements")
-        if (response.ok) {
+        if (response.ok) {\
           const data = await response.json()
           setAnnouncements(data.announcements || [])
         }
@@ -1138,14 +1167,14 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     fetchAnnouncements()
   }, [])
 
-  const markAsRead = async (announcementId: string) => {
-    try {
+  const markAsRead = async (announcementId: string) => {\
+    try {\
       await fetch("/api/announcements", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: \"POST",
+        headers: { "Content-Type": \"application/json" },
         body: JSON.stringify({ announcementId }),
       })
-
+\
       setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
     } catch (error) {
       console.error("Error marking as read:", error)
@@ -1197,8 +1226,8 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     </div>
   )
 }
-
-const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {
+\
+const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {\
   const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
@@ -1206,19 +1235,19 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   const [showUserMessage, setShowUserMessage] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
+  useEffect(() => {\
+    const fetchUserProfile = async () => {\
       if (!user?.id) {
-        console.log("[v0] No user ID available for profile fetch")
+        console.log("[v0] No user ID available for profile fetch")\
         return
       }
 
       try {
-        console.log("[v0] Fetching user profile for ID:", user.id)
+        console.log("[v0] Fetching user profile for ID:", user.id)\
         const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
         if (error && error.code !== "PGRST116") {
-          console.error("[v0] Error fetching profile:", error)
+          console.error("[v0] Error fetching profile:", error)\
           return
         }
 
@@ -1232,26 +1261,26 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     fetchUserProfile()
     if (user?.id) {
       console.log("[v0] Setting up real-time subscription for user:", user.id)
-      // Set up real-time subscription for profile changes
+      // Set up real-time subscription for profile changes\
       const subscription = supabase
         .channel("profile-changes")
         .on(
           "postgres_changes",
           {
-            event: "UPDATE",
+            event: \"UPDATE",
             schema: "public",
             table: "profiles",
             filter: `id=eq.${user.id}`,
           },
           (payload) => {
-            console.log("[v0] Profile updated via subscription:", payload)
+            console.log("[v0] Profile updated via subscription:", payload)\
             setUserProfile(payload.new)
           },
         )
         .subscribe()
 
       return () => {
-        console.log("[v0] Unsubscribing from profile changes")
+        console.log("[v0] Unsubscribing from profile changes")\
         subscription.unsubscribe()
       }
     }
@@ -1266,7 +1295,7 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
   }
 
   const handleBackFromCollection = () => {
-    setShowCollectionInfo(false)
+    setShowCollectionInfo(false)\
     setShowAddCollection(false)
   }
 
@@ -1286,11 +1315,11 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     setShowUserMessage(false)
   }
 
-  if (showSettings) {
+  if (showSettings) {\
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
   }
 
-  if (showCollectionInfo) {
+  if (showCollectionInfo) {\
     return (
       <CollectionInfoPage
         onBack={handleBackFromCollection}
@@ -1301,7 +1330,7 @@ const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () =>
     )
   }
 
-  if (showUserMessage) {
+  if (showUserMessage) {\
     return <UserMessagePage onBack={handleBackFromUserMessage} user={user} />
   }
 
@@ -1383,11 +1412,11 @@ const CollectionInfoPage = ({
   showAddForm,
   user,
 }: {
-  onBack: () => void
+  onBack: () => void\
   onAddCollection: () => void
   showAddForm: boolean
   user: User | null
-}) => {
+}) => {\
   const [bankDetails, setBankDetails] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 

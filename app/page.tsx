@@ -972,7 +972,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
 
   const convertedBalance = selectedCurrency === 'USDT' 
     ? displayBalance 
-    : displayBalance * exchangeRates[selectedCurrency]
+    : displayBalance * exchangeRates[selectedCurrency];
 
   return (
     <div className="min-h-screen bg-gray-50">

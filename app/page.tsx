@@ -2342,82 +2342,87 @@ const HomePage = () => {
           <div className="grid grid-cols-5 py-2">
             <button
               onClick={() => checkAuthAndNavigate("home")}
-              className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
+              className={`flex flex-col items-center justify-center ${
+                activeNav === "home" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              <img
-                src={
-                  activeNav === "home"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                }
-                alt="Home"
-                className="w-6 h-6"
-                style={{ filter: activeNav === "home" ? "none" : "brightness(0)" }}
-              />
-              <span className="text-xs mt-1 font-medium">Home</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("order")}
-              className={`flex flex-col items-center py-2 ${activeNav === "order" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "order"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-on-MTJ5rFnAkPPMIOaPirW7vitrvdV4K1.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-B8U7Mm78bhIOdQcpzf7xk2A5OFHsbM.png"
-                }
-                alt="Order"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Order</span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1V10"
+                />
+              </svg>
+              <span className="text-xs font-medium">Home</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("market")}
-              className={`flex flex-col items-center py-2 ${activeNav === "market" ? "text-cyan-500" : "text-gray-500"}`}
+              className={`flex flex-col items-center justify-center ${
+                activeNav === "market" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/jy-cE3iJPz5tVy8uo4AkVuvrdVIJHlxAy.png"
-                alt="Market"
-                className="w-6 h-6"
-                style={{
-                  filter: activeNav === "market" ? "sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)" : "none",
-                }}
-              />
-              <span className="text-xs mt-1">Market</span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M7 11a2 2 0 11-4 0m2 2l4 4a2 2 0 11-2 0m2-2l4-4m-4 4v3a2 2 0 104 0v-3"
+                />
+              </svg>
+              <span className="text-xs font-medium">Market</span>
+            </button>
+
+            <button
+              onClick={() => checkAuthAndNavigate("order")}
+              className={`flex flex-col items-center justify-center ${
+                activeNav === "order" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3v1.5M3 21v-6m0 0l2-2m2-2l2-2M3 4.5l2.6-2.6M5.6 4.5l-.9-.9M19.5 4.5l-.7-.7M15 12H9m6 0l-2 2m-2-2l-2-2"
+                />
+              </svg>
+              <span className="text-xs font-medium">Orders</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("asset")}
-              className={`flex flex-col items-center py-2 ${activeNav === "asset" ? "text-cyan-500" : "text-gray-500"}`}
+              className={`flex flex-col items-center justify-center ${
+                activeNav === "asset" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              <img
-                src={
-                  activeNav === "asset"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-on-wnj7RxQeGjwlsw5XIS9yhtjYImfVqC.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-1pqynjOg1eAbvDW7cctRuJvWvADoKB.png"
-                }
-                alt="Asset"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Asset</span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="text-xs font-medium">Assets</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("my")}
-              className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
+              className={`flex flex-col items-center justify-center ${
+                activeNav === "my" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              <img
-                src={
-                  activeNav === "my"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-yPiEf0s1WVMnnCrl6rfOtbgWJAqHch.png"
-                }
-                alt="My"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">My</span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 12a18.645 18.645 0 01-3-3m-6-10a8.482 8.482 0 018-8c.587.174 1.141.346 1.668.51M14.44 11L13 14M11 14l1.44-3"
+                />
+              </svg>
+              <span className="text-xs font-medium">My</span>
             </button>
           </div>
         </div>

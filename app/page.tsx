@@ -967,7 +967,7 @@ const AssetPage = ({ profile }: { profile: any }) => {
 
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0;
+    : 0
   const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
   const convertedBalance = selectedCurrency === 'USDT' 
@@ -1112,7 +1112,8 @@ const AssetPage = ({ profile }: { profile: any }) => {
       <div className="h-20"></div>
     </div>
   )
-  }
+}
+\
 const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {\
   const handleExitLogin = async () => {
     await handleLogout()
@@ -1143,6 +1144,7 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
     </div>
   )
 }
+\
 const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | null }) => {\
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -1172,7 +1174,7 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
         headers: { "Content-Type": \"application/json" },
         body: JSON.stringify({ announcementId }),
       })
-
+\
       setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
     } catch (error) {
       console.error("Error marking as read:", error)
@@ -1224,7 +1226,7 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: User | nu
     </div>
   )
 }
-
+\
 const MyPage = ({ user, handleLogout }: { user: User | null; handleLogout: () => void }) => {\
   const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)
@@ -1670,7 +1672,7 @@ const HomePage = () => {
   const [showRechargeMessage, setShowRechargeMessage] = useState(false)
   const [showWithdrawalPage, setShowWithdrawalPage] = useState(false)
   const [showWithdrawalHistory, setShowWithdrawalHistory] = useState(false)
- const [withdrawals, setWithdrawals] = useState<any[]>([]
+  const [withdrawals, setWithdrawals = useState([])
   const [withdrawalAmount, setWithdrawalAmount] = useState("")
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
   const [bankDetails, setBankDetails] = useState<any[]>([])

@@ -182,12 +182,12 @@ const MarketPage = ({
 
   const handleOrderSubmit = async () => {
     if (!orderAmount || Number.parseFloat(orderAmount) <= 0) {
-      alert("Please enter a valid amount")
+      toast.error("Please enter a valid amount")
       return
     }
 
     if (!userProfile || userProfile.available_balance < Number.parseFloat(orderAmount)) {
-      alert("Insufficient balance")
+      toast.error("Insufficient balance")
       return
     }
 
@@ -212,10 +212,11 @@ const MarketPage = ({
       if (result.success) {
         setShowTradingModal(false)
         setOrderAmount("")
+        toast.success("Order created successfully!")
         // Navigate to orders page
         window.dispatchEvent(new CustomEvent("navigate-to-orders"))
       } else {
-        alert(result.error || "Failed to create order")
+        toast.error(result.error || "Failed to create order")
       }
     } catch (error) {
       toast.error("Failed to create order")
@@ -1638,7 +1639,7 @@ const AddCollectionInfoPage = ({
 
   const handleSave = async () => {
     if (!formData.account_holder_name || !formData.bind_bank || !formData.bank_card_number) {
-      alert("Please fill in all required fields")
+      toast.error("Please fill in all required fields")
       return
     }
 
@@ -1654,14 +1655,14 @@ const AddCollectionInfoPage = ({
       const data = await response.json()
 
       if (response.ok) {
-        alert("Bank details saved successfully!")
+        toast.success("Bank details saved successfully!")
         onSaveSuccess()
       } else {
-        alert("Error saving bank details: " + data.error)
+        toast.error("Error saving bank details: " + data.error)
       }
     } catch (error) {
       console.error("Error saving bank details:", error)
-      alert("Error saving bank details")
+      toast.error("Error saving bank details")
     }
   }
 
@@ -2030,12 +2031,12 @@ const HomePage = () => {
 
   const handleWithdrawalSubmit = async () => {
     if (!withdrawalAmount || Number.parseFloat(withdrawalAmount) <= 0) {
-      alert("Please enter a valid amount")
+      toast.error("Please enter a valid amount")
       return
     }
 
     if (Number.parseFloat(withdrawalAmount) > (profile?.available_balance || 0)) {
-      alert("Insufficient balance")
+      toast.error("Insufficient balance")
       return
     }
 
@@ -2053,17 +2054,17 @@ const HomePage = () => {
       })
 
       if (response.ok) {
-        alert("Withdrawal request submitted successfully")
+        toast.success("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
         // fetchProfile() // Refresh balance
       } else {
         const error = await response.json()
-        alert(error.error || "Failed to submit withdrawal request")
+        toast.error(error.error || "Failed to submit withdrawal request")
       }
     } catch (error) {
       console.error("Error submitting withdrawal:", error)
-      alert("Failed to submit withdrawal request")
+      toast.error("Failed to submit withdrawal request")
     } finally {
       setIsSubmittingWithdrawal(false)
     }

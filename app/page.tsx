@@ -2351,7 +2351,7 @@ const HomePage = () => {
   }
 
   return (
-     <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
       {renderCurrentPage()}
 
       {/* Bottom Navigation */}

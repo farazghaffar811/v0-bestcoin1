@@ -682,8 +682,8 @@ const MarketPage = ({
             {/* Balance and Earnings */}
             <div className="flex justify-between items-center mb-3 text-sm">
               <div className="text-white">
-                Available Balance:{" "} <span>R</span>
-                <span className="text-green-400 font-semibold">{userProfile?.available_balance || 0}.0000</span>{" "}
+                Available Balance:{" "} 
+                <span className="text-green-400 font-semibold">{userProfile?.available_balance || 0}.0000</span>{"R "}
                 <span className="text-green-400 bg-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
               </div>
               <div className="text-white">

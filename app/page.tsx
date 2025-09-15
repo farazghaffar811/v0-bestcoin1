@@ -684,7 +684,7 @@ const MarketPage = ({
               <div className="text-white">
                 Available Balance:{" "} 
                 <span className="text-green-400 font-semibold">{userProfile?.available_balance || 0}.0000</span>{" "}
-                <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
+                <span className="text-green-400 bg-opacity-20 px-1 rounded text-s">R</span>
               </div>
               <div className="text-white">
                 Expected Earnings:{" "}
@@ -941,48 +941,105 @@ const AssetPage = ({
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
     ZAR: 18.5, // Default ZAR to USD rate
-    USDT: 1.0, // USDT to USD rate
+    USDT: 1.0, // USDT to USD rate (base currency)
     USD: 1.0   // USD to USD rate
   })
+  const [isLoadingRates, setIsLoadingRates] = useState(false)
 
   const currencies = [
-    { code: "ZAR", name: "South African Rand" },
-    { code: "USDT", name: "Tether USD" },
-    { code: "USD", name: "US Dollar" },
+    { code: "ZAR", name: "South African Rand", symbol: "R" },
+    { code: "USDT", name: "Tether USD", symbol: "₮" },
+    { code: "USD", name: "US Dollar", symbol: "$" },
   ]
 
   useEffect(() => {
-    const fetchExchangeRates = async () => {
-      try {
-        // Using a free exchange rate API
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
-        const data = await response.json()
-        
-        setExchangeRates({
-          ZAR: data.rates.ZAR || 18.5,
-          USDT: 1.0,
-          USD: 1.0
-        })
-      } catch (error) {
-        console.log('[v0] Error fetching exchange rates:', error)
-        // Keep default rates if API fails
-      }
-    }
-
     fetchExchangeRates()
     // Update rates every 5 minutes
     const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
-  const displayBalance = profile?.available_balance
+  const fetchExchangeRates = async () => {
+    try {
+      setIsLoadingRates(true)
+      console.log('[v0] Fetching exchange rates...')
+      
+      // Using a free exchange rate API
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('[v0] Exchange rates fetched:', data.rates)
+        
+        setExchangeRates({
+          ZAR: data.rates.ZAR || 18.5,
+          USDT: 1.0, // USDT is pegged to USD
+          USD: 1.0
+        })
+        
+        console.log('[v0] Exchange rates updated:', {
+          ZAR: data.rates.ZAR || 18.5,
+          USDT: 1.0,
+          USD: 1.0
+        })
+      } else {
+        throw new Error('Failed to fetch exchange rates')
+      }
+    } catch (error) {
+      console.log('[v0] Error fetching exchange rates:', error)
+      // Keep default rates if API fails
+      setExchangeRates({
+        ZAR: 18.5,
+        USDT: 1.0,
+        USD: 1.0
+      })
+    } finally {
+      setIsLoadingRates(false)
+    }
+  }
+
+  // Calculate available balance (excluding frozen balance)
+  const availableBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
     : 0
-  const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
-  const convertedBalance = selectedCurrency === 'USDT' 
-    ? displayBalance 
-    : displayBalance * exchangeRates[selectedCurrency]
+  // Calculate total balance (including frozen balance)  
+  const totalBalance = profile?.available_balance || 0
+
+  // Convert balances based on selected currency
+  const getConvertedAmount = (amount: number) => {
+    if (selectedCurrency === 'USDT') {
+      return amount // USDT is the base currency
+    }
+    return amount * exchangeRates[selectedCurrency]
+  }
+
+  const convertedAvailableBalance = getConvertedAmount(availableBalance)
+  const convertedTotalBalance = getConvertedAmount(totalBalance)
+  const convertedFrozenBalance = getConvertedAmount(profile?.frozen_balance || 0)
+
+  // Get currency symbol
+  const getCurrencySymbol = (currencyCode: string) => {
+    const currency = currencies.find(c => c.code === currencyCode)
+    return currency?.symbol || currencyCode
+  }
+
+  const handleCurrencyChange = (currencyCode: string) => {
+    console.log('[v0] Currency changed from', selectedCurrency, 'to', currencyCode)
+    console.log('[v0] Current exchange rates:', exchangeRates)
+    console.log('[v0] Available balance before conversion:', availableBalance)
+    console.log('[v0] Total balance before conversion:', totalBalance)
+    
+    setSelectedCurrency(currencyCode)
+    setIsDropdownOpen(false)
+    
+    // Log the converted amounts
+    const newAvailableBalance = currencyCode === 'USDT' ? availableBalance : availableBalance * exchangeRates[currencyCode]
+    const newTotalBalance = currencyCode === 'USDT' ? totalBalance : totalBalance * exchangeRates[currencyCode]
+    
+    console.log('[v0] Converted available balance:', newAvailableBalance)
+    console.log('[v0] Converted total balance:', newTotalBalance)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1003,7 +1060,7 @@ const AssetPage = ({
         <div className="mb-4">
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
           <div className="text-3xl font-bold mb-2">
-            {displayBalance.toFixed(4)} <span className="text-lg font-normal">USDT</span>
+            {convertedTotalBalance.toFixed(4)} <span className="text-lg font-normal">{selectedCurrency}</span>
           </div>
           <div className="relative">
             <div
@@ -1011,7 +1068,8 @@ const AssetPage = ({
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>
-                ≈ {convertedBalance.toFixed(4)} {selectedCurrency}
+                ≈ {convertedTotalBalance.toFixed(4)} {getCurrencySymbol(selectedCurrency)}
+                {isLoadingRates && <span className="ml-1 text-xs">(updating...)</span>}
               </span>
               <svg
                 className={`w-4 h-4 ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
@@ -1027,26 +1085,48 @@ const AssetPage = ({
             </div>
 
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[150px] z-10">
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[200px] z-10">
                 {currencies.map((currency) => (
                   <button
                     key={currency.code}
-                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
+                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
                       selectedCurrency === currency.code ? "bg-blue-50 text-blue-600" : "text-gray-700"
                     }`}
-                    onClick={() => {
-                      console.log('[v0] Currency changed to:', currency.code)
-                      setSelectedCurrency(currency.code)
-                      setIsDropdownOpen(false)
-                    }}
+                    onClick={() => handleCurrencyChange(currency.code)}
                   >
-                    <div className="font-medium">{currency.code}</div>
-                    <div className="text-xs opacity-75">{currency.name}</div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">{currency.code}</div>
+                        <div className="text-xs opacity-75">{currency.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">
+                          {getConvertedAmount(totalBalance).toFixed(4)} {currency.symbol}
+                        </div>
+                        {currency.code !== 'USDT' && (
+                          <div className="text-xs opacity-75">
+                            1 USDT = {exchangeRates[currency.code].toFixed(2)} {currency.code}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
             )}
           </div>
+        </div>
+
+        {/* Available Balance Display */}
+        <div className="text-sm opacity-90">
+          <div className="mb-1">
+            Available Balance: {convertedAvailableBalance.toFixed(4)} {selectedCurrency}
+          </div>
+          {profile?.frozen_balance > 0 && (
+            <div className="text-red-300">
+              Frozen Balance: {convertedFrozenBalance.toFixed(4)} {selectedCurrency}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1092,32 +1172,49 @@ const AssetPage = ({
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
         <div className="flex items-center mb-4">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-            R
+            {getCurrencySymbol(selectedCurrency)}
           </div>
-          <span className="font-medium text-gray-900">ZAR</span>
+          <span className="font-medium text-gray-900">{selectedCurrency}</span>
+          <span className="text-xs text-gray-500 ml-2">
+            {selectedCurrency !== 'USDT' && `(1 USDT = ${exchangeRates[selectedCurrency]?.toFixed(2)} ${selectedCurrency})`}
+          </span>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(4)}
+              {convertedAvailableBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
           <div>
             <div className="text-lg font-semibold text-red-500 mb-1">
-              {profile?.frozen_balance?.toFixed(4) || "0.0000"}
+              {convertedFrozenBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Frozen Balance</div>
           </div>
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {(profile?.available_balance || 0).toFixed(4)}
+              {convertedTotalBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Total Balance</div>
           </div>
         </div>
       </div>
+
+      {/* Exchange Rate Information */}
+      {selectedCurrency !== 'USDT' && (
+        <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
+          <div className="text-sm text-blue-800">
+            <div className="font-medium mb-1">Current Exchange Rate</div>
+            <div>1 USDT = {exchangeRates[selectedCurrency]?.toFixed(4)} {selectedCurrency}</div>
+            <div className="text-xs mt-1 opacity-75">
+              Rates updated every 5 minutes
+              {isLoadingRates && <span> • Updating...</span>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom padding for navigation */}
       <div className="h-20"></div>

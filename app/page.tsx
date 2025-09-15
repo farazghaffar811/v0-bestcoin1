@@ -1692,43 +1692,15 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredCryptos, setFilteredCryptos] = useState<CryptoPrice[]>([])
 
-  // --- NEW: Shared Currency State ---
-  const [selectedCurrency, setSelectedCurrency] = useState("USD")
-  const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    ZAR: 18.5,
-    USDT: 1.0,
-    USD: 1.0,
-  })
-
   useEffect(() => {
     initializeAuth()
     fetchCryptoPrices()
     fetchTelegramLink()
     fetchBankDetails()
-    fetchExchangeRates()
 
     const interval = setInterval(fetchCryptoPrices, 10000)
-    const rateInterval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
-
-    return () => {
-      clearInterval(interval)
-      clearInterval(rateInterval)
-    }
+    return () => clearInterval(interval)
   }, [])
-
-  const fetchExchangeRates = async () => {
-    try {
-      const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD")
-      const data = await response.json()
-      setExchangeRates({
-        ZAR: data.rates.ZAR || 18.5,
-        USDT: 1.0,
-        USD: 1.0,
-      })
-    } catch (error) {
-      console.error("[v0] Error fetching exchange rates:", error)
-    }
-  }
 
   const initializeAuth = async () => {
     setIsLoading(true)
@@ -1758,6 +1730,7 @@ const HomePage = () => {
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
+
       if (error) {
         console.error("[v0] Error fetching profile:", error)
       } else {
@@ -1804,6 +1777,7 @@ const HomePage = () => {
       router.push("/login")
       return
     }
+
     resetAllStates()
     setActiveNav(targetPage)
   }
@@ -1813,20 +1787,118 @@ const HomePage = () => {
       router.push("/login")
       return
     }
+
     resetAllStates()
     setSelectedCrypto(cryptoId)
     setActiveNav("market")
+  }
+
+  const handleBackNavigation = () => {
+    router.back()
   }
 
   const fetchCryptoPrices = async () => {
     try {
       console.log("[v0] Fetching crypto prices from internal API...")
       const response = await fetch("/api/crypto")
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
       const data = await response.json()
+      console.log("[v0] Successfully fetched crypto data:", data)
+
       setCryptoPrices(data)
     } catch (error) {
       console.error("[v0] Error fetching crypto prices:", error)
+      const fallbackData: CryptoPrice[] = [
+        {
+          id: "bitcoin",
+          symbol: "BTC/USDT",
+          name: "Bitcoin",
+          current_price: 111123.1906,
+          price_change_percentage_24h: 0.26,
+        },
+        {
+          id: "ethereum",
+          symbol: "ETH/USDT",
+          name: "Ethereum",
+          current_price: 4322.3957,
+          price_change_percentage_24h: 0.61,
+        },
+        {
+          id: "dogecoin",
+          symbol: "DOGE/USDT",
+          name: "Dogecoin",
+          current_price: 0.216,
+          price_change_percentage_24h: 3.15,
+        },
+        {
+          id: "chiliz",
+          symbol: "CHZUSDT",
+          name: "Chiliz",
+          current_price: 0.0393,
+          price_change_percentage_24h: 1.32,
+        },
+        {
+          id: "psg-fan-token",
+          symbol: "PSGUSDT",
+          name: "PSG Fan Token",
+          current_price: 1.8153,
+          price_change_percentage_24h: 0.69,
+        },
+        {
+          id: "atletico-madrid",
+          symbol: "ATMUSDT",
+          name: "Atletico Madrid Fan Token",
+          current_price: 1.265,
+          price_change_percentage_24h: -0.64,
+        },
+        {
+          id: "juventus-fan-token",
+          symbol: "JUVUSDT",
+          name: "Juventus Fan Token",
+          current_price: 1.1484,
+          price_change_percentage_24h: 1.58,
+        },
+        {
+          id: "kusama",
+          symbol: "KSMUSDT",
+          name: "Kusama",
+          current_price: 15.3358,
+          price_change_percentage_24h: 5.37,
+        },
+        {
+          id: "litecoin",
+          symbol: "LTCUSDT",
+          name: "Litecoin",
+          current_price: 112.7811,
+          price_change_percentage_24h: 2.92,
+        },
+        {
+          id: "eos",
+          symbol: "EOSUSDT",
+          name: "EOS",
+          current_price: 0.7262,
+          price_change_percentage_24h: -0.93,
+        },
+        {
+          id: "bitshares",
+          symbol: "BTSUSDT",
+          name: "BitShares",
+          current_price: 9.4785,
+          price_change_percentage_24h: 1.08,
+        },
+        {
+          id: "chainlink",
+          symbol: "LINKUSDT",
+          name: "Chainlink",
+          current_price: 23.4146,
+          price_change_percentage_24h: 2.49,
+        },
+      ]
+      setCryptoPrices(fallbackData)
     }
   }
 
@@ -1872,24 +1944,30 @@ const HomePage = () => {
       alert("Please enter a valid amount")
       return
     }
+
     if (Number.parseFloat(withdrawalAmount) > (profile?.available_balance || 0)) {
       alert("Insufficient balance")
       return
     }
+
     setIsSubmittingWithdrawal(true)
     try {
       const response = await fetch("/api/withdrawals", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           amount: Number.parseFloat(withdrawalAmount),
           bank_details: bankDetails[0] || null,
         }),
       })
+
       if (response.ok) {
         alert("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
+        // fetchProfile() // Refresh balance
       } else {
         const error = await response.json()
         alert(error.error || "Failed to submit withdrawal request")
@@ -1908,8 +1986,11 @@ const HomePage = () => {
       console.log("[v0] Fetching bank details for withdrawal...")
       const response = await fetch("/api/bank-details")
       const data = await response.json()
+      console.log("[v0] Bank details API response:", data)
+
       if (response.ok) {
         setBankDetails(data.bankDetails || [])
+        console.log("[v0] Bank details set:", data.bankDetails || [])
       } else {
         console.error("[v0] Error fetching bank details:", data.error)
       }
@@ -1920,16 +2001,32 @@ const HomePage = () => {
     }
   }
 
-  // --- Balance conversion helper ---
-  const getConvertedBalance = (amount: number) => {
-    return selectedCurrency === "USDT" ? amount : amount * exchangeRates[selectedCurrency]
-  }
-
   const renderCurrentPage = () => {
     if (showRechargeMessage) {
       return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          {/* Recharge UI unchanged */}
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+            <div className="mb-4">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Recharge Information</h3>
+              <p className="text-gray-600">To recharge, kindly contact your teacher</p>
+            </div>
+            <button
+              onClick={() => setShowRechargeMessage(false)}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              OK
+            </button>
+          </div>
         </div>
       )
     }
@@ -1940,7 +2037,18 @@ const HomePage = () => {
           {/* Header */}
           <div className="bg-white shadow-sm">
             <div className="flex items-center justify-between p-4">
-              <h1 className="text-lg font-semibold text-gray-900">Withdrawal</h1>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowWithdrawalPage(false)}>
+                  <Home className="w-6 h-6 text-gray-600" />
+                </button>
+                <h1 className="text-lg font-semibold text-gray-900">Withdrawal</h1>
+              </div>
+              <button
+                onClick={() => setShowWithdrawalHistory(true)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                History
+              </button>
             </div>
           </div>
 
@@ -1950,21 +2058,113 @@ const HomePage = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance</div>
               <div className="text-2xl font-bold text-gray-900">
-                {getConvertedBalance(
-                  Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)),
-                ).toFixed(2)}{" "}
-                {selectedCurrency}
+                {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(2)}{" "}
+                {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-red-600 mt-1">
-                  Frozen: {getConvertedBalance(profile.frozen_balance).toFixed(2)} {selectedCurrency}
+                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
                 </div>
               )}
             </div>
 
             {/* Withdrawal Amount */}
-            {/* ... rest of your existing withdrawal form unchanged ... */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Withdrawal Amount</label>
+              <input
+                type="number"
+                value={withdrawalAmount}
+                onChange={(e) => setWithdrawalAmount(e.target.value)}
+                placeholder="Enter amount"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Bank Details */}
+            {console.log("[v0] Rendering bank details section, bankDetails.length:", bankDetails.length)}
+            {bankDetails.length > 0 && (
+              <div className="bg-white rounded-lg p-4 shadow-sm">
+                <div className="text-sm font-medium text-gray-700 mb-2">Withdrawal Account</div>
+                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                    <span className="text-green-600 font-medium text-sm">
+                      {bankDetails[0]?.bind_bank?.charAt(0)?.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{bankDetails[0]?.bind_bank}</div>
+                    <div className="text-sm text-gray-500">****{bankDetails[0]?.bank_card_number?.slice(-4)}</div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              onClick={handleWithdrawalSubmit}
+              disabled={isSubmittingWithdrawal || !withdrawalAmount || bankDetails.length === 0}
+              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmittingWithdrawal ? "Submitting..." : "Submit Withdrawal Request"}
+            </button>
+
+            {bankDetails.length === 0 && (
+              <div className="text-center text-sm text-gray-500">
+                {isLoadingBankDetails
+                  ? "Loading bank details..."
+                  : "Please add bank details in Collection Information to withdraw"}
+                {console.log("[v0] No bank details available, isLoading:", isLoadingBankDetails)}
+              </div>
+            )}
           </div>
+
+          {/* Withdrawal History Modal */}
+          {showWithdrawalHistory && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <h3 className="text-lg font-semibold">Withdrawal History</h3>
+                  <button onClick={() => setShowWithdrawalHistory(false)} className="text-gray-400 hover:text-gray-600">
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                <div className="p-4 max-h-96 overflow-y-auto">
+                  {withdrawals.length > 0 ? (
+                    <div className="space-y-3">
+                      {withdrawals.map((withdrawal: any) => (
+                        <div key={withdrawal.id} className="border rounded-lg p-3">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="font-medium">
+                              {withdrawal.amount} {profile?.preferred_currency || "ZAR"}
+                            </div>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                withdrawal.status === "approved"
+                                  ? "bg-green-100 text-green-800"
+                                  : withdrawal.status === "rejected"
+                                    ? "bg-red-100 text-red-800"
+                                    : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {new Date(withdrawal.created_at).toLocaleDateString()}
+                          </div>
+                          {withdrawal.admin_notes && (
+                            <div className="text-sm text-gray-600 mt-1">Note: {withdrawal.admin_notes}</div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-500 py-8">No withdrawal history found</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )
     }
@@ -1985,29 +2185,156 @@ const HomePage = () => {
         )
       case "asset":
         return (
-          <AssetPage
-            profile={profile}
+          <AssetPage 
+            profile={profile} 
             onRechargeClick={handleRechargeClick}
             onWithdrawalClick={handleWithdrawalClick}
             onCustomerSupportClick={handleCustomerSupportClick}
-            selectedCurrency={selectedCurrency}
-            setSelectedCurrency={setSelectedCurrency}
-            exchangeRates={exchangeRates}
           />
         )
       case "my":
-        return (
-          <MyPage
-            user={user}
-            handleLogout={handleLogout}
-            selectedCurrency={selectedCurrency}
-            exchangeRates={exchangeRates}
-          />
-        )
+        return <MyPage user={user} handleLogout={handleLogout} />
       default:
         return (
           <div className="min-h-screen bg-gray-50">
-            {/* Your existing home UI unchanged */}
+            {/* Top Price Cards */}
+            <div className="bg-white px-4 py-6">
+              <div className="grid grid-cols-3 gap-4">
+                {cryptoPrices.slice(0, 3).map((crypto) => (
+                  <div key={crypto.id} className="text-center">
+                    <div className="text-sm font-medium text-gray-900 mb-1">{crypto.symbol}</div>
+                    <div className="text-lg font-semibold text-cyan-500 mb-1">
+                      {formatPrice(crypto.current_price, crypto.symbol)}
+                    </div>
+                    <div className="text-sm font-medium text-green-500">
+                      {formatPercentage(crypto.price_change_percentage_24h)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="bg-white px-4 py-6 border-t border-gray-100">
+              <div className="grid grid-cols-3 gap-8">
+                <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Recharge</span>
+                </button>
+
+                <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
+                </button>
+
+                <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
+                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-800 font-medium">Customer Service</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Crypto List */}
+            <div className="bg-white mt-2">
+              {/* Search Input */}
+              <div className="relative px-4 py-3">
+                <input
+                  type="text"
+                  placeholder="Search cryptocurrencies"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const query = e.target.value
+                    setSearchQuery(query)
+
+                    if (query) {
+                      const filtered = cryptoPrices.filter(
+                        (crypto) =>
+                          crypto.symbol.toLowerCase().includes(query.toLowerCase()) ||
+                          crypto.name.toLowerCase().includes(query.toLowerCase()),
+                      )
+                      setFilteredCryptos(filtered)
+                    } else {
+                      setFilteredCryptos([])
+                    }
+                  }}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+
+                {/* Search Results */}
+                {searchQuery && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
+                    {filteredCryptos.length > 0 ? (
+                      filteredCryptos.map((crypto) => (
+                        <button
+                          key={crypto.id}
+                          onClick={() => {
+                            handleCryptoSelect(crypto.symbol.toUpperCase())
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
+                        >
+                          <CryptoIcon symbol={crypto.symbol} className="w-6 h-6" />
+                          <div>
+                            <div className="font-medium text-gray-900">{crypto.symbol.toUpperCase()}</div>
+                            <div className="text-sm text-gray-500">{crypto.name}</div>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="px-4 py-3 text-gray-500 text-center">No cryptocurrencies found</div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {cryptoPrices.map((crypto, index) => (
+                <div
+                  key={crypto.id}
+                  className="flex items-center px-4 py-4 border-b border-gray-100 last:border-b-0 ms-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                  onClick={() => handleCryptoSelect(crypto.id)}
+                >
+                  <div className="flex items-center gap-3">
+                    <CryptoIcon symbol={crypto.symbol.replace("USDT", "")} />
+                    <span className="font-medium text-gray-900">{crypto.symbol}</span>
+                  </div>
+
+                  <div className="flex-1 text-center">
+                    <span
+                      className={`font-semibold ${crypto.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}`}
+                    >
+                      {formatPrice(crypto.current_price, crypto.symbol)}
+                    </span>
+                  </div>
+
+                  <div>
+                    <Badge
+                      className={`${crypto.price_change_percentage_24h >= 0 ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"} text-white px-2 py-1 text-xs font-medium`}
+                    >
+                      {formatPercentage(crypto.price_change_percentage_24h)}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Bottom padding to account for fixed navigation */}
+            <div className="h-20"></div>
           </div>
         )
     }
@@ -2016,101 +2343,99 @@ const HomePage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <p className="text-gray-600">Loading...</p>
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
       </div>
     )
   }
-    return (
-    <div className="min-h-screen bg-gray-100">
+
+  return (
+     <div className="min-h-screen bg-gray-100">
       {renderCurrentPage()}
 
       {/* Bottom Navigation */}
-      {activeNav !== "market" && !showRechargeMessage && !showWithdrawalPage && (
+      {activeNav !== "market" && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
           <div className="grid grid-cols-5 py-2">
             <button
-              onClick={() => checkAuthAndNavigate("home")}
-              className={`flex flex-col items-center justify-center ${
-                activeNav === "home" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
+              onClick={() => setActiveNav("home")}
+              className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h12a1 1 0 001-1V10"
-                />
-              </svg>
-              <span className="text-xs font-medium">Home</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("market")}
-              className={`flex flex-col items-center justify-center ${
-                activeNav === "market" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 11a2 2 0 11-4 0m2 2l4 4a2 2 0 11-2 0m2-2l4-4m-4 4v3a2 2 0 104 0v-3"
-                />
-              </svg>
-              <span className="text-xs font-medium">Market</span>
+              <img
+                src={
+                  activeNav === "home"
+                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
+                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
+                }
+                alt="Home"
+                className="w-6 h-6"
+                style={{ filter: activeNav === "home" ? "none" : "brightness(0)" }}
+              />
+              <span className="text-xs mt-1 font-medium">Home</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("order")}
-              className={`flex flex-col items-center justify-center ${
-                activeNav === "order" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex flex-col items-center py-2 ${activeNav === "order" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3v1.5M3 21v-6m0 0l2-2m2-2l2-2M3 4.5l2.6-2.6M5.6 4.5l-.9-.9M19.5 4.5l-.7-.7M15 12H9m6 0l-2 2m-2-2l-2-2"
-                />
-              </svg>
-              <span className="text-xs font-medium">Orders</span>
+              <img
+                src={
+                  activeNav === "order"
+                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-on-MTJ5rFnAkPPMIOaPirW7vitrvdV4K1.png"
+                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-B8U7Mm78bhIOdQcpzf7xk2A5OFHsbM.png"
+                }
+                alt="Order"
+                className="w-6 h-6"
+              />
+              <span className="text-xs mt-1">Order</span>
+            </button>
+
+            <button
+              onClick={() => checkAuthAndNavigate("market")}
+              className={`flex flex-col items-center py-2 ${activeNav === "market" ? "text-cyan-500" : "text-gray-500"}`}
+            >
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/jy-cE3iJPz5tVy8uo4AkVuvrdVIJHlxAy.png"
+                alt="Market"
+                className="w-6 h-6"
+                style={{
+                  filter: activeNav === "market" ? "sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)" : "none",
+                }}
+              />
+              <span className="text-xs mt-1">Market</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("asset")}
-              className={`flex flex-col items-center justify-center ${
-                activeNav === "asset" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex flex-col items-center py-2 ${activeNav === "asset" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="text-xs font-medium">Assets</span>
+              <img
+                src={
+                  activeNav === "asset"
+                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-on-wnj7RxQeGjwlsw5XIS9yhtjYImfVqC.png"
+                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-1pqynjOg1eAbvDW7cctRuJvWvADoKB.png"
+                }
+                alt="Asset"
+                className="w-6 h-6"
+              />
+              <span className="text-xs mt-1">Asset</span>
             </button>
 
             <button
               onClick={() => checkAuthAndNavigate("my")}
-              className={`flex flex-col items-center justify-center ${
-                activeNav === "my" ? "text-blue-600" : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 12a18.645 18.645 0 01-3-3m-6-10a8.482 8.482 0 018-8c.587.174 1.141.346 1.668.51M14.44 11L13 14M11 14l1.44-3"
-                />
-              </svg>
-              <span className="text-xs font-medium">My</span>
+              <img
+                src={
+                  activeNav === "my"
+                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
+                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-yPiEf0s1WVMnnCrl6rfOtbgWJAqHch.png"
+                }
+                alt="My"
+                className="w-6 h-6"
+              />
+              <span className="text-xs mt-1">My</span>
             </button>
           </div>
         </div>

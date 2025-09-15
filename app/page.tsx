@@ -615,7 +615,7 @@ const MarketPage = ({
 
       {showTradingModal && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-end justify-center z-50"
+          className="fixed inset-0 flex items-end justify-center z-50"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowTradingModal(false)

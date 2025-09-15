@@ -926,24 +926,24 @@ const OrderPage = () => {
   )
 }
 
-const AssetPage = ({ 
-  profile, 
-  onRechargeClick, 
-  onWithdrawalClick, 
-  onCustomerSupportClick 
-}: { 
+const AssetPage = ({
+  profile,
+  onRechargeClick,
+  onWithdrawalClick,
+  onCustomerSupportClick,
+  selectedCurrency,
+  setSelectedCurrency,
+  exchangeRates,
+}: {
   profile: any
   onRechargeClick: () => void
   onWithdrawalClick: () => void
   onCustomerSupportClick: () => void
+  selectedCurrency: string
+  setSelectedCurrency: (currency: string) => void
+  exchangeRates: { [key: string]: number }
 }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState("ZAR")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    ZAR: 18.5, // Default ZAR to USD rate
-    USDT: 1.0, // USDT to USD rate
-    USD: 1.0   // USD to USD rate
-  })
 
   const currencies = [
     { code: "ZAR", name: "South African Rand" },
@@ -951,38 +951,13 @@ const AssetPage = ({
     { code: "USD", name: "US Dollar" },
   ]
 
-  useEffect(() => {
-    const fetchExchangeRates = async () => {
-      try {
-        // Using a free exchange rate API
-        const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
-        const data = await response.json()
-        
-        setExchangeRates({
-          ZAR: data.rates.ZAR || 18.5,
-          USDT: 1.0,
-          USD: 1.0
-        })
-      } catch (error) {
-        console.log('[v0] Error fetching exchange rates:', error)
-        // Keep default rates if API fails
-      }
-    }
-
-    fetchExchangeRates()
-    // Update rates every 5 minutes
-    const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
-
   const displayBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
     : 0
   const balanceLabel = profile?.frozen_balance > 0 ? "Available (After Frozen)" : "Available Balance"
 
-  const convertedBalance = selectedCurrency === 'USDT' 
-    ? displayBalance 
-    : displayBalance * exchangeRates[selectedCurrency]
+  const convertedBalance =
+    selectedCurrency === "USDT" ? displayBalance : displayBalance * exchangeRates[selectedCurrency]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1035,7 +1010,6 @@ const AssetPage = ({
                       selectedCurrency === currency.code ? "bg-blue-50 text-blue-600" : "text-gray-700"
                     }`}
                     onClick={() => {
-                      console.log('[v0] Currency changed to:', currency.code)
                       setSelectedCurrency(currency.code)
                       setIsDropdownOpen(false)
                     }}
@@ -1094,13 +1068,13 @@ const AssetPage = ({
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
             R
           </div>
-          <span className="font-medium text-gray-900">ZAR</span>
+          <span className="font-medium text-gray-900">{selectedCurrency}</span>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-lg font-semibold text-blue-500 mb-1">
-              {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(4)}
+              {displayBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
@@ -1124,6 +1098,7 @@ const AssetPage = ({
     </div>
   )
 }
+
 
 const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {
   const handleExitLogin = async () => {
@@ -1238,7 +1213,17 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
   )
 }
 
-const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void }) => {
+const MyPage = ({
+  user,
+  handleLogout,
+  selectedCurrency,
+  exchangeRates,
+}: {
+  user: any
+  handleLogout: () => void
+  selectedCurrency: string
+  exchangeRates: { [key: string]: number }
+}) => {
   const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
@@ -1272,7 +1257,6 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
     fetchUserProfile()
     if (user?.id) {
       console.log("[v0] Setting up real-time subscription for user:", user.id)
-      // Set up real-time subscription for profile changes
       const subscription = supabase
         .channel("profile-changes")
         .on(
@@ -1297,34 +1281,28 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
     }
   }, [user?.id, supabase])
 
-  const handleSettingsClick = () => {
-    setShowSettings(true)
-  }
-
-  const handleCollectionInfoClick = () => {
-    setShowCollectionInfo(true)
-  }
-
+  const handleSettingsClick = () => setShowSettings(true)
+  const handleCollectionInfoClick = () => setShowCollectionInfo(true)
   const handleBackFromCollection = () => {
     setShowCollectionInfo(false)
     setShowAddCollection(false)
   }
+  const handleAddCollectionClick = () => setShowAddCollection(true)
+  const handleBackFromSettings = () => setShowSettings(false)
+  const handleUserMessageClick = () => setShowUserMessage(true)
+  const handleBackFromUserMessage = () => setShowUserMessage(false)
 
-  const handleAddCollectionClick = () => {
-    setShowAddCollection(true)
-  }
+  // --- Balance conversion ---
+  const available = Math.max(
+    0,
+    (userProfile?.available_balance || 0) - (userProfile?.frozen_balance || 0),
+  )
+  const frozen = userProfile?.frozen_balance || 0
 
-  const handleBackFromSettings = () => {
-    setShowSettings(false)
-  }
-
-  const handleUserMessageClick = () => {
-    setShowUserMessage(true)
-  }
-
-  const handleBackFromUserMessage = () => {
-    setShowUserMessage(false)
-  }
+  const convertedAvailable =
+    selectedCurrency === "USDT" ? available : available * exchangeRates[selectedCurrency]
+  const convertedFrozen =
+    selectedCurrency === "USDT" ? frozen : frozen * exchangeRates[selectedCurrency]
 
   if (showSettings) {
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
@@ -1368,19 +1346,8 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
             <div className="text-sm opacity-90">UID: {userProfile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
             <div className="text-sm font-medium text-yellow-300">Credit Score: {userProfile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              {userProfile?.frozen_balance > 0 ? (
-                <>
-                  Available:{" "}
-                  {Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0)).toFixed(4)}{" "}
-                  {userProfile?.preferred_currency || "USD"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
-                  {userProfile?.preferred_currency || "USD"}
-                </>
-              ) : (
-                <>
-                  Available Balance: {userProfile?.available_balance?.toFixed(4) || "0.0000"}{" "}
-                  {userProfile?.preferred_currency || "USD"}
-                </>
-              )}
+              Available: {convertedAvailable.toFixed(4)} {selectedCurrency} | Frozen:{" "}
+              {convertedFrozen.toFixed(4)} {selectedCurrency}
             </div>
           </div>
         </div>
@@ -1416,6 +1383,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
     </div>
   )
 }
+
 
 const CollectionInfoPage = ({
   onBack,
@@ -1692,15 +1660,43 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredCryptos, setFilteredCryptos] = useState<CryptoPrice[]>([])
 
+  // --- NEW: Shared currency state ---
+  const [selectedCurrency, setSelectedCurrency] = useState("USD")
+  const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
+    ZAR: 18.5,
+    USDT: 1.0,
+    USD: 1.0,
+  })
+
   useEffect(() => {
     initializeAuth()
     fetchCryptoPrices()
     fetchTelegramLink()
     fetchBankDetails()
+    fetchExchangeRates()
 
     const interval = setInterval(fetchCryptoPrices, 10000)
-    return () => clearInterval(interval)
+    const rateInterval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
+
+    return () => {
+      clearInterval(interval)
+      clearInterval(rateInterval)
+    }
   }, [])
+
+  const fetchExchangeRates = async () => {
+    try {
+      const response = await fetch("https://api.exchangerate-api.com/v4/latest/USD")
+      const data = await response.json()
+      setExchangeRates({
+        ZAR: data.rates.ZAR || 18.5,
+        USDT: 1.0,
+        USD: 1.0,
+      })
+    } catch (error) {
+      console.error("[v0] Error fetching exchange rates:", error)
+    }
+  }
 
   const initializeAuth = async () => {
     setIsLoading(true)
@@ -1967,7 +1963,6 @@ const HomePage = () => {
         alert("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
-        // fetchProfile() // Refresh balance
       } else {
         const error = await response.json()
         alert(error.error || "Failed to submit withdrawal request")
@@ -1983,14 +1978,11 @@ const HomePage = () => {
   const fetchBankDetails = async () => {
     try {
       setIsLoadingBankDetails(true)
-      console.log("[v0] Fetching bank details for withdrawal...")
       const response = await fetch("/api/bank-details")
       const data = await response.json()
-      console.log("[v0] Bank details API response:", data)
 
       if (response.ok) {
         setBankDetails(data.bankDetails || [])
-        console.log("[v0] Bank details set:", data.bankDetails || [])
       } else {
         console.error("[v0] Error fetching bank details:", data.error)
       }
@@ -2054,16 +2046,15 @@ const HomePage = () => {
 
           {/* Withdrawal Form */}
           <div className="p-4 space-y-6">
-            {/* Available Balance */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance</div>
               <div className="text-2xl font-bold text-gray-900">
                 {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(2)}{" "}
-                {profile?.preferred_currency || "ZAR"}
+                {selectedCurrency}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-red-600 mt-1">
-                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
+                  Frozen: {profile.frozen_balance.toFixed(2)} {selectedCurrency}
                 </div>
               )}
             </div>
@@ -2081,7 +2072,6 @@ const HomePage = () => {
             </div>
 
             {/* Bank Details */}
-            {console.log("[v0] Rendering bank details section, bankDetails.length:", bankDetails.length)}
             {bankDetails.length > 0 && (
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="text-sm font-medium text-gray-700 mb-2">Withdrawal Account</div>
@@ -2099,7 +2089,6 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               onClick={handleWithdrawalSubmit}
               disabled={isSubmittingWithdrawal || !withdrawalAmount || bankDetails.length === 0}
@@ -2113,7 +2102,6 @@ const HomePage = () => {
                 {isLoadingBankDetails
                   ? "Loading bank details..."
                   : "Please add bank details in Collection Information to withdraw"}
-                {console.log("[v0] No bank details available, isLoading:", isLoadingBankDetails)}
               </div>
             )}
           </div>
@@ -2132,34 +2120,27 @@ const HomePage = () => {
                   {withdrawals.length > 0 ? (
                     <div className="space-y-3">
                       {withdrawals.map((withdrawal: any) => (
-                        <div key={withdrawal.id} className="border rounded-lg p-3">
-                          <div className="flex justify-between items-start mb-2">
-                            <div className="font-medium">
-                              {withdrawal.amount} {profile?.preferred_currency || "ZAR"}
+                        <div key={withdrawal.id} className="p-3 bg-gray-50 rounded-lg">
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">{withdrawal.amount} {selectedCurrency}</div>
+                              <div className="text-sm text-gray-500">{withdrawal.created_at}</div>
                             </div>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                withdrawal.status === "approved"
-                                  ? "bg-green-100 text-green-800"
-                                  : withdrawal.status === "rejected"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
-                            </span>
+                            <div className={`text-sm font-medium ${
+                              withdrawal.status === "completed"
+                                ? "text-green-600"
+                                : withdrawal.status === "pending"
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}>
+                              {withdrawal.status}
+                            </div>
                           </div>
-                          <div className="text-sm text-gray-500">
-                            {new Date(withdrawal.created_at).toLocaleDateString()}
-                          </div>
-                          {withdrawal.admin_notes && (
-                            <div className="text-sm text-gray-600 mt-1">Note: {withdrawal.admin_notes}</div>
-                          )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center text-gray-500 py-8">No withdrawal history found</div>
+                    <p className="text-sm text-gray-500 text-center">No withdrawal history found.</p>
                   )}
                 </div>
               </div>
@@ -2185,156 +2166,57 @@ const HomePage = () => {
         )
       case "asset":
         return (
-          <AssetPage 
-            profile={profile} 
+          <AssetPage
+            profile={profile}
             onRechargeClick={handleRechargeClick}
             onWithdrawalClick={handleWithdrawalClick}
             onCustomerSupportClick={handleCustomerSupportClick}
+            selectedCurrency={selectedCurrency}
+            setSelectedCurrency={setSelectedCurrency}
+            exchangeRates={exchangeRates}
           />
         )
       case "my":
-        return <MyPage user={user} handleLogout={handleLogout} />
+        return (
+          <MyPage
+            user={user}
+            handleLogout={handleLogout}
+            selectedCurrency={selectedCurrency}
+            exchangeRates={exchangeRates}
+          />
+        )
       default:
         return (
-          <div className="min-h-screen bg-gray-50">
-            {/* Top Price Cards */}
-            <div className="bg-white px-4 py-6">
-              <div className="grid grid-cols-3 gap-4">
-                {cryptoPrices.slice(0, 3).map((crypto) => (
-                  <div key={crypto.id} className="text-center">
-                    <div className="text-sm font-medium text-gray-900 mb-1">{crypto.symbol}</div>
-                    <div className="text-lg font-semibold text-cyan-500 mb-1">
-                      {formatPrice(crypto.current_price, crypto.symbol)}
-                    </div>
-                    <div className="text-sm font-medium text-green-500">
-                      {formatPercentage(crypto.price_change_percentage_24h)}
+          <div className="min-h-screen bg-gray-100">
+            <div className="p-4">
+              <h1 className="text-xl font-bold mb-4">Crypto Prices</h1>
+              <div className="grid grid-cols-2 gap-4">
+                {cryptoPrices.map((crypto) => (
+                  <div
+                    key={crypto.id}
+                    onClick={() => handleCryptoSelect(crypto.id)}
+                    className="bg-white p-4 rounded-lg shadow cursor-pointer hover:bg-gray-50"
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-semibold">{crypto.name}</div>
+                        <div className="text-sm text-gray-500">{crypto.symbol}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold">${formatPrice(crypto.current_price, crypto.symbol)}</div>
+                        <div
+                          className={`text-sm ${
+                            crypto.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"
+                          }`}
+                        >
+                          {formatPercentage(crypto.price_change_percentage_24h)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="bg-white px-4 py-6 border-t border-gray-100">
-              <div className="grid grid-cols-3 gap-8">
-                <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-800 font-medium">Recharge</span>
-                </button>
-
-                <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
-                </button>
-
-                <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                      />
-                    </svg>
-                  </div>
-                  <span className="text-sm text-gray-800 font-medium">Customer Service</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Crypto List */}
-            <div className="bg-white mt-2">
-              {/* Search Input */}
-              <div className="relative px-4 py-3">
-                <input
-                  type="text"
-                  placeholder="Search cryptocurrencies"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const query = e.target.value
-                    setSearchQuery(query)
-
-                    if (query) {
-                      const filtered = cryptoPrices.filter(
-                        (crypto) =>
-                          crypto.symbol.toLowerCase().includes(query.toLowerCase()) ||
-                          crypto.name.toLowerCase().includes(query.toLowerCase()),
-                      )
-                      setFilteredCryptos(filtered)
-                    } else {
-                      setFilteredCryptos([])
-                    }
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-
-                {/* Search Results */}
-                {searchQuery && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
-                    {filteredCryptos.length > 0 ? (
-                      filteredCryptos.map((crypto) => (
-                        <button
-                          key={crypto.id}
-                          onClick={() => {
-                            handleCryptoSelect(crypto.symbol.toUpperCase())
-                          }}
-                          className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
-                        >
-                          <CryptoIcon symbol={crypto.symbol} className="w-6 h-6" />
-                          <div>
-                            <div className="font-medium text-gray-900">{crypto.symbol.toUpperCase()}</div>
-                            <div className="text-sm text-gray-500">{crypto.name}</div>
-                          </div>
-                        </button>
-                      ))
-                    ) : (
-                      <div className="px-4 py-3 text-gray-500 text-center">No cryptocurrencies found</div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {cryptoPrices.map((crypto, index) => (
-                <div
-                  key={crypto.id}
-                  className="flex items-center px-4 py-4 border-b border-gray-100 last:border-b-0 ms-2 cursor-pointer hover:bg-gray-50 transition-colors"
-                  onClick={() => handleCryptoSelect(crypto.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <CryptoIcon symbol={crypto.symbol.replace("USDT", "")} />
-                    <span className="font-medium text-gray-900">{crypto.symbol}</span>
-                  </div>
-
-                  <div className="flex-1 text-center">
-                    <span
-                      className={`font-semibold ${crypto.price_change_percentage_24h >= 0 ? "text-green-500" : "text-red-500"}`}
-                    >
-                      {formatPrice(crypto.current_price, crypto.symbol)}
-                    </span>
-                  </div>
-
-                  <div>
-                    <Badge
-                      className={`${crypto.price_change_percentage_24h >= 0 ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600"} text-white px-2 py-1 text-xs font-medium`}
-                    >
-                      {formatPercentage(crypto.price_change_percentage_24h)}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom padding to account for fixed navigation */}
-            <div className="h-20"></div>
           </div>
         )
     }
@@ -2351,97 +2233,31 @@ const HomePage = () => {
   }
 
   return (
-     <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
       {renderCurrentPage()}
-
       {/* Bottom Navigation */}
-      {activeNav !== "market" && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
-          <div className="grid grid-cols-5 py-2">
-            <button
-              onClick={() => setActiveNav("home")}
-              className={`flex flex-col items-center py-2 ${activeNav === "home" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "home"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/home-on-moKPGsJHfITFWja1kCPA4GbGAetGFD.png"
-                }
-                alt="Home"
-                className="w-6 h-6"
-                style={{ filter: activeNav === "home" ? "none" : "brightness(0)" }}
-              />
-              <span className="text-xs mt-1 font-medium">Home</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("order")}
-              className={`flex flex-col items-center py-2 ${activeNav === "order" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "order"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-on-MTJ5rFnAkPPMIOaPirW7vitrvdV4K1.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/order-B8U7Mm78bhIOdQcpzf7xk2A5OFHsbM.png"
-                }
-                alt="Order"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Order</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("market")}
-              className={`flex flex-col items-center py-2 ${activeNav === "market" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/jy-cE3iJPz5tVy8uo4AkVuvrdVIJHlxAy.png"
-                alt="Market"
-                className="w-6 h-6"
-                style={{
-                  filter: activeNav === "market" ? "sepia(1) saturate(5) hue-rotate(180deg) brightness(1.2)" : "none",
-                }}
-              />
-              <span className="text-xs mt-1">Market</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("asset")}
-              className={`flex flex-col items-center py-2 ${activeNav === "asset" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "asset"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-on-wnj7RxQeGjwlsw5XIS9yhtjYImfVqC.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/asset-1pqynjOg1eAbvDW7cctRuJvWvADoKB.png"
-                }
-                alt="Asset"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">Asset</span>
-            </button>
-
-            <button
-              onClick={() => checkAuthAndNavigate("my")}
-              className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
-            >
-              <img
-                src={
-                  activeNav === "my"
-                    ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
-                    : "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-yPiEf0s1WVMnnCrl6rfOtbgWJAqHch.png"
-                }
-                alt="My"
-                className="w-6 h-6"
-              />
-              <span className="text-xs mt-1">My</span>
-            </button>
-          </div>
-        </div>
-      )}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 grid grid-cols-4">
+        {[
+          { key: "home", label: "Home", icon: "🏠" },
+          { key: "market", label: "Market", icon: "📈" },
+          { key: "asset", label: "Assets", icon: "💰" },
+          { key: "my", label: "My", icon: "👤" },
+        ].map((item) => (
+          <button
+            key={item.key}
+            onClick={() => checkAuthAndNavigate(item.key)}
+            className={`flex flex-col items-center py-2 text-sm ${
+              activeNav === item.key ? "text-blue-600" : "text-gray-500"
+            }`}
+          >
+            <span className="text-xl">{item.icon}</span>
+            {item.label}
+          </button>
+        ))}
+      </nav>
     </div>
   )
 }
+
 
 export default HomePage

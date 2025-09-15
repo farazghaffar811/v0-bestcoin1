@@ -442,7 +442,7 @@ const MarketPage = ({
     }
     return symbolMap[crypto] || "BINANCE:BTCUSDT"
   }
-
+ const [showTooltip, setShowTooltip] = useState(false);
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
@@ -647,12 +647,25 @@ const MarketPage = ({
 
             {/* Trading Time */}
             <div className="mb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-white font-semibold text-sm">Trading Time</span>
-                <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">i</span>
-                </div>
-              </div>
+              <div className="flex items-center gap-2 mb-2 relative">
+      {/* Label */}
+      <span className="text-white font-semibold text-sm">Trading Time</span>
+
+      {/* Info Button */}
+      <div
+        className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
+        onClick={() => setShowTooltip(!showTooltip)}
+      >
+        <span className="text-white text-xs font-bold">i</span>
+      </div>
+
+      {/* Tooltip */}
+      {showTooltip && (
+        <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
+          Participation <br /> Win/Loss Ratio
+        </div>
+      )}
+    </div>
 
               <div className="grid grid-cols-3 gap-2">
                 {[

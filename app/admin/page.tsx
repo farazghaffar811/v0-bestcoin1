@@ -14,14 +14,14 @@ interface User {
   uid?: string
   preferred_currency?: string
   frozen_balance?: number
-  withdraw_prohibited?: boolean
+  withdrawal_prohibited?: boolean
 }
 
 interface EditUserData {
   credit_score: number
   available_balance: number
   frozen_balance: number
-  withdraw_prohibited: boolean
+  withdrawal_prohibited: boolean
 }
 
 interface Trade {
@@ -97,7 +97,7 @@ export default function AdminDashboard() {
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [newPassword, setNewPassword] = useState("")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0, withdraw_prohibited: false })
+  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0, withdrawal_prohibited: false })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
     binding_type: "",
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
       credit_score: user.credit_score || 0,
       available_balance: user.available_balance || 0,
       frozen_balance: user.frozen_balance || 0,
-      withdraw_prohibited: user.withdraw_prohibited || false,
+      withdrawal_prohibited: user.withdrawal_prohibited || false,
     })
   }
 
@@ -374,7 +374,7 @@ export default function AdminDashboard() {
           credit_score: editData.credit_score,
           available_balance: editData.available_balance,
           frozen_balance: adjustedFrozenBalance,
-          withdraw_prohibited: editData.withdraw_prohibited,
+          withdrawal_prohibited: editData.withdrawal_prohibited,
         }),
       })
 
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
                 credit_score: editData.credit_score,
                 available_balance: editData.available_balance,
                 frozen_balance: adjustedFrozenBalance,
-                withdraw_prohibited: editData.withdraw_prohibited,
+                withdrawal_prohibited: editData.withdrawal_prohibited,
               }
             : user,
         ),
@@ -918,12 +918,12 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span
                               className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                user.withdraw_prohibited
+                                user.withdrawal_prohibited
                                   ? "bg-red-100 text-red-800"
                                   : "bg-green-100 text-green-800"
                               }`}
                             >
-                              {user.withdraw_prohibited ? "Prohibited" : "Allowed"}
+                              {user.withdrawal_prohibited ? "Prohibited" : "Allowed"}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -1224,14 +1224,14 @@ export default function AdminDashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Withdraw Prohibited</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Withdrawal Prohibited</label>
                 <div className="flex items-center space-x-4">
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      name="withdraw_prohibited"
-                      checked={!editData.withdraw_prohibited}
-                      onChange={() => setEditData((prev) => ({ ...prev, withdraw_prohibited: false }))}
+                      name="withdrawal_prohibited"
+                      checked={!editData.withdrawal_prohibited}
+                      onChange={() => setEditData((prev) => ({ ...prev, withdrawal_prohibited: false }))}
                       className="mr-2 text-green-500 focus:ring-green-500"
                     />
                     <span className="text-sm text-green-600 font-medium">No (Allow Withdrawals)</span>
@@ -1239,9 +1239,9 @@ export default function AdminDashboard() {
                   <label className="flex items-center">
                     <input
                       type="radio"
-                      name="withdraw_prohibited"
-                      checked={editData.withdraw_prohibited}
-                      onChange={() => setEditData((prev) => ({ ...prev, withdraw_prohibited: true }))}
+                      name="withdrawal_prohibited"
+                      checked={editData.withdrawal_prohibited}
+                      onChange={() => setEditData((prev) => ({ ...prev, withdrawal_prohibited: true }))}
                       className="mr-2 text-red-500 focus:ring-red-500"
                     />
                     <span className="text-sm text-red-600 font-medium">Yes (Prohibit Withdrawals)</span>

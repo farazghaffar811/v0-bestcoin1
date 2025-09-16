@@ -1462,7 +1462,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
                 <>
                   Available:{" "}
                   {Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0)).toFixed(4)}{" "}
-                  {userProfile?.preferred_currency ||"ZAR"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
+                  {userProfile?.preferred_currency || "ZAR"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
                   {userProfile?.preferred_currency || "ZAR"}
                 </>
               ) : (

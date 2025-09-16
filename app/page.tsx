@@ -229,9 +229,11 @@ const MarketPage = ({
 
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
+    const profitPercentages = { 30: 20, 60: 20, 120: 30, 180: 50 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages]
-    return (Number.parseFloat(orderAmount) * percentage) / 100
+    const orderAmountNum = Number.parseFloat(orderAmount)
+    // Return total expected earnings (order amount + profit)
+    return orderAmountNum + (orderAmountNum * percentage) / 100
   }
 
   const fetchLiveData = async () => {
@@ -669,8 +671,9 @@ const MarketPage = ({
       )}
     </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-4 gap-2">
                 {[
+                  { time: 30, scale: 20 },
                   { time: 60, scale: 20 },
                   { time: 120, scale: 30 },
                   { time: 180, scale: 50 },

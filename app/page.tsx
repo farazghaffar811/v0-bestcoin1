@@ -1334,6 +1334,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
   const [showUserMessage, setShowUserMessage] = useState(false)
+  const [showAuthentication, setShowAuthentication] = useState(false)
   const supabase = createBrowserClient()
 
   useEffect(() => {
@@ -1416,6 +1417,13 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
     setShowUserMessage(false)
   }
 
+  const handleAuthenticationClick = () => {
+    setShowAuthentication(true)
+  }
+
+  const handleBackFromAuthentication = () => {
+    setShowAuthentication(false)
+  }
   if (showSettings) {
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
   }
@@ -1435,6 +1443,9 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
     return <UserMessagePage onBack={handleBackFromUserMessage} user={user} />
   }
 
+  if (showAuthentication) {
+    return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
+  }
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header with user profile */}
@@ -1480,7 +1491,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
       <div className="px-4 py-2 space-y-1">
         {[
           { icon: "💳", label: "Collection Information", action: handleCollectionInfoClick },
-          { icon: "🛡️", label: "Authentication" },
+          { icon: "🛡️", label: "Authentication", action: handleAuthenticationClick },
           { icon: "💬", label: "User Message", action: handleUserMessageClick },
           { icon: "❓", label: "Help Center" },
           { icon: "⚙️", label: "Settings", action: handleSettingsClick },
@@ -1502,6 +1513,39 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
             )}
           </div>
         ))}
+      </div>
+    </div>
+  )
+}
+
+const AuthenticationPage = ({ onBack, user }: { onBack: () => void; user: any }) => {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-200">
+        <button onClick={onBack} className="p-2">
+          <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+        </button>
+        <h1 className="text-lg font-semibold text-gray-900">Authentication</h1>
+        <div className="w-10"></div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {/* Basic Authentication Section */}
+        <div className="bg-white rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">Basic Authentication</h2>
+            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
+              Completed
+            </span>
+          </div>
+          <p className="text-gray-600 text-sm leading-relaxed">
+            Complete basic email or mobile phone authentication, therefore, the fund transaction will be automatically notified by e-mail or mobile phone, and the market dynamics will be immediately tracked
+          </p>
+        </div>
       </div>
     </div>
   )

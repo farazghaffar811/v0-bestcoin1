@@ -33,7 +33,8 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
       const lowerSymbol = symbol.toLowerCase().replace(/\/+$/, "").trim()
       const iconUrl = `${supabaseUrl}/storage/v1/object/public/currencies/${lowerSymbol}.png`
 
-      toast.info(`Loading icon for ${symbol}`)
+      console.log("Sanitized Symbol:", lowerSymbol)
+      console.log("Final Icon URL:", iconUrl)
       
       setIconSrc(iconUrl)
       setHasError(false)
@@ -157,6 +158,7 @@ const MarketPage = ({
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        console.log("[v0] Fetching user profile...")
         const supabase = createBrowserClient()
         const {
           data: { user },
@@ -168,7 +170,7 @@ const MarketPage = ({
           setUserProfile(profile)
         }
       } catch (error) {
-        toast.error("Error fetching user profile")
+        console.error("[v0] Error fetching user profile:", error)
       }
     }
 
@@ -234,11 +236,11 @@ const MarketPage = ({
 
   const fetchLiveData = async () => {
     try {
-      toast.info("Fetching latest crypto prices...")
+      console.log("[v0] Fetching crypto prices from internal API...")
       const response = await fetch("/api/crypto")
       if (response.ok) {
         const data = await response.json()
-        toast.success("Crypto data updated successfully")
+        console.log("[v0] Successfully fetched crypto data:", data)
         const cryptoData = data.find((c: any) => c.id === selectedCrypto)
         if (cryptoData) {
           setCurrentPrice(cryptoData.current_price)
@@ -253,14 +255,14 @@ const MarketPage = ({
         }
       }
     } catch (error) {
-      toast.error("Failed to fetch live data")
+      console.error("[v0] Error fetching live data:", error)
     }
   }
 
   const initTradingViewWidget = () => {
     if (typeof window !== "undefined" && (window as any).TradingView) {
       try {
-        toast.info("Initializing trading chart...")
+        console.log("[v0] Initializing TradingView widget...")
 
         // Clear existing widget
         const container = document.getElementById("tradingview-widget")
@@ -288,24 +290,24 @@ const MarketPage = ({
           popup_height: "650",
           loading_screen: { backgroundColor: "#1e293b" },
           onChartReady: () => {
-            toast.success("Trading chart loaded successfully")
+            console.log("[v0] TradingView widget loaded successfully")
             setWidgetLoaded(true)
           },
           onError: (error: any) => {
-            toast.error("Failed to load trading chart")
+            console.error("[v0] TradingView widget error:", error)
             setWidgetLoaded(true) // Show fallback
           },
         })
 
         setWidgetInstance(widget)
       } catch (error) {
-        toast.error("Error initializing trading chart")
+        console.error("[v0] Error initializing TradingView widget:", error)
         setTimeout(() => {
           setWidgetLoaded(true)
         }, 2000)
       }
     } else {
-      toast.warning("TradingView not available, showing fallback")
+      console.warn("[v0] TradingView not available, showing fallback")
       setTimeout(() => {
         setWidgetLoaded(true)
       }, 1000)
@@ -353,11 +355,11 @@ const MarketPage = ({
     script.async = true
     script.defer = true
     script.onload = () => {
-      toast.success("TradingView script loaded")
+      console.log("[v0] TradingView script loaded")
       setTimeout(initTradingViewWidget, 100)
     }
     script.onerror = (error) => {
-      toast.error("Failed to load TradingView script")
+      console.error("[v0] Failed to load TradingView script:", error)
       setWidgetLoaded(true) // Show fallback
     }
 
@@ -370,7 +372,7 @@ const MarketPage = ({
         try {
           widgetInstance.remove()
         } catch (error) {
-          toast.error("Error removing widget")
+          console.error("[v0] Error removing widget:", error)
         }
       }
       // Don't remove script as it might be used by other components
@@ -380,12 +382,12 @@ const MarketPage = ({
   useEffect(() => {
     if (widgetInstance && widgetLoaded) {
       try {
-        toast.info("Updating chart symbol and interval...")
+        console.log("[v0] Updating widget symbol and interval...")
         widgetInstance.setSymbol(getTradingViewSymbol(selectedCrypto), selectedTimeframe, () => {
-          toast.success("Chart updated successfully")
+          console.log("[v0] Widget symbol updated successfully")
         })
       } catch (error) {
-        toast.error("Error updating chart")
+        console.error("[v0] Error updating widget:", error)
         // Reinitialize widget if update fails
         initTradingViewWidget()
       }
@@ -741,7 +743,7 @@ const OrderPage = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        toast.info("Checking for expired orders...")
+        console.log("[v0] Fetching orders and checking for expired orders...")
         setError(null)
 
         // First close any expired orders
@@ -750,7 +752,7 @@ const OrderPage = () => {
           throw new Error(`Failed to close orders: ${closeResponse.status}`)
         }
         const closeResult = await closeResponse.json()
-        toast.success("Orders updated successfully")
+        console.log("[v0] Close orders result:", closeResult.message || closeResult)
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -767,15 +769,16 @@ const OrderPage = () => {
         }
 
         const result = await response.json()
-        toast.info("Orders loaded")
+        console.log("[v0] Fetched orders:", result)
 
         if (result.orders) {
           setOrders(result.orders)
+          console.log("[v0] Orders set:", result.orders)
         } else {
           setOrders([])
         }
       } catch (error) {
-        toast.error("Failed to fetch orders")
+        console.error("[v0] Error fetching orders:", error)
         setError(error instanceof Error ? error.message : "Failed to fetch orders")
         setOrders([])
       }
@@ -803,6 +806,9 @@ const OrderPage = () => {
 
   const positionOrders = orders.filter((order) => order.status === "active")
   const closingOrders = orders.filter((order) => order.status === "closed")
+
+  console.log("[v0] Position orders:", positionOrders)
+  console.log("[v0] Closing orders:", closingOrders)
 
   return (
     <div className="bg-gray-100 min-h-screen text-gray-800 p-4">
@@ -971,25 +977,31 @@ const AssetPage = ({
   const fetchExchangeRates = async () => {
     try {
       setIsLoadingRates(true)
-      toast.info("Fetching exchange rates...")
+      console.log('[v0] Fetching exchange rates...')
       
       // Using a free exchange rate API
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
       
       if (response.ok) {
         const data = await response.json()
-        toast.success("Exchange rates updated")
+        console.log('[v0] Exchange rates fetched:', data.rates)
         
         setExchangeRates({
           ZAR: data.rates.ZAR || 18.5,
           USDT: 1.0, // USDT is pegged to USD
           USD: 1.0
         })
+        
+        console.log('[v0] Exchange rates updated:', {
+          ZAR: data.rates.ZAR || 18.5,
+          USDT: 1.0,
+          USD: 1.0
+        })
       } else {
         throw new Error('Failed to fetch exchange rates')
       }
     } catch (error) {
-      toast.error("Failed to fetch exchange rates")
+      console.log('[v0] Error fetching exchange rates:', error)
       // Keep default rates if API fails
       setExchangeRates({
         ZAR: 18.5,
@@ -1028,10 +1040,19 @@ const AssetPage = ({
   }
 
   const handleCurrencyChange = (currencyCode: string) => {
-    toast.info(`Currency changed to ${currencyCode}`)
+    console.log('[v0] Currency changed from', selectedCurrency, 'to', currencyCode)
+    console.log('[v0] Current exchange rates:', exchangeRates)
+    console.log('[v0] Available balance before conversion:', availableBalance)
+    console.log('[v0] Total balance before conversion:', totalBalance)
     
     setSelectedCurrency(currencyCode)
     setIsDropdownOpen(false)
+    
+    const newAvailableBalance = currencyCode === 'USDT' ? availableBalance : availableBalance * exchangeRates[currencyCode]
+    const newTotalBalance = currencyCode === 'USDT' ? totalBalance : totalBalance * exchangeRates[currencyCode]
+    
+    console.log('[v0] Converted available balance:', newAvailableBalance)
+    console.log('[v0] Converted total balance:', newTotalBalance)
   }
 
   return (
@@ -1340,29 +1361,29 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!user?.id) {
-        toast.info("No user ID available for profile fetch")
+        console.log("[v0] No user ID available for profile fetch")
         return
       }
 
       try {
-        toast.info("Fetching user profile...")
+        console.log("[v0] Fetching user profile for ID:", user.id)
         const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
         if (error && error.code !== "PGRST116") {
-          toast.error("Error fetching profile")
+          console.error("[v0] Error fetching profile:", error)
           return
         }
 
-        toast.success("Profile loaded successfully")
+        console.log("[v0] Profile fetched successfully:", profile)
         setUserProfile(profile)
       } catch (error) {
-        toast.error("Error fetching user profile")
+        console.error("[v0] Error fetching user profile:", error)
       }
     }
 
     fetchUserProfile()
     if (user?.id) {
-      toast.info("Setting up real-time subscription for user profile")
+      console.log("[v0] Setting up real-time subscription for user:", user.id)
       // Set up real-time subscription for profile changes
       const subscription = supabase
         .channel("profile-changes")
@@ -1375,14 +1396,14 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
             filter: `id=eq.${user.id}`,
           },
           (payload) => {
-            toast.info("Profile updated via subscription")
+            console.log("[v0] Profile updated via subscription:", payload)
             setUserProfile(payload.new)
           },
         )
         .subscribe()
 
       return () => {
-        toast.info("Unsubscribing from profile changes")
+        console.log("[v0] Unsubscribing from profile changes")
         subscription.unsubscribe()
       }
     }
@@ -1848,7 +1869,7 @@ const HomePage = () => {
         await fetchProfile(session.user.id)
       }
     } catch (error) {
-      toast.error("Auth init error")
+      console.error("[v0] Auth init error:", error)
     } finally {
       setIsLoading(false)
     }
@@ -1866,12 +1887,12 @@ const HomePage = () => {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
       if (error) {
-        toast.error("Error fetching profile")
+        console.error("[v0] Error fetching profile:", error)
       } else {
         setProfile(data)
       }
     } catch (error) {
-      toast.error("Error fetching profile")
+      console.error("[v0] Error fetching profile:", error)
     }
   }
 
@@ -1888,7 +1909,7 @@ const HomePage = () => {
         setTelegramLink(data.telegram_link || "https://t.me/support")
       }
     } catch (error) {
-      toast.error("Error fetching telegram link")
+      console.log("[v0] Error fetching telegram link:", error)
     }
   }
 
@@ -1933,7 +1954,7 @@ const HomePage = () => {
 
   const fetchCryptoPrices = async () => {
     try {
-      toast.info("Fetching crypto prices...")
+      console.log("[v0] Fetching crypto prices from internal API...")
       const response = await fetch("/api/crypto")
 
       if (!response.ok) {
@@ -1941,11 +1962,11 @@ const HomePage = () => {
       }
 
       const data = await response.json()
-      toast.success("Crypto data loaded successfully")
+      console.log("[v0] Successfully fetched crypto data:", data)
 
       setCryptoPrices(data)
     } catch (error) {
-      toast.error("Error fetching crypto prices")
+      console.error("[v0] Error fetching crypto prices:", error)
       const fallbackData: CryptoPrice[] = [
         {
           id: "bitcoin",
@@ -2117,18 +2138,19 @@ const HomePage = () => {
   const fetchBankDetails = async () => {
     try {
       setIsLoadingBankDetails(true)
-      toast.info("Fetching bank details...")
+      console.log("[v0] Fetching bank details for withdrawal...")
       const response = await fetch("/api/bank-details")
       const data = await response.json()
+      console.log("[v0] Bank details API response:", data)
 
       if (response.ok) {
         setBankDetails(data.bankDetails || [])
-        toast.success("Bank details loaded")
+        console.log("[v0] Bank details set:", data.bankDetails || [])
       } else {
-        toast.error("Error fetching bank details")
+        console.error("[v0] Error fetching bank details:", data.error)
       }
     } catch (error) {
-      toast.error("Error fetching bank details")
+      console.error("Error fetching bank details:", error)
     } finally {
       setIsLoadingBankDetails(false)
     }
@@ -2245,6 +2267,7 @@ const HomePage = () => {
                 {isLoadingBankDetails
                   ? "Loading bank details..."
                   : "Please add bank details in Collection Information to withdraw"}
+                {console.log("[v0] No bank details available, isLoading:", isLoadingBankDetails)}
               </div>
             )}
           </div>

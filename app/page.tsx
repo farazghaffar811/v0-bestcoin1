@@ -107,8 +107,6 @@ interface MarketPageProps {
   onTimeframeChange: (timeframe: string) => void
   resetAllStates: () => void
   setActiveNav: (nav: string) => void
-  userProfile: any
-  onProfileUpdate: () => void
 }
 
 const MarketPage = ({
@@ -118,14 +116,13 @@ const MarketPage = ({
   onTimeframeChange,
   resetAllStates,
   setActiveNav,
-  userProfile,
-  onProfileUpdate,
 }: MarketPageProps) => {
   const [showTradingModal, setShowTradingModal] = useState(false)
   const [tradingDirection, setTradingDirection] = useState<"buy_up" | "buy_down">("buy_up")
   const [orderAmount, setOrderAmount] = useState("")
   const [selectedTradingTime, setSelectedTradingTime] = useState(60)
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
+  const [userProfile, setUserProfile] = useState<any>(null)
   const router = useRouter()
 
   const [currentPrice, setCurrentPrice] = useState(110780.8745)
@@ -139,11 +136,6 @@ const MarketPage = ({
   const [liveTradeData, setLiveTradeData] = useState<TradeData[]>([])
   const [widgetLoaded, setWidgetLoaded] = useState(false)
   const [widgetInstance, setWidgetInstance] = useState<any>(null)
-
-  // Calculate available balance (excluding frozen balance)
-  const availableBalance = userProfile?.available_balance
-    ? Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0))
-    : 0
 
   useEffect(() => {
     const handleNavigateHome = () => {
@@ -163,6 +155,28 @@ const MarketPage = ({
     }
   }, [router])
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        console.log("[v0] Fetching user profile...")
+        const supabase = createBrowserClient()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (user) {
+          const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+          setUserProfile(profile)
+        }
+      } catch (error) {
+        console.error("[v0] Error fetching user profile:", error)
+      }
+    }
+
+    fetchUserProfile()
+  }, [])
+
   const handleTradingClick = (direction: "buy_up" | "buy_down") => {
     setTradingDirection(direction)
     setShowTradingModal(true)
@@ -174,7 +188,7 @@ const MarketPage = ({
       return
     }
 
-    if (!userProfile || availableBalance < Number.parseFloat(orderAmount)) {
+    if (!userProfile || userProfile.available_balance < Number.parseFloat(orderAmount)) {
       toast.error("Insufficient balance")
       return
     }
@@ -201,8 +215,6 @@ const MarketPage = ({
         setShowTradingModal(false)
         setOrderAmount("")
         toast.success("Order created successfully!")
-        // Refresh user profile to get updated balance
-        onProfileUpdate()
         // Navigate to orders page
         window.dispatchEvent(new CustomEvent("navigate-to-orders"))
       } else {
@@ -689,8 +701,8 @@ const MarketPage = ({
             <div className="flex justify-between items-center mb-3 text-sm">
               <div className="text-white">
                 Available Balance:{" "} 
-                <span className="text-green-400 font-semibold">{availableBalance.toFixed(4)}</span>{" "}
-                <span className="text-green-400 bg-opacity-20 px-1 rounded text-s">{userProfile?.preferred_currency || "R"}</span>
+                <span className="text-green-400 font-semibold">{userProfile?.available_balance || 0}.0000</span>{" "}
+                <span className="text-green-400 bg-opacity-20 px-1 rounded text-s">R</span>
               </div>
               <div className="text-white">
                 Expected Earnings:{" "}
@@ -1046,10 +1058,6 @@ const AssetPage = ({
     console.log('[v0] Converted total balance:', newTotalBalance)
   }
 
-  console.log('[v0] AssetPage - Profile data received:', profile)
-  console.log('[v0] AssetPage - Available balance:', availableBalance)
-  console.log('[v0] AssetPage - Total balance:', totalBalance)
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div
@@ -1344,17 +1352,65 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
   )
 }
 
-const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () => void; profile: any }) => {
+const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void }) => {
+  const [userProfile, setUserProfile] = useState<any>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
   const [showUserMessage, setShowUserMessage] = useState(false)
   const [showAuthentication, setShowAuthentication] = useState(false)
+  const supabase = createBrowserClient()
 
-  // Calculate available balance (excluding frozen balance)
-  const availableBalance = profile?.available_balance
-    ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) {
+        console.log("[v0] No user ID available for profile fetch")
+        return
+      }
+
+      try {
+        console.log("[v0] Fetching user profile for ID:", user.id)
+        const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+        if (error && error.code !== "PGRST116") {
+          console.error("[v0] Error fetching profile:", error)
+          return
+        }
+
+        console.log("[v0] Profile fetched successfully:", profile)
+        setUserProfile(profile)
+      } catch (error) {
+        console.error("[v0] Error fetching user profile:", error)
+      }
+    }
+
+    fetchUserProfile()
+    if (user?.id) {
+      console.log("[v0] Setting up real-time subscription for user:", user.id)
+      // Set up real-time subscription for profile changes
+      const subscription = supabase
+        .channel("profile-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "profiles",
+            filter: `id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log("[v0] Profile updated via subscription:", payload)
+            setUserProfile(payload.new)
+          },
+        )
+        .subscribe()
+
+      return () => {
+        console.log("[v0] Unsubscribing from profile changes")
+        subscription.unsubscribe()
+      }
+    }
+  }, [user?.id, supabase])
 
   const handleSettingsClick = () => {
     setShowSettings(true)
@@ -1414,10 +1470,6 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   if (showAuthentication) {
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
-
-  console.log('[v0] MyPage - Profile data received:', profile)
-  console.log('[v0] MyPage - Available balance:', availableBalance)
-
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header with user profile */}
@@ -1438,17 +1490,20 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
           </div>
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
-            <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
-            <div className="text-sm font-medium text-yellow-300">Credit Score: {profile?.credit_score || 0}</div>
+            <div className="text-sm opacity-90">UID: {userProfile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
+            <div className="text-sm font-medium text-yellow-300">Credit Score: {userProfile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              {profile?.frozen_balance > 0 ? (
+              {userProfile?.frozen_balance > 0 ? (
                 <>
-                  Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} | Frozen:{" "}
-                  {profile.frozen_balance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
+                  Available:{" "}
+                  {Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0)).toFixed(4)}{" "}
+                  {userProfile?.preferred_currency || "ZAR"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
+                  {userProfile?.preferred_currency || "ZAR"}
                 </>
               ) : (
                 <>
-                  Available Balance: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
+                  Available Balance: {userProfile?.available_balance?.toFixed(4) || "0.0000"}{" "}
+                  {userProfile?.preferred_currency || "ZAR"}
                 </>
               )}
             </div>
@@ -1832,23 +1887,15 @@ const HomePage = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      console.log("[v0] Fetching profile for user ID:", userId)
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
       if (error) {
         console.error("[v0] Error fetching profile:", error)
       } else {
-        console.log("[v0] Profile data fetched:", data)
         setProfile(data)
       }
     } catch (error) {
       console.error("[v0] Error fetching profile:", error)
-    }
-  }
-
-  const handleProfileUpdate = async () => {
-    if (user?.id) {
-      await fetchProfile(user.id)
     }
   }
 
@@ -2056,11 +2103,7 @@ const HomePage = () => {
       return
     }
 
-    const availableBalance = profile?.available_balance
-      ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-      : 0
-
-    if (Number.parseFloat(withdrawalAmount) > availableBalance) {
+    if (Number.parseFloat(withdrawalAmount) > (profile?.available_balance || 0)) {
       toast.error("Insufficient balance")
       return
     }
@@ -2082,7 +2125,7 @@ const HomePage = () => {
         toast.success("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
-        handleProfileUpdate() // Refresh balance
+        // fetchProfile() // Refresh balance
       } else {
         const error = await response.json()
         toast.error(error.error || "Failed to submit withdrawal request")
@@ -2195,10 +2238,6 @@ const HomePage = () => {
         )
       }
 
-      const availableBalance = profile?.available_balance
-        ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-        : 0
-
       return (
         <div className="min-h-screen bg-gray-50">
           {/* Header */}
@@ -2225,7 +2264,8 @@ const HomePage = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance</div>
               <div className="text-2xl font-bold text-gray-900">
-                {availableBalance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
+                {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(2)}{" "}
+                {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-red-600 mt-1">
@@ -2346,8 +2386,6 @@ const HomePage = () => {
             onTimeframeChange={() => {}}
             resetAllStates={resetAllStates}
             setActiveNav={setActiveNav}
-            userProfile={profile}
-            onProfileUpdate={handleProfileUpdate}
           />
         )
       case "asset":
@@ -2360,7 +2398,7 @@ const HomePage = () => {
           />
         )
       case "my":
-        return <MyPage user={user} handleLogout={handleLogout} profile={profile} />
+        return <MyPage user={user} handleLogout={handleLogout} />
       default:
         return (
           <div className="min-h-screen bg-gray-50">

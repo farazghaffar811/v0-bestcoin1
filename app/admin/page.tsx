@@ -14,12 +14,14 @@ interface User {
   uid?: string
   preferred_currency?: string
   frozen_balance?: number
+  withdraw_prohibited?: boolean
 }
 
 interface EditUserData {
   credit_score: number
   available_balance: number
   frozen_balance: number
+  withdraw_prohibited: boolean
 }
 
 interface Trade {
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [newPassword, setNewPassword] = useState("")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0 })
+  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0, withdraw_prohibited: false })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
     binding_type: "",
@@ -334,6 +336,7 @@ export default function AdminDashboard() {
       credit_score: user.credit_score || 0,
       available_balance: user.available_balance || 0,
       frozen_balance: user.frozen_balance || 0,
+      withdraw_prohibited: user.withdraw_prohibited || false,
     })
   }
 
@@ -371,6 +374,7 @@ export default function AdminDashboard() {
           credit_score: editData.credit_score,
           available_balance: editData.available_balance,
           frozen_balance: adjustedFrozenBalance,
+          withdraw_prohibited: editData.withdraw_prohibited,
         }),
       })
 
@@ -385,6 +389,7 @@ export default function AdminDashboard() {
                 credit_score: editData.credit_score,
                 available_balance: editData.available_balance,
                 frozen_balance: adjustedFrozenBalance,
+                withdraw_prohibited: editData.withdraw_prohibited,
               }
             : user,
         ),
@@ -871,6 +876,9 @@ export default function AdminDashboard() {
                           Currency
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Withdraw Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Joined
                         </th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -906,6 +914,17 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {user.preferred_currency || "USD"}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                user.withdraw_prohibited
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {user.withdraw_prohibited ? "Prohibited" : "Allowed"}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {new Date(user.created_at).toLocaleDateString()}
@@ -1202,6 +1221,35 @@ export default function AdminDashboard() {
                     Unfreeze
                   </button>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Withdraw Prohibited</label>
+                <div className="flex items-center space-x-4">
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="withdraw_prohibited"
+                      checked={!editData.withdraw_prohibited}
+                      onChange={() => setEditData((prev) => ({ ...prev, withdraw_prohibited: false }))}
+                      className="mr-2 text-green-500 focus:ring-green-500"
+                    />
+                    <span className="text-sm text-green-600 font-medium">No (Allow Withdrawals)</span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="withdraw_prohibited"
+                      checked={editData.withdraw_prohibited}
+                      onChange={() => setEditData((prev) => ({ ...prev, withdraw_prohibited: true }))}
+                      className="mr-2 text-red-500 focus:ring-red-500"
+                    />
+                    <span className="text-sm text-red-600 font-medium">Yes (Prohibit Withdrawals)</span>
+                  </label>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  When set to "Yes", the user will be unable to withdraw funds in the main app
+                </p>
               </div>
             </div>
 

@@ -2304,14 +2304,31 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
-              onClick={handleWithdrawalSubmit}
-              disabled={isSubmittingWithdrawal || !withdrawalAmount || bankDetails.length === 0}
-              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmittingWithdrawal ? "Submitting..." : "Submit Withdrawal Request"}
-            </button>
+           {/* Withdrawal Prohibited Warning */}
+{userProfile?.withdrawal_prohibited && (
+  <div className="mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center">
+    Withdrawals are prohibited for your account. Please contact support.
+  </div>
+)}
+
+{/* Submit Button */}
+<button
+  onClick={handleWithdrawalSubmit}
+  disabled={
+    isSubmittingWithdrawal ||
+    !withdrawalAmount ||
+    bankDetails.length === 0 ||
+    userProfile?.withdrawal_prohibited
+  }
+  className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+>
+  {userProfile?.withdrawal_prohibited
+    ? "Withdrawals Disabled"
+    : isSubmittingWithdrawal
+      ? "Submitting..."
+      : "Submit Withdrawal Request"}
+</button>
+
 
             {bankDetails.length === 0 && (
               <div className="text-center text-sm text-gray-500">

@@ -1,3 +1,4 @@
+@@ .. @@
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
@@ -7,9 +8,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const supabase = await createClient()
     const adminSupabase = await createAdminClient()
-    const { credit_score, available_balance, frozen_balance } = await request.json()
+-    const { credit_score, available_balance, frozen_balance } = await request.json()
++    const { credit_score, available_balance, frozen_balance, withdrawal_prohibited } = await request.json()
 
-    console.log("[v0] Update data received:", { credit_score, available_balance, frozen_balance })
+-    console.log("[v0] Update data received:", { credit_score, available_balance, frozen_balance })
++    console.log("[v0] Update data received:", { credit_score, available_balance, frozen_balance, withdrawal_prohibited })
 
     // Check if user is admin
     const {
@@ -49,6 +52,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         credit_score,
         available_balance,
         frozen_balance: frozen_balance || 0,
++        withdrawal_prohibited: withdrawal_prohibited || false,
         preferred_currency: "ZAR",
         role: "user",
         created_at: new Date().toISOString(),
@@ -80,6 +84,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       credit_score,
       available_balance,
       frozen_balance: frozen_balance || 0,
++      withdrawal_prohibited: withdrawal_prohibited !== undefined ? withdrawal_prohibited : existingProfile.withdrawal_prohibited,
       updated_at: new Date().toISOString(),
     }
 

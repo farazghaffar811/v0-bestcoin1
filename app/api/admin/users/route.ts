@@ -1,3 +1,4 @@
+@@ .. @@
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
@@ -35,6 +36,8 @@ export async function GET() {
         role: profile?.role || (authUser.email === "bestcoin1@gmail.com" ? "admin" : "user"),
         credit_score: profile?.credit_score || 0,
         available_balance: profile?.available_balance || 0,
++        frozen_balance: profile?.frozen_balance || 0,
++        withdrawal_prohibited: profile?.withdrawal_prohibited || false,
         uid: profile?.uid || null,
         preferred_currency: profile?.preferred_currency || "USD",
       }

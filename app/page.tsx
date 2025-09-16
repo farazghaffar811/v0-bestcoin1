@@ -673,7 +673,7 @@ const MarketPage = ({
 
               <div className="grid grid-cols-4 gap-2">
                 {[
-                  { time: 30, scale: 20 },
+                
                   { time: 60, scale: 20 },
                   { time: 120, scale: 30 },
                   { time: 180, scale: 50 },

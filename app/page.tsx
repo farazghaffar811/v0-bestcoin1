@@ -958,9 +958,9 @@ const AssetPage = ({
   const [selectedCurrency, setSelectedCurrency] = useState("ZAR")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    ZAR: 18.5, // Default ZAR to USD rate
-    USDT: 1.0, // USDT to USD rate (base currency)
-    USD: 1.0   // USD to USD rate
+    ZAR: 1.0, // ZAR is now the base currency (amounts in DB are in ZAR)
+    USDT: 0.054, // ZAR to USDT rate (1 ZAR = 0.054 USDT approx)
+    USD: 0.054   // ZAR to USD rate
   })
   const [isLoadingRates, setIsLoadingRates] = useState(false)
 
@@ -983,22 +983,22 @@ const AssetPage = ({
       console.log('[v0] Fetching exchange rates...')
       
       // Using a free exchange rate API
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD')
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/ZAR')
       
       if (response.ok) {
         const data = await response.json()
         console.log('[v0] Exchange rates fetched:', data.rates)
         
         setExchangeRates({
-          ZAR: data.rates.ZAR || 18.5,
-          USDT: 1.0, // USDT is pegged to USD
-          USD: 1.0
+          ZAR: 1.0, // Base currency (amounts stored in DB are in ZAR)
+          USDT: data.rates.USD || 0.054, // ZAR to USDT (assuming USDT pegged to USD)
+          USD: data.rates.USD || 0.054  // ZAR to USD
         })
         
         console.log('[v0] Exchange rates updated:', {
-          ZAR: data.rates.ZAR || 18.5,
-          USDT: 1.0,
-          USD: 1.0
+          ZAR: 1.0,
+          USDT: data.rates.USD || 0.054,
+          USD: data.rates.USD || 0.054
         })
       } else {
         throw new Error('Failed to fetch exchange rates')
@@ -1007,9 +1007,9 @@ const AssetPage = ({
       console.log('[v0] Error fetching exchange rates:', error)
       // Keep default rates if API fails
       setExchangeRates({
-        ZAR: 18.5,
-        USDT: 1.0,
-        USD: 1.0
+        ZAR: 1.0, // Base currency
+        USDT: 0.054,
+        USD: 0.054
       })
     } finally {
       setIsLoadingRates(false)
@@ -1026,8 +1026,8 @@ const AssetPage = ({
 
   // Convert balances based on selected currency
   const getConvertedAmount = (amount: number) => {
-    if (selectedCurrency === 'USDT') {
-      return amount // USDT is the base currency
+    if (selectedCurrency === 'ZAR') {
+      return amount // ZAR is the base currency (no conversion needed)
     }
     return amount * exchangeRates[selectedCurrency]
   }
@@ -1051,8 +1051,8 @@ const AssetPage = ({
     setSelectedCurrency(currencyCode)
     setIsDropdownOpen(false)
     
-    const newAvailableBalance = currencyCode === 'USDT' ? availableBalance : availableBalance * exchangeRates[currencyCode]
-    const newTotalBalance = currencyCode === 'USDT' ? totalBalance : totalBalance * exchangeRates[currencyCode]
+    const newAvailableBalance = currencyCode === 'ZAR' ? availableBalance : availableBalance * exchangeRates[currencyCode]
+    const newTotalBalance = currencyCode === 'ZAR' ? totalBalance : totalBalance * exchangeRates[currencyCode]
     
     console.log('[v0] Converted available balance:', newAvailableBalance)
     console.log('[v0] Converted total balance:', newTotalBalance)
@@ -1120,9 +1120,9 @@ const AssetPage = ({
                         <div className="font-medium">
                           {getConvertedAmount(totalBalance).toFixed(4)} {currency.symbol}
                         </div>
-                        {currency.code !== 'USDT' && (
+                        {currency.code !== 'ZAR' && (
                           <div className="text-xs opacity-75">
-                            1 USDT = {exchangeRates[currency.code].toFixed(2)} {currency.code}
+                            1 ZAR = {exchangeRates[currency.code].toFixed(4)} {currency.code}
                           </div>
                         )}
                       </div>
@@ -1193,7 +1193,7 @@ const AssetPage = ({
           </div>
           <span className="font-medium text-gray-900">{selectedCurrency}</span>
           <span className="text-xs text-gray-500 ml-2">
-            {selectedCurrency !== 'USDT' && `(1 USDT = ${exchangeRates[selectedCurrency]?.toFixed(2)} ${selectedCurrency})`}
+            {selectedCurrency !== 'ZAR' && `(1 ZAR = ${exchangeRates[selectedCurrency]?.toFixed(4)} ${selectedCurrency})`}
           </span>
         </div>
 
@@ -1220,11 +1220,11 @@ const AssetPage = ({
       </div>
 
       {/* Exchange Rate Information */}
-      {selectedCurrency !== 'USDT' && (
+      {selectedCurrency !== 'ZAR' && (
         <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
           <div className="text-sm text-blue-800">
             <div className="font-medium mb-1">Current Exchange Rate</div>
-            <div>1 USDT = {exchangeRates[selectedCurrency]?.toFixed(4)} {selectedCurrency}</div>
+            <div>1 ZAR = {exchangeRates[selectedCurrency]?.toFixed(6)} {selectedCurrency}</div>
             <div className="text-xs mt-1 opacity-75">
               Rates updated every 5 minutes
               {isLoadingRates && <span> • Updating...</span>}

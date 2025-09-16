@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
 import { Home, X } from "lucide-react"
-import { toast } from "sonner"
+import { toast, Toaster } from "sonner"
 
 interface CryptoPrice {
   id: string
@@ -2482,7 +2482,21 @@ const HomePage = () => {
   }
 
   return (
-     <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100">
+      <Toaster 
+        position="top-center"
+        richColors
+        closeButton
+        duration={3000}
+        toastOptions={{
+          style: {
+            background: 'white',
+            color: 'black',
+            border: '1px solid #e5e7eb',
+            fontSize: '14px',
+          },
+        }}
+      />
       {renderCurrentPage()}
 
       {/* Bottom Navigation */}

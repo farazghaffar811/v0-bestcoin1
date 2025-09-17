@@ -330,15 +330,17 @@ export default function AdminDashboard() {
     router.push("/login")
   }
 
-  const handleEditUser = (user: User) => {
-    setEditingUser(user)
-    setEditData({
-      credit_score: user.credit_score || 0,
-      available_balance: user.available_balance || 0,
-      frozen_balance: user.frozen_balance || 0,
+
+   const handleEditUser = (user: User) => {
+     setEditingUser(user)
+     setEditData({
+       credit_score: user.credit_score || 0,
+       available_balance: user.available_balance || 0,
+       frozen_balance: user.frozen_balance || 0,
       withdrawal_prohibited: user.withdrawal_prohibited || false,
-    })
-  }
+      withdrawal_prohibited: Boolean(user.withdrawal_prohibited),
+     })
+   }
 
   const handleEditBankDetail = (bankDetail: BankDetail) => {
     setEditingBankDetail(bankDetail)
@@ -356,53 +358,74 @@ export default function AdminDashboard() {
     setWithdrawalNotes(withdrawal.admin_notes || "")
   }
 
-  const handleUpdateUser = async () => {
-    if (!editingUser) return
+ const handleUpdateUser = async () => {
+     if (!editingUser) return
+ 
+    console.log("[Admin] Updating user with data:", {
+      credit_score: editData.credit_score,
+      available_balance: editData.available_balance,
+      frozen_balance: Math.min(editData.frozen_balance, editData.available_balance || 0),
+      withdrawal_prohibited: editData.withdrawal_prohibited,
+    })
 
-    try {
-      setIsUpdating(true)
-
-      const maxFrozenBalance = editData.available_balance || 0
-      const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
-
-      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          credit_score: editData.credit_score,
-          available_balance: editData.available_balance,
-          frozen_balance: adjustedFrozenBalance,
-          withdrawal_prohibited: editData.withdrawal_prohibited,
-        }),
-      })
+     try {
+       setIsUpdating(true)
+ 
+       const maxFrozenBalance = editData.available_balance || 0
+       const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
+ 
+       const response = await fetch(`/api/admin/users/${editingUser.id}`, {
+         method: "PUT",
+         headers: {
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({
+           credit_score: editData.credit_score,
+           available_balance: editData.available_balance,
+           frozen_balance: adjustedFrozenBalance,
+           withdrawal_prohibited: editData.withdrawal_prohibited,
+         }),
+       })
+ 
+      console.log("[Admin] Update response status:", response.status)
+      const responseData = await response.json()
+      console.log("[Admin] Update response data:", responseData)
 
       if (!response.ok) throw new Error("Failed to update user")
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to update user")
+      }
+ 
 
-      // Update local state
-      setUsers(
-        users.map((user) =>
-          user.id === editingUser.id
-            ? {
-                ...user,
-                credit_score: editData.credit_score,
-                available_balance: editData.available_balance,
-                frozen_balance: adjustedFrozenBalance,
-                withdrawal_prohibited: editData.withdrawal_prohibited,
-              }
-            : user,
-        ),
-      )
-
-      setEditingUser(null)
-      alert("User updated successfully!")
-    } catch (error) {
-      alert("Failed to update user: " + (error instanceof Error ? error.message : "Unknown error"))
-    } finally {
-      setIsUpdating(false)
-    }
-  }
+      
+     
+    // Update local state
+       setUsers(
+         users.map((user) =>
+           user.id === editingUser.id
+             ? {
+                 ...user,
+                 credit_score: editData.credit_score,
+                 available_balance: editData.available_balance,
+                 frozen_balance: adjustedFrozenBalance,
+                 withdrawal_prohibited: editData.withdrawal_prohibited,
+               }
+             : user,
+         ),
+       )
+ 
+       setEditingUser(null)
+       alert("User updated successfully!")
+     
+      // Refresh users list to ensure we have the latest data
+      await fetchUsers()
+     } catch (error) {
+      console.error("[Admin] Update error:", error)
+       alert("Failed to update user: " + (error instanceof Error ? error.message : "Unknown error"))
+     } finally {
+       setIsUpdating(false)
+     }
+   }
 
   const handleUpdateBankDetail = async () => {
     if (!editingBankDetail) return

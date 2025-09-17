@@ -163,7 +163,7 @@ const MarketPage = ({
     setShowTradingModal(true)
   }
 
-  // Fixed: Available balance is now just the available_balance field (frozen balance doesn't reduce available balance)
+  // FIXED: Only return available_balance (frozen balance is completely separate and should not affect available balance)
   const getAvailableBalance = () => {
     if (!userProfile) return 0
     return userProfile.available_balance || 0
@@ -689,7 +689,7 @@ const MarketPage = ({
               </div>
             </div>
 
-            {/* Balance and Earnings */}
+            {/* Balance and Earnings - FIXED: Only show available balance (no addition of frozen balance) */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
               <div className="text-white">
                 Available Balance:{" "} 
@@ -702,10 +702,10 @@ const MarketPage = ({
               </div>
             </div>
 
-            {/* Frozen Balance Warning */}
+            {/* Frozen Balance Warning - Show as separate information, not affecting available balance */}
             {userProfile?.frozen_balance > 0 && (
               <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                Note: {userProfile.frozen_balance.toFixed(4)} R is currently frozen
+                Note: {userProfile.frozen_balance.toFixed(4)} R is currently frozen and cannot be used for trading
               </div>
             )}
 
@@ -849,7 +849,13 @@ const OrderPage = () => {
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
                     </div>
-                    <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white self-start">Active</div>
+                    <div className="flex items-center gap-2">
+                      {/* ADDED: Trading time badge */}
+                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
+                        {order.trading_time}s
+                      </div>
+                      <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Active</div>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -863,7 +869,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-gray-500">Trading Time</div>
-                      <div className="text-gray-800">{order.trading_time}s</div>
+                      <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
                       <div className="text-gray-500">Expected Earnings</div>
@@ -900,12 +906,18 @@ const OrderPage = () => {
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
                     </div>
-                    <div
-                      className={`px-2 py-1 rounded text-xs text-white self-start ${
-                        order.result === "win" ? "bg-green-500" : order.result === "loss" ? "bg-red-500" : "bg-gray-500"
-                      }`}
-                    >
-                      {order.result === "win" ? "Won" : order.result === "loss" ? "Lost" : "Closed"}
+                    <div className="flex items-center gap-2">
+                      {/* ADDED: Trading time badge */}
+                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
+                        {order.trading_time}s
+                      </div>
+                      <div
+                        className={`px-2 py-1 rounded text-xs text-white ${
+                          order.result === "win" ? "bg-green-500" : order.result === "loss" ? "bg-red-500" : "bg-gray-500"
+                        }`}
+                      >
+                        {order.result === "win" ? "Won" : order.result === "loss" ? "Lost" : "Closed"}
+                      </div>
                     </div>
                   </div>
 
@@ -917,6 +929,10 @@ const OrderPage = () => {
                     <div>
                       <div className="text-gray-500">Amount</div>
                       <div className="text-gray-800">{order.amount} R</div>
+                    </div>
+                    <div>
+                      <div className="text-gray-500">Trading Time</div>
+                      <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
                       <div className="text-gray-500">Result</div>
@@ -1017,10 +1033,10 @@ const AssetPage = ({
     }
   }
 
-  // Fixed: Available balance is just the available_balance field, total balance includes frozen balance
-  const availableBalance = profile?.available_balance || 0
-  const frozenBalance = profile?.frozen_balance || 0
-  const totalBalance = availableBalance + frozenBalance
+  // FIXED: Separated available and frozen balances - they should never be combined for available balance calculation
+  const availableBalance = profile?.available_balance || 0  // Only available balance
+  const frozenBalance = profile?.frozen_balance || 0        // Separate frozen balance
+  const totalBalance = availableBalance + frozenBalance    // Total = available + frozen
 
   // Convert balances based on selected currency
   const getConvertedAmount = (amount: number) => {
@@ -1132,14 +1148,14 @@ const AssetPage = ({
           </div>
         </div>
 
-        {/* Available Balance Display */}
+        {/* FIXED: Clearly separated available and frozen balance display */}
         <div className="text-sm opacity-90">
           <div className="mb-1">
             Available Balance: {convertedAvailableBalance.toFixed(4)} {selectedCurrency}
           </div>
           {frozenBalance > 0 && (
             <div className="text-yellow-300">
-              Frozen Balance: {convertedFrozenBalance.toFixed(4)} {selectedCurrency}
+              Frozen Balance: {convertedFrozenBalance.toFixed(4)} {selectedCurrency} (Cannot be used for trading)
             </div>
           )}
         </div>
@@ -1183,7 +1199,7 @@ const AssetPage = ({
         </div>
       </div>
 
-      {/* Currency Balance Section */}
+      {/* Currency Balance Section - FIXED: Proper balance separation */}
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
         <div className="flex items-center mb-4">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
@@ -1201,18 +1217,33 @@ const AssetPage = ({
               {convertedAvailableBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(For Trading)</div>
           </div>
           <div>
             <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
               {convertedFrozenBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Frozen Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
           </div>
           <div>
             <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
               {convertedTotalBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Total Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Balance Information */}
+      <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
+        <div className="text-sm text-blue-800">
+          <div className="font-medium mb-2">Balance Information</div>
+          <div className="space-y-1">
+            <div>• Available Balance: Can be used for trading and withdrawals</div>
+            <div>• Frozen Balance: Currently locked and cannot be used</div>
+            <div>• Total Balance: Sum of available and frozen balances</div>
           </div>
         </div>
       </div>
@@ -1417,9 +1448,9 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
 
-  // Fixed: Available balance is just the available_balance field, frozen balance is separate
-  const availableBalance = profile?.available_balance || 0
-  const frozenBalance = profile?.frozen_balance || 0
+  // FIXED: Separated available and frozen balances properly
+  const availableBalance = profile?.available_balance || 0  // Only available balance
+  const frozenBalance = profile?.frozen_balance || 0        // Separate frozen balance
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1444,15 +1475,12 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
             <div className="text-sm font-medium text-yellow-300">Credit Score: {profile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              {frozenBalance > 0 ? (
-                <>
-                  Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} | 
-                  Frozen: {frozenBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
-                </>
-              ) : (
-                <>
-                  Available Balance: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
-                </>
+              {/* FIXED: Clear separation of available and frozen balance display */}
+              <div>Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}</div>
+              {frozenBalance > 0 && (
+                <div className="text-yellow-300">
+                  Frozen: {frozenBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
+                </div>
               )}
             </div>
           </div>
@@ -2069,7 +2097,7 @@ const HomePage = () => {
       return
     }
 
-    // Fixed: Available balance is just the available_balance field (no deduction for frozen balance)
+    // FIXED: Available balance is only the available_balance field (frozen balance does not reduce available balance)
     const availableBalance = profile?.available_balance || 0
     
     if (Number.parseFloat(withdrawalAmount) > availableBalance) {
@@ -2207,7 +2235,7 @@ const HomePage = () => {
         )
       }
 
-      // Fixed: Available balance is just the available_balance field (frozen balance doesn't reduce available balance)
+      // FIXED: Available balance is only the available_balance field (frozen balance doesn't reduce available balance)
       const availableBalance = profile?.available_balance || 0
 
       return (
@@ -2232,15 +2260,15 @@ const HomePage = () => {
 
           {/* Withdrawal Form */}
           <div className="p-4 space-y-6">
-            {/* Available Balance */}
+            {/* Available Balance - FIXED: Only show available balance, mention frozen separately */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-sm text-gray-600 mb-1">Available Balance</div>
+              <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
               <div className="text-2xl font-bold text-gray-900">
                 {availableBalance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-orange-600 mt-1">
-                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
+                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"} (Cannot withdraw)
                 </div>
               )}
             </div>

@@ -860,24 +860,24 @@ const OrderPage = () => {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-900 font-bold">Entry Price</div>
+                      <div className="text-black font-bold">Entry Price</div>
                       <div className="text-gray-800">{order.entry_price}</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Amount</div>
+                      <div className="text-black font-bold">Amount</div>
                       <div className="text-gray-800">{order.amount} R</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Trading Time</div>
+                      <div className="text-black font-bold">Trading Time</div>
                       <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Expected Earnings</div>
+                      <div className="text-black font-bold">Expected Earnings</div>
                       <div className="text-green-600">{order.expected_earnings} R</div>
                     </div>
                   </div>
 
-                  <div className="mt-3 text-xs text-gray-500">
+                  <div className="mt-3 text-xs text-black font-bold">
                     Created: {new Date(order.created_at).toLocaleString()}
                     {order.expires_at && (
                       <span className="block sm:inline sm:ml-4 mt-1 sm:mt-0">
@@ -923,32 +923,32 @@ const OrderPage = () => {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-900 font-bold">Entry Price</div>
+                      <div className="text-black font-bold">Entry Price</div>
                       <div className="text-gray-800">{order.entry_price}</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Amount</div>
+                      <div className="text-black font-bold">Amount</div>
                       <div className="text-gray-800">{order.amount} R</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Trading Time</div>
+                      <div className="text-black font-bold">Trading Time</div>
                       <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
-                      <div className="text-gray-900 font-bold">Result</div>
+                      <div className="text-black font-bold">Result</div>
                       <div className={order.result === "win" ? "text-green-600" : "text-red-600"}>
                         {order.result === "win" ? "Win" : "Loss"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Actual Earnings</div>
+                      <div className="text-black font-bold">Actual Earnings</div>
                       <div className={order.actual_earnings > 0 ? "text-green-600" : "text-red-600"}>
                         {order.actual_earnings || 0} R
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-3 text-xs text-gray-500">
+                  <div className="mt-3 text-xs text-black font-bold">
                     Closed: {order.closed_at ? new Date(order.closed_at).toLocaleString() : "N/A"}
                   </div>
                 </div>

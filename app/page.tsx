@@ -107,6 +107,8 @@ interface MarketPageProps {
   onTimeframeChange: (timeframe: string) => void
   resetAllStates: () => void
   setActiveNav: (nav: string) => void
+  userProfile: any
+  refreshUserProfile: () => void
 }
 
 const MarketPage = ({
@@ -116,13 +118,14 @@ const MarketPage = ({
   onTimeframeChange,
   resetAllStates,
   setActiveNav,
+  userProfile,
+  refreshUserProfile,
 }: MarketPageProps) => {
   const [showTradingModal, setShowTradingModal] = useState(false)
   const [tradingDirection, setTradingDirection] = useState<"buy_up" | "buy_down">("buy_up")
   const [orderAmount, setOrderAmount] = useState("")
   const [selectedTradingTime, setSelectedTradingTime] = useState(60)
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false)
-  const [userProfile, setUserProfile] = useState<any>(null)
   const router = useRouter()
 
   const [currentPrice, setCurrentPrice] = useState(110780.8745)
@@ -155,31 +158,17 @@ const MarketPage = ({
     }
   }, [router])
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        console.log("[v0] Fetching user profile...")
-        const supabase = createBrowserClient()
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-
-        if (user) {
-          const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-          setUserProfile(profile)
-        }
-      } catch (error) {
-        console.error("[v0] Error fetching user profile:", error)
-      }
-    }
-
-    fetchUserProfile()
-  }, [])
-
   const handleTradingClick = (direction: "buy_up" | "buy_down") => {
     setTradingDirection(direction)
     setShowTradingModal(true)
+  }
+
+  // Calculate actual available balance (total balance minus frozen balance)
+  const getAvailableBalance = () => {
+    if (!userProfile) return 0
+    const totalBalance = userProfile.available_balance || 0
+    const frozenBalance = userProfile.frozen_balance || 0
+    return Math.max(0, totalBalance - frozenBalance)
   }
 
   const handleOrderSubmit = async () => {
@@ -188,8 +177,9 @@ const MarketPage = ({
       return
     }
 
-    if (!userProfile || userProfile.available_balance < Number.parseFloat(orderAmount)) {
-      toast.error("Insufficient balance")
+    const availableBalance = getAvailableBalance()
+    if (availableBalance < Number.parseFloat(orderAmount)) {
+      toast.error("Insufficient available balance")
       return
     }
 
@@ -215,6 +205,8 @@ const MarketPage = ({
         setShowTradingModal(false)
         setOrderAmount("")
         toast.success("Order created successfully!")
+        // Refresh user profile to update balance
+        refreshUserProfile()
         // Navigate to orders page
         window.dispatchEvent(new CustomEvent("navigate-to-orders"))
       } else {
@@ -229,8 +221,9 @@ const MarketPage = ({
 
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 30: 20, 60: 20, 120: 30, 180: 50 }
-    const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages]
+    // Updated profit percentages for new trading times: 60s=20%, 120s=30%, 240s=50%
+    const profitPercentages = { 60: 20, 120: 30, 240: 50 }
+    const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     // Return total expected earnings (order amount + profit)
     return orderAmountNum + (orderAmountNum * percentage) / 100
@@ -446,7 +439,9 @@ const MarketPage = ({
     }
     return symbolMap[crypto] || "BINANCE:BTCUSDT"
   }
- const [showTooltip, setShowTooltip] = useState(false);
+  
+  const [showTooltip, setShowTooltip] = useState(false);
+  
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
@@ -495,7 +490,7 @@ const MarketPage = ({
       <div className="px-4 py-4 bg-slate-800">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <div className={`text-2xl font-bold ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
+            <div className={`text-xl sm:text-2xl font-bold ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
               {currentPrice.toLocaleString("en-US", { minimumFractionDigits: 4 })}
             </div>
             <div className={`text-sm ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
@@ -528,12 +523,12 @@ const MarketPage = ({
 
       {/* Timeframe Tabs */}
       <div className="px-4 py-3 bg-slate-800 border-b border-slate-700">
-        <div className="flex gap-6">
+        <div className="flex gap-3 sm:gap-6 overflow-x-auto">
           {["1M", "5M", "30M", "1H", "4H", "1D"].map((timeframe) => (
             <button
               key={timeframe}
               onClick={() => onTimeframeChange(timeframe)}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors ${
+              className={`text-sm font-medium pb-2 border-b-2 transition-colors whitespace-nowrap ${
                 selectedTimeframe === timeframe
                   ? "text-blue-400 border-blue-400"
                   : "text-gray-400 border-transparent hover:text-white"
@@ -546,8 +541,8 @@ const MarketPage = ({
       </div>
 
       {/* Chart Section */}
-      <div className="bg-slate-800 p-4 rounded-lg">
-        <div className="h-96 bg-slate-900 rounded relative overflow-hidden">
+      <div className="bg-slate-800 p-2 sm:p-4 rounded-lg">
+        <div className="h-64 sm:h-80 md:h-96 bg-slate-900 rounded relative overflow-hidden">
           <div id="tradingview-widget" className="w-full h-full">
             {!widgetLoaded && (
               <div className="flex items-center justify-center h-full">
@@ -572,7 +567,7 @@ const MarketPage = ({
       </div>
 
       {/* Trading Data Table - positioned above fixed buttons */}
-      <div className="bg-slate-800 mx-4 mb-4">
+      <div className="bg-slate-800 mx-2 sm:mx-4 mb-4">
         <div className="grid grid-cols-4 gap-2 p-3 text-xs text-gray-400 border-b border-gray-700">
           <div className="text-center">Time</div>
           <div className="text-center">Direction</div>
@@ -580,11 +575,11 @@ const MarketPage = ({
           <div className="text-center">Quantity</div>
         </div>
 
-        <div className="max-h-64 overflow-y-auto">
+        <div className="max-h-40 sm:max-h-64 overflow-y-auto">
           {liveTradeData.map((trade, index) => (
             <div
               key={`${trade.time}-${index}`}
-              className="grid grid-cols-4 gap-2 p-3 text-xs border-b border-gray-700 last:border-b-0"
+              className="grid grid-cols-4 gap-2 p-2 sm:p-3 text-xs border-b border-gray-700 last:border-b-0"
             >
               <div className="text-center text-white">{trade.time}</div>
               <div
@@ -600,33 +595,33 @@ const MarketPage = ({
       </div>
 
       {/* Trading Buttons - Fixed at bottom like navbar */}
-      <div className="fixed bottom-0 left-0 right-0 px-8 py-2 z-50">
+      <div className="fixed bottom-0 left-0 right-0 px-4 sm:px-8 py-2 z-50">
         <div className="flex justify-between gap-4">
           <button
             onClick={() => handleTradingClick("buy_up")}
-            className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
+            className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 sm:px-6 rounded-lg font-semibold transition-colors flex-1 sm:w-44 sm:flex-initial"
           >
-            <div className="text-lg">Buy Up</div>
+            <div className="text-base sm:text-lg">Buy Up</div>
           </button>
           <button
             onClick={() => handleTradingClick("buy_down")}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 sm:px-6 rounded-lg font-semibold transition-colors flex-1 sm:w-44 sm:flex-initial"
           >
-            <div className="text-lg">Buy Down</div>
+            <div className="text-base sm:text-lg">Buy Down</div>
           </button>
         </div>
       </div>
 
       {showTradingModal && (
         <div
-          className="fixed inset-0 bg-opacity-20 flex items-end justify-center z-50"
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowTradingModal(false)
             }
           }}
         >
-          <div className="bg-slate-900 w-full h-[65%] sm:h-[70%] md:h-[75%] lg:h-[60%] xl:h-[55%] rounded-t-2xl p-4 sm:p-6 animate-slide-up max-h-[90vh] overflow-hidden">
+          <div className="bg-slate-900 w-full sm:w-auto sm:min-w-[400px] sm:max-w-[500px] h-[70vh] sm:h-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
@@ -652,31 +647,30 @@ const MarketPage = ({
             {/* Trading Time */}
             <div className="mb-3">
               <div className="flex items-center gap-2 mb-2 relative">
-      {/* Label */}
-      <span className="text-white font-semibold text-sm">Trading Time</span>
+                {/* Label */}
+                <span className="text-white font-semibold text-sm">Trading Time</span>
 
-      {/* Info Button */}
-      <div
-        className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
-        onClick={() => setShowTooltip(!showTooltip)}
-      >
-        <span className="text-white text-xs font-bold">i</span>
-      </div>
+                {/* Info Button */}
+                <div
+                  className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
+                  onClick={() => setShowTooltip(!showTooltip)}
+                >
+                  <span className="text-white text-xs font-bold">i</span>
+                </div>
 
-      {/* Tooltip */}
-      {showTooltip && (
-        <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
-          Participation <br /> Win/Loss Ratio
-        </div>
-      )}
-    </div>
+                {/* Tooltip */}
+                {showTooltip && (
+                  <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
+                    Participation <br /> Win/Loss Ratio
+                  </div>
+                )}
+              </div>
 
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[
-                
                   { time: 60, scale: 20 },
                   { time: 120, scale: 30 },
-                  { time: 180, scale: 50 },
+                  { time: 240, scale: 50 }, // Changed from 180 to 240
                 ].map(({ time, scale }) => (
                   <button
                     key={time}
@@ -689,7 +683,7 @@ const MarketPage = ({
                   >
                     <div className="text-center">
                       <div className="text-gray-400 text-xs mb-1">Time</div>
-                      <div className="text-blue-400 font-bold text-lg mb-1">{time}S</div>
+                      <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
                       <div className="text-green-400 text-xs font-semibold">Scale:{scale}.00%</div>
                     </div>
                   </button>
@@ -698,17 +692,24 @@ const MarketPage = ({
             </div>
 
             {/* Balance and Earnings */}
-            <div className="flex justify-between items-center mb-3 text-sm">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
               <div className="text-white">
                 Available Balance:{" "} 
-                <span className="text-green-400 font-semibold">{userProfile?.available_balance || 0}.0000</span>{" "}
-                <span className="text-green-400 bg-opacity-20 px-1 rounded text-s">R</span>
+                <span className="text-green-400 font-semibold">{getAvailableBalance().toFixed(4)}</span>{" "}
+                <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
               </div>
               <div className="text-white">
                 Expected Earnings:{" "}
-                <span className="text-blue-400 font-semibold">{calculateExpectedEarnings().toFixed(0)}</span>
+                <span className="text-blue-400 font-semibold">{calculateExpectedEarnings().toFixed(2)}</span>
               </div>
             </div>
+
+            {/* Frozen Balance Warning */}
+            {userProfile?.frozen_balance > 0 && (
+              <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
+                Note: {userProfile.frozen_balance.toFixed(4)} R is frozen and not available for trading
+              </div>
+            )}
 
             {/* Amount Input */}
             <div className="mb-4">
@@ -749,7 +750,7 @@ const OrderPage = () => {
         console.log("[v0] Fetching orders and checking for expired orders...")
         setError(null)
 
-        // First close any expired orders
+        // First close any expired orders (auto-win feature)
         const closeResponse = await fetch("/api/orders/close", { method: "POST" })
         if (!closeResponse.ok) {
           throw new Error(`Failed to close orders: ${closeResponse.status}`)
@@ -814,11 +815,11 @@ const OrderPage = () => {
   console.log("[v0] Closing orders:", closingOrders)
 
   return (
-    <div className="bg-gray-100 min-h-screen text-gray-800 p-4">
+    <div className="bg-gray-100 min-h-screen text-gray-800 p-2 sm:p-4">
       <div className="flex border-b border-gray-300 mb-6">
         <button
           onClick={() => setActiveTab("position")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors ${
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
             activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -826,7 +827,7 @@ const OrderPage = () => {
         </button>
         <button
           onClick={() => setActiveTab("closing")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors ${
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
             activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
           }`}
         >
@@ -843,14 +844,14 @@ const OrderPage = () => {
             <div className="space-y-4">
               {positionOrders.map((order) => (
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
                       <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
                     </div>
-                    <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Active</div>
+                    <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white self-start">Active</div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -875,7 +876,9 @@ const OrderPage = () => {
                   <div className="mt-3 text-xs text-gray-500">
                     Created: {new Date(order.created_at).toLocaleString()}
                     {order.expires_at && (
-                      <span className="ml-4">Expires: {new Date(order.expires_at).toLocaleString()}</span>
+                      <span className="block sm:inline sm:ml-4 mt-1 sm:mt-0">
+                        Expires: {new Date(order.expires_at).toLocaleString()}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -892,7 +895,7 @@ const OrderPage = () => {
             <div className="space-y-4">
               {closingOrders.map((order) => (
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
                       <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
@@ -900,7 +903,7 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div
-                      className={`px-2 py-1 rounded text-xs text-white ${
+                      className={`px-2 py-1 rounded text-xs text-white self-start ${
                         order.result === "win" ? "bg-green-500" : order.result === "loss" ? "bg-red-500" : "bg-gray-500"
                       }`}
                     >
@@ -1016,12 +1019,12 @@ const AssetPage = ({
     }
   }
 
-  // Calculate available balance (excluding frozen balance)
+  // Calculate available balance (excluding frozen balance) - FIXED CALCULATION
   const availableBalance = profile?.available_balance
     ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
     : 0
 
-  // Calculate total balance (including frozen balance)  
+  // Calculate total balance (including frozen balance) - this is the total balance shown  
   const totalBalance = profile?.available_balance || 0
 
   // Convert balances based on selected currency
@@ -1061,7 +1064,7 @@ const AssetPage = ({
   return (
     <div className="min-h-screen bg-gray-50">
       <div
-        className="px-4 py-12 text-white relative"
+        className="px-4 py-8 sm:py-12 text-white relative"
         style={{
           backgroundImage:
             "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fund_header.0e0b665e-TVAYzlPrZkwu8NA0Pts2ihlrbuEcuj.png')",
@@ -1076,7 +1079,7 @@ const AssetPage = ({
 
         <div className="mb-4">
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
-          <div className="text-3xl font-bold mb-2">
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
             {convertedTotalBalance.toFixed(4)} <span className="text-lg font-normal">{selectedCurrency}</span>
           </div>
           <div className="relative">
@@ -1149,7 +1152,7 @@ const AssetPage = ({
 
       {/* Action Buttons */}
       <div className="bg-white px-4 py-6 border-t border-gray-100">
-        <div className="grid grid-cols-3 gap-8">
+        <div className="grid grid-cols-3 gap-4 sm:gap-8">
           <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
               <img
@@ -1199,19 +1202,19 @@ const AssetPage = ({
 
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-lg font-semibold text-blue-500 mb-1">
+            <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
               {convertedAvailableBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-red-500 mb-1">
+            <div className="text-base sm:text-lg font-semibold text-red-500 mb-1">
               {convertedFrozenBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Frozen Balance</div>
           </div>
           <div>
-            <div className="text-lg font-semibold text-blue-500 mb-1">
+            <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
               {convertedTotalBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Total Balance</div>
@@ -1352,65 +1355,12 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
   )
 }
 
-const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void }) => {
-  const [userProfile, setUserProfile] = useState<any>(null)
+const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () => void; profile: any }) => {
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
   const [showUserMessage, setShowUserMessage] = useState(false)
   const [showAuthentication, setShowAuthentication] = useState(false)
-  const supabase = createBrowserClient()
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user?.id) {
-        console.log("[v0] No user ID available for profile fetch")
-        return
-      }
-
-      try {
-        console.log("[v0] Fetching user profile for ID:", user.id)
-        const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-
-        if (error && error.code !== "PGRST116") {
-          console.error("[v0] Error fetching profile:", error)
-          return
-        }
-
-        console.log("[v0] Profile fetched successfully:", profile)
-        setUserProfile(profile)
-      } catch (error) {
-        console.error("[v0] Error fetching user profile:", error)
-      }
-    }
-
-    fetchUserProfile()
-    if (user?.id) {
-      console.log("[v0] Setting up real-time subscription for user:", user.id)
-      // Set up real-time subscription for profile changes
-      const subscription = supabase
-        .channel("profile-changes")
-        .on(
-          "postgres_changes",
-          {
-            event: "UPDATE",
-            schema: "public",
-            table: "profiles",
-            filter: `id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log("[v0] Profile updated via subscription:", payload)
-            setUserProfile(payload.new)
-          },
-        )
-        .subscribe()
-
-      return () => {
-        console.log("[v0] Unsubscribing from profile changes")
-        subscription.unsubscribe()
-      }
-    }
-  }, [user?.id, supabase])
 
   const handleSettingsClick = () => {
     setShowSettings(true)
@@ -1448,6 +1398,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
   const handleBackFromAuthentication = () => {
     setShowAuthentication(false)
   }
+
   if (showSettings) {
     return <SettingsPage onBack={handleBackFromSettings} handleLogout={handleLogout} />
   }
@@ -1470,11 +1421,17 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
   if (showAuthentication) {
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
+
+  // Calculate available balance (excluding frozen balance) - consistent with AssetPage
+  const availableBalance = profile?.available_balance
+    ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
+    : 0
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header with user profile */}
       <div
-        className="py-12 px-4 text-white relative"
+        className="py-8 sm:py-12 px-4 text-white relative"
         style={{
           backgroundImage:
             "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fund_header.0e0b665e-TVAYzlPrZkwu8NA0Pts2ihlrbuEcuj.png')",
@@ -1490,20 +1447,17 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
           </div>
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
-            <div className="text-sm opacity-90">UID: {userProfile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
-            <div className="text-sm font-medium text-yellow-300">Credit Score: {userProfile?.credit_score || 0}</div>
+            <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
+            <div className="text-sm font-medium text-yellow-300">Credit Score: {profile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              {userProfile?.frozen_balance > 0 ? (
+              {profile?.frozen_balance > 0 ? (
                 <>
-                  Available:{" "}
-                  {Math.max(0, (userProfile.available_balance || 0) - (userProfile.frozen_balance || 0)).toFixed(4)}{" "}
-                  {userProfile?.preferred_currency || "ZAR"} | Frozen: {userProfile.frozen_balance.toFixed(4)}{" "}
-                  {userProfile?.preferred_currency || "ZAR"}
+                  Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} | 
+                  Frozen: {profile.frozen_balance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
                 </>
               ) : (
                 <>
-                  Available Balance: {userProfile?.available_balance?.toFixed(4) || "0.0000"}{" "}
-                  {userProfile?.preferred_currency || "ZAR"}
+                  Available Balance: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
                 </>
               )}
             </div>
@@ -1528,7 +1482,7 @@ const MyPage = ({ user, handleLogout }: { user: any; handleLogout: () => void })
           >
             <div className="flex items-center gap-4">
               <span className="text-2xl">{item.icon}</span>
-              <span className="text-lg font-medium text-gray-800">{item.label}</span>
+              <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
             </div>
             {!item.action && (
               <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1892,10 +1846,17 @@ const HomePage = () => {
       if (error) {
         console.error("[v0] Error fetching profile:", error)
       } else {
+        console.log("[v0] Profile fetched:", data)
         setProfile(data)
       }
     } catch (error) {
       console.error("[v0] Error fetching profile:", error)
+    }
+  }
+
+  const refreshUserProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id)
     }
   }
 
@@ -2103,8 +2064,11 @@ const HomePage = () => {
       return
     }
 
-    if (Number.parseFloat(withdrawalAmount) > (profile?.available_balance || 0)) {
-      toast.error("Insufficient balance")
+    // Calculate available balance properly (excluding frozen balance)
+    const availableBalance = Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0))
+    
+    if (Number.parseFloat(withdrawalAmount) > availableBalance) {
+      toast.error("Insufficient available balance")
       return
     }
 
@@ -2125,7 +2089,7 @@ const HomePage = () => {
         toast.success("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
-        // fetchProfile() // Refresh balance
+        await refreshUserProfile() // Refresh balance
       } else {
         const error = await response.json()
         toast.error(error.error || "Failed to submit withdrawal request")
@@ -2238,6 +2202,9 @@ const HomePage = () => {
         )
       }
 
+      // Calculate available balance properly (excluding frozen balance)
+      const availableBalance = Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0))
+
       return (
         <div className="min-h-screen bg-gray-50">
           {/* Header */}
@@ -2264,8 +2231,7 @@ const HomePage = () => {
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance</div>
               <div className="text-2xl font-bold text-gray-900">
-                {Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0)).toFixed(2)}{" "}
-                {profile?.preferred_currency || "ZAR"}
+                {availableBalance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-red-600 mt-1">
@@ -2304,38 +2270,29 @@ const HomePage = () => {
               </div>
             )}
 
-           {/* Withdrawal Prohibited Warning */}
-{userProfile?.withdrawal_prohibited && (
-  <div className="mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-center">
-    Withdrawals are prohibited for your account. Please contact support.
-  </div>
-)}
-
-{/* Submit Button */}
-<button
-  onClick={handleWithdrawalSubmit}
-  disabled={
-    isSubmittingWithdrawal ||
-    !withdrawalAmount ||
-    bankDetails.length === 0 ||
-    userProfile?.withdrawal_prohibited
-  }
-  className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
->
-  {userProfile?.withdrawal_prohibited
-    ? "Withdrawals Disabled"
-    : isSubmittingWithdrawal
-      ? "Submitting..."
-      : "Submit Withdrawal Request"}
-</button>
-
+            {/* Submit Button */}
+            <button
+              onClick={handleWithdrawalSubmit}
+              disabled={
+                isSubmittingWithdrawal ||
+                !withdrawalAmount ||
+                bankDetails.length === 0 ||
+                profile?.withdrawal_prohibited
+              }
+              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white py-4 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {profile?.withdrawal_prohibited
+                ? "Withdrawals Disabled"
+                : isSubmittingWithdrawal
+                  ? "Submitting..."
+                  : "Submit Withdrawal Request"}
+            </button>
 
             {bankDetails.length === 0 && (
               <div className="text-center text-sm text-gray-500">
                 {isLoadingBankDetails
                   ? "Loading bank details..."
                   : "Please add bank details in Collection Information to withdraw"}
-                {console.log("[v0] No bank details available, isLoading:", isLoadingBankDetails)}
               </div>
             )}
           </div>
@@ -2403,6 +2360,8 @@ const HomePage = () => {
             onTimeframeChange={() => {}}
             resetAllStates={resetAllStates}
             setActiveNav={setActiveNav}
+            userProfile={profile}
+            refreshUserProfile={refreshUserProfile}
           />
         )
       case "asset":
@@ -2415,20 +2374,20 @@ const HomePage = () => {
           />
         )
       case "my":
-        return <MyPage user={user} handleLogout={handleLogout} />
+        return <MyPage user={user} handleLogout={handleLogout} profile={profile} />
       default:
         return (
           <div className="min-h-screen bg-gray-50">
             {/* Top Price Cards */}
             <div className="bg-white px-4 py-6">
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 {cryptoPrices.slice(0, 3).map((crypto) => (
                   <div key={crypto.id} className="text-center">
-                    <div className="text-sm font-medium text-gray-900 mb-1">{crypto.symbol}</div>
-                    <div className="text-lg font-semibold text-cyan-500 mb-1">
+                    <div className="text-xs sm:text-sm font-medium text-gray-900 mb-1">{crypto.symbol}</div>
+                    <div className="text-sm sm:text-lg font-semibold text-cyan-500 mb-1">
                       {formatPrice(crypto.current_price, crypto.symbol)}
                     </div>
-                    <div className="text-sm font-medium text-green-500">
+                    <div className="text-xs sm:text-sm font-medium text-green-500">
                       {formatPercentage(crypto.price_change_percentage_24h)}
                     </div>
                   </div>
@@ -2438,7 +2397,7 @@ const HomePage = () => {
 
             {/* Action Buttons */}
             <div className="bg-white px-4 py-6 border-t border-gray-100">
-              <div className="grid grid-cols-3 gap-8">
+              <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
                     <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2592,7 +2551,7 @@ const HomePage = () => {
 
       {/* Bottom Navigation */}
       {activeNav !== "market" && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
           <div className="grid grid-cols-5 py-2">
             <button
               onClick={() => setActiveNav("home")}

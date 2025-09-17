@@ -565,25 +565,6 @@ function AdminDashboardContent() {
     }
   }
 
-  const SearchBar = () => (
-    <div className="mb-4 max-w-md">
-      <div className="relative">
-        <input
-          type="email"
-          placeholder="Search by email..."
-          value={searchEmail}
-          onChange={(e) => setSearchEmail(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <div className="w-64 bg-white shadow-lg">
@@ -746,7 +727,24 @@ function AdminDashboardContent() {
               </div>
             ) : (
               <div className="p-6">
-                <SearchBar />
+                {/* Inlined Search Bar - Fixed the focus issue */}
+                <div className="mb-4 max-w-md">
+                  <div className="relative">
+                    <input
+                      type="email"
+                      placeholder="Search by email..."
+                      value={searchEmail}
+                      onChange={(e) => setSearchEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
                 {activeTab === "withdrawals" ? (
                   /* Withdrawal List table section */
                   <div className="overflow-x-auto">

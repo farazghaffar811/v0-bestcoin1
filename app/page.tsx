@@ -163,12 +163,10 @@ const MarketPage = ({
     setShowTradingModal(true)
   }
 
-  // Calculate actual available balance (total balance minus frozen balance)
+  // Fixed: Available balance is now just the available_balance field (frozen balance doesn't reduce available balance)
   const getAvailableBalance = () => {
     if (!userProfile) return 0
-    const totalBalance = userProfile.available_balance || 0
-    const frozenBalance = userProfile.frozen_balance || 0
-    return Math.max(0, totalBalance - frozenBalance)
+    return userProfile.available_balance || 0
   }
 
   const handleOrderSubmit = async () => {
@@ -221,8 +219,8 @@ const MarketPage = ({
 
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    // Updated profit percentages for new trading times: 60s=20%, 120s=30%, 240s=50%
-    const profitPercentages = { 60: 20, 120: 30, 240: 50 }
+    // Updated profit percentages for new trading times: 60s=20%, 120s=30%, 180s=50%
+    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     // Return total expected earnings (order amount + profit)
@@ -670,7 +668,7 @@ const MarketPage = ({
                 {[
                   { time: 60, scale: 20 },
                   { time: 120, scale: 30 },
-                  { time: 240, scale: 50 }, // Changed from 180 to 240
+                  { time: 180, scale: 50 }, // Changed from 180 to 180
                 ].map(({ time, scale }) => (
                   <button
                     key={time}
@@ -707,7 +705,7 @@ const MarketPage = ({
             {/* Frozen Balance Warning */}
             {userProfile?.frozen_balance > 0 && (
               <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                Note: {userProfile.frozen_balance.toFixed(4)} R is frozen and not available for trading
+                Note: {userProfile.frozen_balance.toFixed(4)} R is currently frozen
               </div>
             )}
 
@@ -1019,13 +1017,10 @@ const AssetPage = ({
     }
   }
 
-  // Calculate available balance (excluding frozen balance) - FIXED CALCULATION
-  const availableBalance = profile?.available_balance
-    ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0
-
-  // Calculate total balance (including frozen balance) - this is the total balance shown  
-  const totalBalance = profile?.available_balance || 0
+  // Fixed: Available balance is just the available_balance field, total balance includes frozen balance
+  const availableBalance = profile?.available_balance || 0
+  const frozenBalance = profile?.frozen_balance || 0
+  const totalBalance = availableBalance + frozenBalance
 
   // Convert balances based on selected currency
   const getConvertedAmount = (amount: number) => {
@@ -1037,7 +1032,7 @@ const AssetPage = ({
 
   const convertedAvailableBalance = getConvertedAmount(availableBalance)
   const convertedTotalBalance = getConvertedAmount(totalBalance)
-  const convertedFrozenBalance = getConvertedAmount(profile?.frozen_balance || 0)
+  const convertedFrozenBalance = getConvertedAmount(frozenBalance)
 
   // Get currency symbol
   const getCurrencySymbol = (currencyCode: string) => {
@@ -1142,8 +1137,8 @@ const AssetPage = ({
           <div className="mb-1">
             Available Balance: {convertedAvailableBalance.toFixed(4)} {selectedCurrency}
           </div>
-          {profile?.frozen_balance > 0 && (
-            <div className="text-red-300">
+          {frozenBalance > 0 && (
+            <div className="text-yellow-300">
               Frozen Balance: {convertedFrozenBalance.toFixed(4)} {selectedCurrency}
             </div>
           )}
@@ -1208,13 +1203,13 @@ const AssetPage = ({
             <div className="text-xs text-gray-500">Available Balance</div>
           </div>
           <div>
-            <div className="text-base sm:text-lg font-semibold text-red-500 mb-1">
+            <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
               {convertedFrozenBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Frozen Balance</div>
           </div>
           <div>
-            <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
+            <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
               {convertedTotalBalance.toFixed(4)}
             </div>
             <div className="text-xs text-gray-500">Total Balance</div>
@@ -1422,10 +1417,9 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
 
-  // Calculate available balance (excluding frozen balance) - consistent with AssetPage
-  const availableBalance = profile?.available_balance
-    ? Math.max(0, (profile.available_balance || 0) - (profile.frozen_balance || 0))
-    : 0
+  // Fixed: Available balance is just the available_balance field, frozen balance is separate
+  const availableBalance = profile?.available_balance || 0
+  const frozenBalance = profile?.frozen_balance || 0
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1450,10 +1444,10 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
             <div className="text-sm font-medium text-yellow-300">Credit Score: {profile?.credit_score || 0}</div>
             <div className="text-sm opacity-90">
-              {profile?.frozen_balance > 0 ? (
+              {frozenBalance > 0 ? (
                 <>
                   Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} | 
-                  Frozen: {profile.frozen_balance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
+                  Frozen: {frozenBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}
                 </>
               ) : (
                 <>
@@ -1814,6 +1808,17 @@ const HomePage = () => {
     return () => clearInterval(interval)
   }, [])
 
+  // Add real-time profile updates using polling
+  useEffect(() => {
+    if (user?.id && profile) {
+      const profileRefreshInterval = setInterval(() => {
+        fetchProfile(user.id)
+      }, 5000) // Refresh every 5 seconds for real-time updates
+
+      return () => clearInterval(profileRefreshInterval)
+    }
+  }, [user?.id, profile])
+
   const initializeAuth = async () => {
     setIsLoading(true)
     try {
@@ -2064,8 +2069,8 @@ const HomePage = () => {
       return
     }
 
-    // Calculate available balance properly (excluding frozen balance)
-    const availableBalance = Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0))
+    // Fixed: Available balance is just the available_balance field (no deduction for frozen balance)
+    const availableBalance = profile?.available_balance || 0
     
     if (Number.parseFloat(withdrawalAmount) > availableBalance) {
       toast.error("Insufficient available balance")
@@ -2202,8 +2207,8 @@ const HomePage = () => {
         )
       }
 
-      // Calculate available balance properly (excluding frozen balance)
-      const availableBalance = Math.max(0, (profile?.available_balance || 0) - (profile?.frozen_balance || 0))
+      // Fixed: Available balance is just the available_balance field (frozen balance doesn't reduce available balance)
+      const availableBalance = profile?.available_balance || 0
 
       return (
         <div className="min-h-screen bg-gray-50">
@@ -2234,7 +2239,7 @@ const HomePage = () => {
                 {availableBalance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
-                <div className="text-sm text-red-600 mt-1">
+                <div className="text-sm text-orange-600 mt-1">
                   Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
                 </div>
               )}

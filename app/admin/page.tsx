@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 
@@ -81,7 +81,7 @@ interface Withdrawal {
   }
 }
 
-export default function AdminDashboard() {
+function AdminDashboardContent() {
   const [users, setUsers] = useState<User[]>([])
   const [trades, setTrades] = useState<Trade[]>([])
   const [settings, setSettings] = useState<Setting[]>([])
@@ -113,9 +113,29 @@ export default function AdminDashboard() {
   const [router] = useState(useRouter())
   const supabase = createClient()
 
+  // Search states
+  const [searchEmail, setSearchEmail] = useState("")
+
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [selectedUserForAnnouncement, setSelectedUserForAnnouncement] = useState<any>(null)
   const [announcementMessage, setAnnouncementMessage] = useState("")
+
+  // Filter functions
+  const filteredUsers = users.filter(user => 
+    user.email.toLowerCase().includes(searchEmail.toLowerCase())
+  )
+
+  const filteredTrades = trades.filter(trade => 
+    trade.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
+  )
+
+  const filteredBankDetails = bankDetails.filter(detail => 
+    detail.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
+  )
+
+  const filteredWithdrawals = withdrawals.filter(withdrawal => 
+    withdrawal.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
+  )
 
   const handleSendAnnouncement = (user: any) => {
     setSelectedUserForAnnouncement(user)
@@ -330,17 +350,15 @@ export default function AdminDashboard() {
     router.push("/login")
   }
 
-
-   const handleEditUser = (user: User) => {
-     setEditingUser(user)
-     setEditData({
-       credit_score: user.credit_score || 0,
-       available_balance: user.available_balance || 0,
-       frozen_balance: user.frozen_balance || 0,
-      withdrawal_prohibited: user.withdrawal_prohibited || false,
+  const handleEditUser = (user: User) => {
+    setEditingUser(user)
+    setEditData({
+      credit_score: user.credit_score || 0,
+      available_balance: user.available_balance || 0,
+      frozen_balance: user.frozen_balance || 0,
       withdrawal_prohibited: Boolean(user.withdrawal_prohibited),
-     })
-   }
+    })
+  }
 
   const handleEditBankDetail = (bankDetail: BankDetail) => {
     setEditingBankDetail(bankDetail)
@@ -358,9 +376,9 @@ export default function AdminDashboard() {
     setWithdrawalNotes(withdrawal.admin_notes || "")
   }
 
- const handleUpdateUser = async () => {
-     if (!editingUser) return
- 
+  const handleUpdateUser = async () => {
+    if (!editingUser) return
+
     console.log("[Admin] Updating user with data:", {
       credit_score: editData.credit_score,
       available_balance: editData.available_balance,
@@ -368,64 +386,60 @@ export default function AdminDashboard() {
       withdrawal_prohibited: editData.withdrawal_prohibited,
     })
 
-     try {
-       setIsUpdating(true)
- 
-       const maxFrozenBalance = editData.available_balance || 0
-       const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
- 
-       const response = await fetch(`/api/admin/users/${editingUser.id}`, {
-         method: "PUT",
-         headers: {
-           "Content-Type": "application/json",
-         },
-         body: JSON.stringify({
-           credit_score: editData.credit_score,
-           available_balance: editData.available_balance,
-           frozen_balance: adjustedFrozenBalance,
-           withdrawal_prohibited: editData.withdrawal_prohibited,
-         }),
-       })
- 
+    try {
+      setIsUpdating(true)
+
+      const maxFrozenBalance = editData.available_balance || 0
+      const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
+
+      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          credit_score: editData.credit_score,
+          available_balance: editData.available_balance,
+          frozen_balance: adjustedFrozenBalance,
+          withdrawal_prohibited: editData.withdrawal_prohibited,
+        }),
+      })
+
       console.log("[Admin] Update response status:", response.status)
       const responseData = await response.json()
       console.log("[Admin] Update response data:", responseData)
 
-      if (!response.ok) throw new Error("Failed to update user")
       if (!response.ok) {
         throw new Error(responseData.error || "Failed to update user")
       }
- 
 
-      
-     
-    // Update local state
-       setUsers(
-         users.map((user) =>
-           user.id === editingUser.id
-             ? {
-                 ...user,
-                 credit_score: editData.credit_score,
-                 available_balance: editData.available_balance,
-                 frozen_balance: adjustedFrozenBalance,
-                 withdrawal_prohibited: editData.withdrawal_prohibited,
-               }
-             : user,
-         ),
-       )
- 
-       setEditingUser(null)
-       alert("User updated successfully!")
-     
+      // Update local state
+      setUsers(
+        users.map((user) =>
+          user.id === editingUser.id
+            ? {
+                ...user,
+                credit_score: editData.credit_score,
+                available_balance: editData.available_balance,
+                frozen_balance: adjustedFrozenBalance,
+                withdrawal_prohibited: editData.withdrawal_prohibited,
+              }
+            : user,
+        ),
+      )
+
+      setEditingUser(null)
+      alert("User updated successfully!")
+
       // Refresh users list to ensure we have the latest data
       await fetchUsers()
-     } catch (error) {
+    } catch (error) {
       console.error("[Admin] Update error:", error)
-       alert("Failed to update user: " + (error instanceof Error ? error.message : "Unknown error"))
-     } finally {
-       setIsUpdating(false)
-     }
-   }
+      alert("Failed to update user: " + (error instanceof Error ? error.message : "Unknown error"))
+    } finally {
+      setIsUpdating(false)
+    }
+  }
 
   const handleUpdateBankDetail = async () => {
     if (!editingBankDetail) return
@@ -472,8 +486,9 @@ export default function AdminDashboard() {
     try {
       setIsUpdatingTelegram(true)
 
-      const response = await fetch("/api/admin/settings", {
-        method: "PUT",
+      // Try both POST and PUT methods to handle both create and update scenarios
+      let response = await fetch("/api/admin/settings", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
@@ -483,10 +498,30 @@ export default function AdminDashboard() {
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to update telegram link")
+      // If POST fails, try PUT for updating existing record
+      if (!response.ok) {
+        response = await fetch("/api/admin/settings", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            key: "telegram_link",
+            value: telegramLink,
+          }),
+        })
+      }
 
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update telegram link")
+      }
+
+      // Refresh settings to get the updated value
+      await fetchSettings()
       alert("Telegram link updated successfully!")
     } catch (error) {
+      console.error("Telegram update error:", error)
       alert("Failed to update telegram link: " + (error instanceof Error ? error.message : "Unknown error"))
     } finally {
       setIsUpdatingTelegram(false)
@@ -529,6 +564,25 @@ export default function AdminDashboard() {
       setIsChangingPassword(false)
     }
   }
+
+  const SearchBar = () => (
+    <div className="mb-4 max-w-md">
+      <div className="relative">
+        <input
+          type="email"
+          placeholder="Search by email..."
+          value={searchEmail}
+          onChange={(e) => setSearchEmail(e.target.value)}
+          className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -642,13 +696,13 @@ export default function AdminDashboard() {
             </h2>
             <p className="text-gray-600 mt-1">
               {activeTab === "users"
-                ? `Total Users: ${users.length}`
+                ? `Total Users: ${filteredUsers.length} ${searchEmail ? `(filtered from ${users.length})` : ''}`
                 : activeTab === "trades"
-                  ? `Total Trades: ${trades.length}`
+                  ? `Total Trades: ${filteredTrades.length} ${searchEmail ? `(filtered from ${trades.length})` : ''}`
                   : activeTab === "bank-details"
-                    ? `Total Bank Details: ${bankDetails.length}`
+                    ? `Total Bank Details: ${filteredBankDetails.length} ${searchEmail ? `(filtered from ${bankDetails.length})` : ''}`
                     : activeTab === "withdrawals"
-                      ? `Total Withdrawals: ${withdrawals.length}`
+                      ? `Total Withdrawals: ${filteredWithdrawals.length} ${searchEmail ? `(filtered from ${withdrawals.length})` : ''}`
                       : "Manage customer support telegram link"}
             </p>
           </div>
@@ -690,396 +744,416 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
-            ) : activeTab === "withdrawals" ? (
-              /* Added Withdrawal List table section */
-              <div className="overflow-x-auto">
-                {isLoading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : error ? (
-                  <div className="text-red-500 text-center py-8">{error}</div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User Info
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Bank Details
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Admin Notes
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {withdrawals.map((withdrawal) => (
-                        <tr key={withdrawal.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{withdrawal.profiles.email}</div>
-                              <div className="text-sm text-gray-500">UID: {withdrawal.profiles.uid}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {withdrawal.amount.toFixed(2)} ZAR
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                withdrawal.status === "approved"
-                                  ? "bg-green-100 text-green-800"
-                                  : withdrawal.status === "rejected"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                              }`}
-                            >
-                              {withdrawal.status.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {withdrawal.bank_details ? (
-                              <div>
-                                <div>{withdrawal.bank_details.bind_bank}</div>
-                                <div className="text-xs text-gray-500">
-                                  ****{withdrawal.bank_details.bank_card_number?.slice(-4)}
-                                </div>
-                              </div>
-                            ) : (
-                              "N/A"
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(withdrawal.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {withdrawal.admin_notes || "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {withdrawal.status === "pending" && (
-                              <button
-                                onClick={() => handleEditWithdrawal(withdrawal)}
-                                className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
-                              >
-                                Review
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {withdrawals.length === 0 && !isLoading && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">No withdrawal requests found</p>
-                  </div>
-                )}
-              </div>
-            ) : activeTab === "bank-details" ? (
-              /* Added Bank Details table section */
-              <div className="overflow-x-auto">
-                {isLoading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : error ? (
-                  <div className="text-red-500 text-center py-8">{error}</div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User Info
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Binding Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Currency
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Account Holder
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Bank
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Card Number
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Created
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {bankDetails.map((detail) => (
-                        <tr key={detail.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{detail.profiles.email}</div>
-                              <div className="text-sm text-gray-500">UID: {detail.profiles.uid}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.binding_type}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.currency}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {detail.account_holder_name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.bind_bank}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {detail.bank_card_number.slice(0, 4)}****{detail.bank_card_number.slice(-4)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(detail.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => handleEditBankDetail(detail)}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                            >
-                              Edit
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {bankDetails.length === 0 && !isLoading && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">No bank details found</p>
-                  </div>
-                )}
-              </div>
-            ) : activeTab === "users" ? (
-              <div className="overflow-x-auto">
-                {isLoading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : error ? (
-                  <div className="text-red-500 text-center py-8">{error}</div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User Info
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          UID
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Credit Score
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Balance
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Currency
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Withdraw Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Joined
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {users.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{user.email}</div>
-                              <div className="text-sm text-gray-500">
-                                {user.role === "admin" ? (
-                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                    Admin
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    User
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.uid || "N/A"}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.credit_score || 0}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.available_balance?.toFixed(4) || "0.0000"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {user.preferred_currency || "USD"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                user.withdrawal_prohibited
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {user.withdrawal_prohibited ? "Prohibited" : "Allowed"}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </td>
-                          {/* Added announcement button to user actions */}
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button
-                              onClick={() => handleEditUser(user)}
-                              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => handleChangePassword(user)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
-                            >
-                              Change Password
-                            </button>
-                            <button
-                              onClick={() => handleSendAnnouncement(user)}
-                              className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors"
-                            >
-                              Send Message
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
-
-                {users.length === 0 && !isLoading && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">No users found</p>
-                  </div>
-                )}
-              </div>
             ) : (
-              <div className="overflow-x-auto">
-                {isLoading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : error ? (
-                  <div className="text-red-500 text-center py-8">{error}</div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Crypto
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Direction
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Profit %
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Time
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Payout
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Date
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {trades.map((trade) => (
-                        <tr key={trade.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{trade.profiles.email}</div>
-                              <div className="text-sm text-gray-500">UID: {trade.profiles.uid}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.crypto_symbol}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                trade.direction === "up" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {trade.direction.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {trade.amount.toFixed(4)} R
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {trade.profit_percentage}%
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.trading_time}s</td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                trade.status === "active"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : trade.status === "closed"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-gray-100 text-gray-800"
-                              }`}
-                            >
-                              {trade.status.toUpperCase()}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {trade.payout ? `${trade.payout.toFixed(4)} R` : "-"}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(trade.created_at).toLocaleDateString()}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                )}
+              <div className="p-6">
+                <SearchBar />
+                {activeTab === "withdrawals" ? (
+                  /* Withdrawal List table section */
+                  <div className="overflow-x-auto">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : error ? (
+                      <div className="text-red-500 text-center py-8">{error}</div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User Info
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Amount
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Bank Details
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Created
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Admin Notes
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredWithdrawals.map((withdrawal) => (
+                            <tr key={withdrawal.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{withdrawal.profiles.email}</div>
+                                  <div className="text-sm text-gray-500">UID: {withdrawal.profiles.uid}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {withdrawal.amount.toFixed(2)} ZAR
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    withdrawal.status === "approved"
+                                      ? "bg-green-100 text-green-800"
+                                      : withdrawal.status === "rejected"
+                                        ? "bg-red-100 text-red-800"
+                                        : "bg-yellow-100 text-yellow-800"
+                                  }`}
+                                >
+                                  {withdrawal.status.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {withdrawal.bank_details ? (
+                                  <div>
+                                    <div>{withdrawal.bank_details.bind_bank}</div>
+                                    <div className="text-xs text-gray-500">
+                                      ****{withdrawal.bank_details.bank_card_number?.slice(-4)}
+                                    </div>
+                                  </div>
+                                ) : (
+                                  "N/A"
+                                )}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(withdrawal.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {withdrawal.admin_notes || "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                {withdrawal.status === "pending" && (
+                                  <button
+                                    onClick={() => handleEditWithdrawal(withdrawal)}
+                                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
+                                  >
+                                    Review
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
 
-                {trades.length === 0 && !isLoading && (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">No trades found</p>
+                    {filteredWithdrawals.length === 0 && !isLoading && (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">
+                          {searchEmail ? "No withdrawal requests found matching your search" : "No withdrawal requests found"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : activeTab === "bank-details" ? (
+                  /* Bank Details table section */
+                  <div className="overflow-x-auto">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : error ? (
+                      <div className="text-red-500 text-center py-8">{error}</div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User Info
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Binding Type
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Currency
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Account Holder
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Bank
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Card Number
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Created
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredBankDetails.map((detail) => (
+                            <tr key={detail.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{detail.profiles.email}</div>
+                                  <div className="text-sm text-gray-500">UID: {detail.profiles.uid}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.binding_type}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.currency}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {detail.account_holder_name}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.bind_bank}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {detail.bank_card_number.slice(0, 4)}****{detail.bank_card_number.slice(-4)}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(detail.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button
+                                  onClick={() => handleEditBankDetail(detail)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                >
+                                  Edit
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {filteredBankDetails.length === 0 && !isLoading && (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">
+                          {searchEmail ? "No bank details found matching your search" : "No bank details found"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : activeTab === "users" ? (
+                  <div className="overflow-x-auto">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : error ? (
+                      <div className="text-red-500 text-center py-8">{error}</div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User Info
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              UID
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Credit Score
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Balance
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Frozen Balance
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Currency
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Withdraw Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Joined
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredUsers.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                                  <div className="text-sm text-gray-500">
+                                    {user.role === "admin" ? (
+                                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                        Admin
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                        User
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{user.uid || "N/A"}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {user.credit_score || 0}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {user.available_balance?.toFixed(4) || "0.0000"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span className="text-orange-600 font-medium">
+                                  {user.frozen_balance?.toFixed(4) || "0.0000"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {user.preferred_currency || "USD"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    user.withdrawal_prohibited
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-green-100 text-green-800"
+                                  }`}
+                                >
+                                  {user.withdrawal_prohibited ? "Prohibited" : "Allowed"}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <button
+                                  onClick={() => handleEditUser(user)}
+                                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleChangePassword(user)}
+                                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors mr-2"
+                                >
+                                  Change Password
+                                </button>
+                                <button
+                                  onClick={() => handleSendAnnouncement(user)}
+                                  className="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-xs transition-colors"
+                                >
+                                  Send Message
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {filteredUsers.length === 0 && !isLoading && (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">
+                          {searchEmail ? "No users found matching your search" : "No users found"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    {isLoading ? (
+                      <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : error ? (
+                      <div className="text-red-500 text-center py-8">{error}</div>
+                    ) : (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Crypto
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Direction
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Amount
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Profit %
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Time
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Status
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Payout
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Date
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredTrades.map((trade) => (
+                            <tr key={trade.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                  <div className="text-sm font-medium text-gray-900">{trade.profiles.email}</div>
+                                  <div className="text-sm text-gray-500">UID: {trade.profiles.uid}</div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.crypto_symbol}</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    trade.direction === "up" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {trade.direction.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {trade.amount.toFixed(4)} R
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {trade.profit_percentage}%
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.trading_time}s</td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    trade.status === "active"
+                                      ? "bg-yellow-100 text-yellow-800"
+                                      : trade.status === "closed"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
+                                  {trade.status.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {trade.payout ? `${trade.payout.toFixed(4)} R` : "-"}
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {new Date(trade.created_at).toLocaleDateString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {filteredTrades.length === 0 && !isLoading && (
+                      <div className="text-center py-12">
+                        <p className="text-gray-500">
+                          {searchEmail ? "No trades found matching your search" : "No trades found"}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1452,5 +1526,21 @@ export default function AdminDashboard() {
         </div>
       )}
     </div>
+  )
+}
+
+// Main component with Suspense boundary
+export default function AdminDashboard() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-gray-600">Loading Admin Dashboard...</p>
+        </div>
+      </div>
+    }>
+      <AdminDashboardContent />
+    </Suspense>
   )
 }

@@ -860,19 +860,19 @@ const OrderPage = () => {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-500 font-bold">Entry Price</div>
+                      <div className="text-gray-900 font-bold">Entry Price</div>
                       <div className="text-gray-800">{order.entry_price}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 font-bold">Amount</div>
+                      <div className="text-gray-900 font-bold">Amount</div>
                       <div className="text-gray-800">{order.amount} R</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 font-bold">Trading Time</div>
+                      <div className="text-gray-900 font-bold">Trading Time</div>
                       <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 font-bold">Expected Earnings</div>
+                      <div className="text-gray-900 font-bold">Expected Earnings</div>
                       <div className="text-green-600">{order.expected_earnings} R</div>
                     </div>
                   </div>
@@ -923,19 +923,19 @@ const OrderPage = () => {
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <div className="text-gray-500 font-bold">Entry Price</div>
+                      <div className="text-gray-900 font-bold">Entry Price</div>
                       <div className="text-gray-800">{order.entry_price}</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 font-bold">Amount</div>
+                      <div className="text-gray-900 font-bold">Amount</div>
                       <div className="text-gray-800">{order.amount} R</div>
                     </div>
                     <div>
-                      <div className="text-gray-500 font-bold">Trading Time</div>
+                      <div className="text-gray-900 font-bold">Trading Time</div>
                       <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
-                      <div className="text-gray-500">Result</div>
+                      <div className="text-gray-900 font-bold">Result</div>
                       <div className={order.result === "win" ? "text-green-600" : "text-red-600"}>
                         {order.result === "win" ? "Win" : "Loss"}
                       </div>

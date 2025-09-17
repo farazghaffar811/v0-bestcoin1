@@ -575,11 +575,11 @@ const MarketPage = ({
           <div className="text-center">Quantity</div>
         </div>
 
-        <div className="max-h-40 sm:max-h-64 overflow-y-auto">
+        <div className="max-h-64 overflow-y-auto">
           {liveTradeData.map((trade, index) => (
             <div
               key={`${trade.time}-${index}`}
-              className="grid grid-cols-4 gap-2 p-2 sm:p-3 text-xs border-b border-gray-700 last:border-b-0"
+               className="grid grid-cols-4 gap-2 p-3 text-xs border-b border-gray-700 last:border-b-0"
             >
               <div className="text-center text-white">{trade.time}</div>
               <div
@@ -595,33 +595,33 @@ const MarketPage = ({
       </div>
 
       {/* Trading Buttons - Fixed at bottom like navbar */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 sm:px-8 py-2 z-50">
+       <div className="fixed bottom-0 left-0 right-0 px-8 py-2 z-50">
         <div className="flex justify-between gap-4">
           <button
             onClick={() => handleTradingClick("buy_up")}
-            className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 sm:px-6 rounded-lg font-semibold transition-colors flex-1 sm:w-44 sm:flex-initial"
+            className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
           >
-            <div className="text-base sm:text-lg">Buy Up</div>
+           <div className="text-lg">Buy Up</div>
           </button>
           <button
             onClick={() => handleTradingClick("buy_down")}
-            className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 sm:px-6 rounded-lg font-semibold transition-colors flex-1 sm:w-44 sm:flex-initial"
-          >
-            <div className="text-base sm:text-lg">Buy Down</div>
+            className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
+            >
+            <div className="text-lg">Buy Down</div>
           </button>
         </div>
       </div>
 
       {showTradingModal && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+          className="fixed inset-0 bg-opacity-20 flex items-end justify-center z-50"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowTradingModal(false)
             }
           }}
         >
-          <div className="bg-slate-900 w-full sm:w-auto sm:min-w-[400px] sm:max-w-[500px] h-[70vh] sm:h-auto rounded-t-2xl sm:rounded-2xl p-4 sm:p-6 animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="bg-slate-900 w-full h-[65%] sm:h-[70%] md:h-[75%] lg:h-[60%] xl:h-[55%] rounded-t-2xl p-4 sm:p-6 animate-slide-up max-h-[90vh] overflow-hidden">
             {/* Header */}
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">

@@ -85,8 +85,11 @@ export default function LoginPage() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-16">
+       
         {/* CBOE Title */}
-        <h1 className="text-4xl font-bold text-gray-800 mb-16">CBOE</h1>
+       <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-16">
+  BEST
+</h1>
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-6">

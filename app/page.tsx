@@ -651,10 +651,7 @@ const MarketPage = ({
               <div className="text-white text-xl font-bold">{formatNumberWithCommas(currentPrice, 4)}</div>
             </div>
 
-            {/* Auto-Win Notice */}
-            <div className="mb-3 p-3 bg-green-900 bg-opacity-50 border border-green-600 rounded text-green-300 text-sm">
-              🎉 <strong>Guaranteed Win!</strong> All trades are set to automatically win after the trading time expires!
-            </div>
+           
 
             {/* Trading Time */}
             <div className="mb-3">
@@ -742,7 +739,7 @@ const MarketPage = ({
               disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
               className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmittingOrder ? "Submitting..." : "Order Confirmation (Guaranteed Win!)"}
+              {isSubmittingOrder ? "Submitting..." : "Order Confirmation"}
             </button>
           </div>
         </div>

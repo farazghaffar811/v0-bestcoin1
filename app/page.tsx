@@ -770,7 +770,7 @@ const MarketPage = ({
                 disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
                 className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmittingOrder ? "Submitting..." : "✅ Order"}
+                {isSubmittingOrder ? "Submitting..." : "✅ Submit Order"}
               </button>
             </div>
           </div>

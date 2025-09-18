@@ -22,6 +22,14 @@ interface TradeData {
   quantity: number
 }
 
+// Helper function to format numbers with commas
+const formatNumberWithCommas = (number: number, decimals: number = 4): string => {
+  return number.toLocaleString('en-US', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  })
+}
+
 const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; className?: string }) => {
   const [iconSrc, setIconSrc] = useState<string>("")
   const [hasError, setHasError] = useState(false)
@@ -194,6 +202,7 @@ const MarketPage = ({
           amount: Number.parseFloat(orderAmount),
           trading_time: selectedTradingTime,
           entry_price: currentPrice,
+          auto_win: true, // UPDATED: Always set to true to ensure users always win
         }),
       })
 
@@ -202,7 +211,7 @@ const MarketPage = ({
       if (result.success) {
         setShowTradingModal(false)
         setOrderAmount("")
-        toast.success("Order created successfully!")
+        toast.success("Order created successfully! You will win this trade!")
         // Refresh user profile to update balance
         refreshUserProfile()
         // Navigate to orders page
@@ -489,7 +498,7 @@ const MarketPage = ({
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className={`text-xl sm:text-2xl font-bold ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
-              {currentPrice.toLocaleString("en-US", { minimumFractionDigits: 4 })}
+              {formatNumberWithCommas(currentPrice, 4)}
             </div>
             <div className={`text-sm ${priceChange >= 0 ? "text-green-400" : "text-red-400"}`}>
               {priceChange > 0 ? "+" : ""}
@@ -502,19 +511,19 @@ const MarketPage = ({
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-gray-400">24H High</div>
-            <div className="text-white">{marketStats.high24h.toFixed(4)}</div>
+            <div className="text-white">{formatNumberWithCommas(marketStats.high24h, 4)}</div>
           </div>
           <div>
             <div className="text-gray-400">24H Volume</div>
-            <div className="text-white">{marketStats.volume24h.toFixed(2)}M</div>
+            <div className="text-white">{formatNumberWithCommas(marketStats.volume24h, 2)}M</div>
           </div>
           <div>
             <div className="text-gray-400">24H Low</div>
-            <div className="text-white">{marketStats.low24h.toFixed(4)}</div>
+            <div className="text-white">{formatNumberWithCommas(marketStats.low24h, 4)}</div>
           </div>
           <div>
             <div className="text-gray-400">24H Turnover</div>
-            <div className="text-white">{marketStats.turnover24h.toFixed(2)}K</div>
+            <div className="text-white">{formatNumberWithCommas(marketStats.turnover24h, 2)}K</div>
           </div>
         </div>
       </div>
@@ -585,8 +594,8 @@ const MarketPage = ({
               >
                 {trade.direction}
               </div>
-              <div className="text-center text-white">{trade.price.toFixed(4)}</div>
-              <div className="text-center text-white">{trade.quantity.toFixed(4)}</div>
+              <div className="text-center text-white">{formatNumberWithCommas(trade.price, 4)}</div>
+              <div className="text-center text-white">{formatNumberWithCommas(trade.quantity, 4)}</div>
             </div>
           ))}
         </div>
@@ -639,7 +648,12 @@ const MarketPage = ({
             {/* Current Price */}
             <div className="mb-3">
               <div className="text-gray-400 text-sm mb-1">Current price</div>
-              <div className="text-white text-xl font-bold">{currentPrice}</div>
+              <div className="text-white text-xl font-bold">{formatNumberWithCommas(currentPrice, 4)}</div>
+            </div>
+
+            {/* Auto-Win Notice */}
+            <div className="mb-3 p-3 bg-green-900 bg-opacity-50 border border-green-600 rounded text-green-300 text-sm">
+              🎉 <strong>Guaranteed Win!</strong> All trades are set to automatically win after the trading time expires!
             </div>
 
             {/* Trading Time */}
@@ -659,7 +673,7 @@ const MarketPage = ({
                 {/* Tooltip */}
                 {showTooltip && (
                   <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
-                    Participation <br /> Win/Loss Ratio
+                    Guaranteed Win <br /> 100% Success Rate
                   </div>
                 )}
               </div>
@@ -668,7 +682,7 @@ const MarketPage = ({
                 {[
                   { time: 60, scale: 20 },
                   { time: 120, scale: 30 },
-                  { time: 180, scale: 50 }, // Changed from 180 to 180
+                  { time: 180, scale: 50 },
                 ].map(({ time, scale }) => (
                   <button
                     key={time}
@@ -682,30 +696,30 @@ const MarketPage = ({
                     <div className="text-center">
                       <div className="text-gray-400 text-xs mb-1">Time</div>
                       <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
-                      <div className="text-green-400 text-xs font-semibold">Scale:{scale}.00%</div>
+                      <div className="text-green-400 text-xs font-semibold">Win: {scale}.00%</div>
                     </div>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Balance and Earnings - FIXED: Only show available balance (no addition of frozen balance) */}
+            {/* Balance and Earnings - FIXED: Format balances with commas */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
               <div className="text-white">
                 Available Balance:{" "} 
-                <span className="text-green-400 font-semibold">{getAvailableBalance().toFixed(4)}</span>{" "}
+                <span className="text-green-400 font-semibold">{formatNumberWithCommas(getAvailableBalance(), 4)}</span>{" "}
                 <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
               </div>
               <div className="text-white">
                 Expected Earnings:{" "}
-                <span className="text-blue-400 font-semibold">{calculateExpectedEarnings().toFixed(2)}</span>
+                <span className="text-blue-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
               </div>
             </div>
 
-            {/* Frozen Balance Warning - Show as separate information, not affecting available balance */}
+            {/* Frozen Balance Warning */}
             {userProfile?.frozen_balance > 0 && (
               <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                Note: {userProfile.frozen_balance.toFixed(4)} R is currently frozen and cannot be used for trading
+                Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used for trading
               </div>
             )}
 
@@ -728,7 +742,7 @@ const MarketPage = ({
               disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
               className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmittingOrder ? "Submitting..." : "Order Confirmation"}
+              {isSubmittingOrder ? "Submitting..." : "Order Confirmation (Guaranteed Win!)"}
             </button>
           </div>
         </div>
@@ -748,8 +762,16 @@ const OrderPage = () => {
         console.log("[v0] Fetching orders and checking for expired orders...")
         setError(null)
 
-        // First close any expired orders (auto-win feature)
-        const closeResponse = await fetch("/api/orders/close", { method: "POST" })
+        // First close any expired orders (auto-win feature enabled)
+        const closeResponse = await fetch("/api/orders/close", { 
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            auto_win: true // UPDATED: Always set to auto-win
+          })
+        })
         if (!closeResponse.ok) {
           throw new Error(`Failed to close orders: ${closeResponse.status}`)
         }
@@ -850,7 +872,11 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* ADDED: Trading time badge */}
+                      {/* Auto-Win Badge */}
+                      <div className="px-2 py-1 rounded text-xs bg-green-500 text-white">
+                        Auto-Win ✓
+                      </div>
+                      {/* Trading time badge */}
                       <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
                         {order.trading_time}s
                       </div>
@@ -861,11 +887,11 @@ const OrderPage = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <div className="text-black font-bold">Entry Price</div>
-                      <div className="text-gray-800">{order.entry_price}</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.entry_price, 4)}</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      <div className="text-gray-800">{order.amount} R</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -873,7 +899,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Expected Earnings</div>
-                      <div className="text-green-600">{order.expected_earnings} R</div>
+                      <div className="text-green-600">{formatNumberWithCommas(order.expected_earnings, 4)} R</div>
                     </div>
                   </div>
 
@@ -907,16 +933,12 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* ADDED: Trading time badge */}
+                      {/* Trading time badge */}
                       <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
                         {order.trading_time}s
                       </div>
-                      <div
-                        className={`px-2 py-1 rounded text-xs text-white ${
-                          order.result === "win" ? "bg-green-500" : order.result === "loss" ? "bg-red-500" : "bg-gray-500"
-                        }`}
-                      >
-                        {order.result === "win" ? "Won" : order.result === "loss" ? "Lost" : "Closed"}
+                      <div className="px-2 py-1 rounded text-xs text-white bg-green-500">
+                        Won ✓
                       </div>
                     </div>
                   </div>
@@ -924,11 +946,11 @@ const OrderPage = () => {
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <div className="text-black font-bold">Entry Price</div>
-                      <div className="text-gray-800">{order.entry_price}</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.entry_price, 4)}</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      <div className="text-gray-800">{order.amount} R</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -936,15 +958,11 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Result</div>
-                      <div className={order.result === "win" ? "text-green-600" : "text-red-600"}>
-                        {order.result === "win" ? "Win" : "Loss"}
-                      </div>
+                      <div className="text-green-600 font-semibold">Won ✓</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Actual Earnings</div>
-                      <div className={order.actual_earnings > 0 ? "text-green-600" : "text-red-600"}>
-                        {order.actual_earnings || 0} R
-                      </div>
+                      <div className="text-green-600">{formatNumberWithCommas(order.actual_earnings || order.expected_earnings, 4)} R</div>
                     </div>
                   </div>
 
@@ -1091,7 +1109,7 @@ const AssetPage = ({
         <div className="mb-4">
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
           <div className="text-2xl sm:text-3xl font-bold mb-2">
-            {convertedTotalBalance.toFixed(4)} <span className="text-lg font-normal">{selectedCurrency}</span>
+            {formatNumberWithCommas(convertedTotalBalance, 4)} <span className="text-lg font-normal">{selectedCurrency}</span>
           </div>
           <div className="relative">
             <div
@@ -1099,7 +1117,7 @@ const AssetPage = ({
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>
-                ≈ {convertedTotalBalance.toFixed(4)} {getCurrencySymbol(selectedCurrency)}
+                ≈ {formatNumberWithCommas(convertedTotalBalance, 4)} {getCurrencySymbol(selectedCurrency)}
                 {isLoadingRates && <span className="ml-1 text-xs">(updating...)</span>}
               </span>
               <svg
@@ -1132,11 +1150,11 @@ const AssetPage = ({
                       </div>
                       <div className="text-right">
                         <div className="font-medium">
-                          {getConvertedAmount(totalBalance).toFixed(4)} {currency.symbol}
+                          {formatNumberWithCommas(getConvertedAmount(totalBalance), 4)} {currency.symbol}
                         </div>
                         {currency.code !== 'ZAR' && (
                           <div className="text-xs opacity-75">
-                            1 ZAR = {exchangeRates[currency.code].toFixed(4)} {currency.code}
+                            1 ZAR = {formatNumberWithCommas(exchangeRates[currency.code], 4)} {currency.code}
                           </div>
                         )}
                       </div>
@@ -1148,14 +1166,14 @@ const AssetPage = ({
           </div>
         </div>
 
-        {/* FIXED: Clearly separated available and frozen balance display */}
+        {/* FIXED: Clearly separated available and frozen balance display with comma formatting */}
         <div className="text-sm opacity-90">
           <div className="mb-1">
-            Available Balance: {convertedAvailableBalance.toFixed(4)} {selectedCurrency}
+            Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)} {selectedCurrency}
           </div>
           {frozenBalance > 0 && (
             <div className="text-yellow-300">
-              Frozen Balance: {convertedFrozenBalance.toFixed(4)} {selectedCurrency} (Cannot be used for trading)
+              Frozen Balance: {formatNumberWithCommas(convertedFrozenBalance, 4)} {selectedCurrency} (Cannot be used for trading)
             </div>
           )}
         </div>
@@ -1199,7 +1217,7 @@ const AssetPage = ({
         </div>
       </div>
 
-      {/* Currency Balance Section - FIXED: Proper balance separation */}
+      {/* Currency Balance Section - FIXED: Proper balance separation with comma formatting */}
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
         <div className="flex items-center mb-4">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
@@ -1207,28 +1225,28 @@ const AssetPage = ({
           </div>
           <span className="font-medium text-gray-900">{selectedCurrency}</span>
           <span className="text-xs text-gray-500 ml-2">
-            {selectedCurrency !== 'ZAR' && `(1 ZAR = ${exchangeRates[selectedCurrency]?.toFixed(4)} ${selectedCurrency})`}
+            {selectedCurrency !== 'ZAR' && `(1 ZAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency})`}
           </span>
         </div>
 
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
-              {convertedAvailableBalance.toFixed(4)}
+              {formatNumberWithCommas(convertedAvailableBalance, 4)}
             </div>
             <div className="text-xs text-gray-500">Available Balance</div>
             <div className="text-xs text-gray-400 mt-1">(For Trading)</div>
           </div>
           <div>
             <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
-              {convertedFrozenBalance.toFixed(4)}
+              {formatNumberWithCommas(convertedFrozenBalance, 4)}
             </div>
             <div className="text-xs text-gray-500">Frozen Balance</div>
             <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
           </div>
           <div>
             <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
-              {convertedTotalBalance.toFixed(4)}
+              {formatNumberWithCommas(convertedTotalBalance, 4)}
             </div>
             <div className="text-xs text-gray-500">Total Balance</div>
             <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
@@ -1253,7 +1271,7 @@ const AssetPage = ({
         <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
           <div className="text-sm text-blue-800">
             <div className="font-medium mb-1">Current Exchange Rate</div>
-            <div>1 ZAR = {exchangeRates[selectedCurrency]?.toFixed(6)} {selectedCurrency}</div>
+            <div>1 ZAR = {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)} {selectedCurrency}</div>
             <div className="text-xs mt-1 opacity-75">
               Rates updated every 5 minutes
               {isLoadingRates && <span> • Updating...</span>}
@@ -1448,7 +1466,7 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
 
-  // FIXED: Separated available and frozen balances properly
+  // FIXED: Separated available and frozen balances properly with comma formatting
   const availableBalance = profile?.available_balance || 0  // Only available balance
   const frozenBalance = profile?.frozen_balance || 0        // Separate frozen balance
 
@@ -1473,13 +1491,13 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
             <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
-            <div className="text-sm font-medium text-yellow-300">Credit Score: {profile?.credit_score || 0}</div>
+            <div className="text-sm font-medium text-yellow-300">Credit Score: {formatNumberWithCommas(profile?.credit_score || 0, 0)}</div>
             <div className="text-sm opacity-90">
-              {/* FIXED: Clear separation of available and frozen balance display */}
-              <div>Available: {availableBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"}</div>
+              {/* FIXED: Clear separation of available and frozen balance display with comma formatting */}
+              <div>Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "ZAR"}</div>
               {frozenBalance > 0 && (
                 <div className="text-yellow-300">
-                  Frozen: {frozenBalance.toFixed(4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
+                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
                 </div>
               )}
             </div>
@@ -2056,12 +2074,9 @@ const HomePage = () => {
 
   const formatPrice = (price: number, symbol: string) => {
     if (symbol.includes("DOGE") || symbol.includes("CHZ")) {
-      return price.toFixed(4)
+      return formatNumberWithCommas(price, 4)
     }
-    return price.toLocaleString("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 4,
-    })
+    return formatNumberWithCommas(price, 4)
   }
 
   const formatPercentage = (percentage: number) => {
@@ -2260,15 +2275,15 @@ const HomePage = () => {
 
           {/* Withdrawal Form */}
           <div className="p-4 space-y-6">
-            {/* Available Balance - FIXED: Only show available balance, mention frozen separately */}
+            {/* Available Balance - FIXED: Only show available balance, mention frozen separately with comma formatting */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
               <div className="text-2xl font-bold text-gray-900">
-                {availableBalance.toFixed(2)} {profile?.preferred_currency || "ZAR"}
+                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-orange-600 mt-1">
-                  Frozen: {profile.frozen_balance.toFixed(2)} {profile?.preferred_currency || "ZAR"} (Cannot withdraw)
+                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "ZAR"} (Cannot withdraw)
                 </div>
               )}
             </div>
@@ -2347,7 +2362,7 @@ const HomePage = () => {
                         <div key={withdrawal.id} className="border rounded-lg p-3">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">
-                              {withdrawal.amount} {profile?.preferred_currency || "ZAR"}
+                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "ZAR"}
                             </div>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${

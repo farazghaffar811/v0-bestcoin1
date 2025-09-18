@@ -710,7 +710,7 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* Balance and Earnings - FIXED: Format balances with commas and show total winnings */}
+              {/* Balance and Earnings - FIXED: Format balances with commas and show total winnings without signs */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
                 <div className="text-white">
                   Available Balance:{" "} 
@@ -719,7 +719,7 @@ const MarketPage = ({
                 </div>
                 <div className="text-white">
                   Total Winnings:{" "}
-                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
+                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)}</span>
                 </div>
               </div>
 
@@ -733,12 +733,12 @@ const MarketPage = ({
                   </div>
                   <div>
                     <span className="text-gray-400">Profit:</span>
-                    <span className="text-green-400 ml-2">+{formatNumberWithCommas(calculateProfitAmount(), 2)} R</span>
+                    <span className="text-green-400 ml-2">{formatNumberWithCommas(Math.abs(calculateProfitAmount()), 2)} R</span>
                   </div>
                 </div>
                 <div className="border-t border-slate-600 mt-2 pt-2">
                   <span className="text-gray-400">Total Return:</span>
-                  <span className="text-green-400 ml-2 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)} R</span>
+                  <span className="text-green-400 ml-2 font-semibold">{formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)} R</span>
                 </div>
               </div>
 
@@ -926,7 +926,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Expected Total Return</div>
-                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(order.expected_earnings, 4)} R</div>
+                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.expected_earnings), 4)} R</div>
                     </div>
                   </div>
 
@@ -944,7 +944,7 @@ const OrderPage = () => {
           )}
         </div>
       ) : (
-        /* Closing Orders Section - FIXED: Show proper winnings */
+        /* Closing Orders Section - FIXED: Hide profit made field and show total winnings without signs */
         <div>
           {closingOrders.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No closing orders</div>
@@ -989,9 +989,9 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Total Winnings</div>
-                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(order.actual_earnings || order.expected_earnings, 4)} R</div>
+                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} R</div>
                     </div>
-                   
+                  </div>
 
                   <div className="mt-3 text-xs text-black font-bold">
                     Closed: {order.closed_at ? new Date(order.closed_at).toLocaleString() : "N/A"}

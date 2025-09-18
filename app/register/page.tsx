@@ -91,7 +91,11 @@ export default function RegisterPage() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-16">
-        <h1 className="text-4xl font-bold text-gray-800 mb-16">CBOE</h1>
+         {/* CBOE Title */}
+       <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-16">
+  BEST
+</h1>
+
 
         <form onSubmit={handleRegister} className="w-full max-w-md space-y-6">
           <div className="relative">

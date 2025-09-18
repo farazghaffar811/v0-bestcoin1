@@ -211,7 +211,7 @@ const MarketPage = ({
       if (result.success) {
         setShowTradingModal(false)
         setOrderAmount("")
-        toast.success("Order created successfully! You will win this trade!")
+        toast.success("Order created successfully!")
         // Refresh user profile to update balance
         refreshUserProfile()
         // Navigate to orders page

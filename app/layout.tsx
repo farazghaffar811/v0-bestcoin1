@@ -8,8 +8,17 @@ export const metadata: Metadata = {
   title: 'BEST',
   description: 'High Level Trading Platform',
   generator: 'v0.app',
+   icons: {
+    icon: [
+      {
+        url: 'https://res.cloudinary.com/dwnt025iw/image/upload/v1758170169/favicon_l1kb1v.png',
+        type: 'image/png',
+        sizes: '32x32',
+      },
+    ],
+  },
 }
-
+ 
 export default function RootLayout({
   children,
 }: Readonly<{

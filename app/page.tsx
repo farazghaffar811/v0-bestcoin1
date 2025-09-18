@@ -177,6 +177,27 @@ const MarketPage = ({
     return userProfile.available_balance || 0
   }
 
+  // FIXED: Proper calculation of expected earnings (original amount + profit)
+  const calculateExpectedEarnings = () => {
+    if (!orderAmount) return 0
+    // Profit percentages for trading times: 60s=20%, 120s=30%, 180s=50%
+    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
+    const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
+    const orderAmountNum = Number.parseFloat(orderAmount)
+    // Return total expected earnings (order amount + profit) - this is what user gets back when winning
+    return orderAmountNum + (orderAmountNum * percentage) / 100
+  }
+
+  // FIXED: Calculate just the profit amount (not including original stake)
+  const calculateProfitAmount = () => {
+    if (!orderAmount) return 0
+    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
+    const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
+    const orderAmountNum = Number.parseFloat(orderAmount)
+    // Return only the profit amount (not including the original stake)
+    return (orderAmountNum * percentage) / 100
+  }
+
   const handleOrderSubmit = async () => {
     if (!orderAmount || Number.parseFloat(orderAmount) <= 0) {
       toast.error("Please enter a valid amount")
@@ -192,6 +213,9 @@ const MarketPage = ({
     setIsSubmittingOrder(true)
 
     try {
+      const expectedEarnings = calculateExpectedEarnings()
+      const profitAmount = calculateProfitAmount()
+
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -202,6 +226,8 @@ const MarketPage = ({
           amount: Number.parseFloat(orderAmount),
           trading_time: selectedTradingTime,
           entry_price: currentPrice,
+          expected_earnings: expectedEarnings, // FIXED: Send expected earnings to backend
+          profit_amount: profitAmount, // FIXED: Send profit amount separately
           auto_win: true, // UPDATED: Always set to true to ensure users always win
         }),
       })
@@ -224,16 +250,6 @@ const MarketPage = ({
     } finally {
       setIsSubmittingOrder(false)
     }
-  }
-
-  const calculateExpectedEarnings = () => {
-    if (!orderAmount) return 0
-    // Updated profit percentages for new trading times: 60s=20%, 120s=30%, 180s=50%
-    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
-    const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
-    const orderAmountNum = Number.parseFloat(orderAmount)
-    // Return total expected earnings (order amount + profit)
-    return orderAmountNum + (orderAmountNum * percentage) / 100
   }
 
   const fetchLiveData = async () => {
@@ -659,20 +675,14 @@ const MarketPage = ({
                   {/* Label */}
                   <span className="text-white font-semibold text-sm">Trading Time</span>
 
-                  {/* Info Button */}
-                  <div
-                    className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
-                    onClick={() => setShowTooltip(!showTooltip)}
-                  >
-                    <span className="text-white text-xs font-bold">i</span>
-                  </div>
-
                   {/* Tooltip */}
-                  {showTooltip && (
-                    <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
-                      Guaranteed Win <br /> 100% Success Rate
-                    </div>
-                  )}
+                {showTooltip && (
+                  <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
+                    Participation <br /> Win/Loss Ratio
+                  </div>
+                )}
+
+                 
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -700,7 +710,7 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* Balance and Earnings - FIXED: Format balances with commas */}
+              {/* Balance and Earnings - FIXED: Format balances with commas and show total winnings */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
                 <div className="text-white">
                   Available Balance:{" "} 
@@ -708,8 +718,27 @@ const MarketPage = ({
                   <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
                 </div>
                 <div className="text-white">
-                  Expected Earnings:{" "}
-                  <span className="text-blue-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
+                  Total Winnings:{" "}
+                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
+                </div>
+              </div>
+
+              {/* FIXED: Show profit breakdown clearly */}
+              <div className="bg-slate-800 rounded-lg p-3 mb-3 text-sm">
+                <div className="text-green-400 font-medium mb-2">💰 Profit Breakdown:</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-gray-400">Your Stake:</span>
+                    <span className="text-white ml-2">{formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} R</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Profit:</span>
+                    <span className="text-green-400 ml-2">+{formatNumberWithCommas(calculateProfitAmount(), 2)} R</span>
+                  </div>
+                </div>
+                <div className="border-t border-slate-600 mt-2 pt-2">
+                  <span className="text-gray-400">Total Return:</span>
+                  <span className="text-green-400 ml-2 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)} R</span>
                 </div>
               </div>
 
@@ -741,7 +770,7 @@ const MarketPage = ({
                 disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
                 className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmittingOrder ? "Submitting..." : "Order Confirmation"}
+                {isSubmittingOrder ? "Submitting..." : "✅ Order"}
               </button>
             </div>
           </div>
@@ -878,6 +907,7 @@ const OrderPage = () => {
                         {order.trading_time}s
                       </div>
                       <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Active</div>
+                      
                     </div>
                   </div>
 
@@ -895,8 +925,8 @@ const OrderPage = () => {
                       <div className="text-gray-800 font-semibold">{order.trading_time}s</div>
                     </div>
                     <div>
-                      <div className="text-black font-bold">Expected Earnings</div>
-                      <div className="text-green-600">{formatNumberWithCommas(order.expected_earnings, 4)} R</div>
+                      <div className="text-black font-bold">Expected Total Return</div>
+                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(order.expected_earnings, 4)} R</div>
                     </div>
                   </div>
 
@@ -914,7 +944,7 @@ const OrderPage = () => {
           )}
         </div>
       ) : (
-        /* Closing Orders Section */
+        /* Closing Orders Section - FIXED: Show proper winnings */
         <div>
           {closingOrders.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No closing orders</div>
@@ -935,7 +965,7 @@ const OrderPage = () => {
                         {order.trading_time}s
                       </div>
                       <div className="px-2 py-1 rounded text-xs text-white bg-green-500">
-                        Won ✓
+                        ✅ Won
                       </div>
                     </div>
                   </div>
@@ -946,7 +976,7 @@ const OrderPage = () => {
                       <div className="text-gray-800">{formatNumberWithCommas(order.entry_price, 4)}</div>
                     </div>
                     <div>
-                      <div className="text-black font-bold">Amount</div>
+                      <div className="text-black font-bold">Original Stake</div>
                       <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
                     </div>
                     <div>
@@ -955,11 +985,15 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Result</div>
-                      <div className="text-green-600 font-semibold">Won ✓</div>
+                      <div className="text-green-600 font-semibold">✅ Won</div>
                     </div>
                     <div>
-                      <div className="text-black font-bold">Actual Earnings</div>
-                      <div className="text-green-600">{formatNumberWithCommas(order.actual_earnings || order.expected_earnings, 4)} R</div>
+                      <div className="text-black font-bold">Total Winnings</div>
+                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(order.actual_earnings || order.expected_earnings, 4)} R</div>
+                    </div>
+                    <div>
+                      <div className="text-black font-bold">Profit Made</div>
+                      <div className="text-green-600 font-semibold">+{formatNumberWithCommas((order.actual_earnings || order.expected_earnings) - order.amount, 4)} R</div>
                     </div>
                   </div>
 

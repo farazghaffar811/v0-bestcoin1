@@ -628,119 +628,122 @@ const MarketPage = ({
             }
           }}
         >
-          <div className="bg-slate-900 w-full h-[65%] sm:h-[70%] md:h-[75%] lg:h-[60%] xl:h-[55%] rounded-t-2xl p-4 sm:p-6 animate-slide-up max-h-[90vh] overflow-hidden">
-            {/* Header */}
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <div className="text-gray-400 text-sm mb-1">Product Name</div>
-                <div className="text-white font-semibold text-lg">BTC/USDT</div>
-              </div>
-              <div className="flex-1 text-right">
-                <div className="text-gray-400 text-sm mb-1">Direction</div>
-                <div
-                  className={`font-semibold text-lg ${tradingDirection === "buy_up" ? "text-green-400" : "text-red-400"}`}
-                >
-                  {tradingDirection === "buy_up" ? "Buy Up" : "Buy Down"}
+          <div className="bg-slate-900 w-full min-h-[60vh] max-h-[85vh] sm:h-[70%] md:h-[75%] lg:h-[60%] xl:h-[55%] rounded-t-2xl flex flex-col animate-slide-up">
+            {/* Scrollable content area */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+              {/* Header */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <div className="text-gray-400 text-sm mb-1">Product Name</div>
+                  <div className="text-white font-semibold text-lg">BTC/USDT</div>
                 </div>
-              </div>
-            </div>
-
-            {/* Current Price */}
-            <div className="mb-3">
-              <div className="text-gray-400 text-sm mb-1">Current price</div>
-              <div className="text-white text-xl font-bold">{formatNumberWithCommas(currentPrice, 4)}</div>
-            </div>
-
-           
-
-            {/* Trading Time */}
-            <div className="mb-3">
-              <div className="flex items-center gap-2 mb-2 relative">
-                {/* Label */}
-                <span className="text-white font-semibold text-sm">Trading Time</span>
-
-                {/* Info Button */}
-                <div
-                  className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
-                  onClick={() => setShowTooltip(!showTooltip)}
-                >
-                  <span className="text-white text-xs font-bold">i</span>
-                </div>
-
-                {/* Tooltip */}
-                {showTooltip && (
-                  <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
-                    Guaranteed Win <br /> 100% Success Rate
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { time: 60, scale: 20 },
-                  { time: 120, scale: 30 },
-                  { time: 180, scale: 50 },
-                ].map(({ time, scale }) => (
-                  <button
-                    key={time}
-                    onClick={() => setSelectedTradingTime(time)}
-                    className={`p-2 rounded-lg transition-all ${
-                      selectedTradingTime === time
-                        ? "bg-blue-600 border-2 border-blue-400"
-                        : "bg-slate-700 border-2 border-slate-600 hover:border-slate-500"
-                    }`}
+                <div className="flex-1 text-right">
+                  <div className="text-gray-400 text-sm mb-1">Direction</div>
+                  <div
+                    className={`font-semibold text-lg ${tradingDirection === "buy_up" ? "text-green-400" : "text-red-400"}`}
                   >
-                    <div className="text-center">
-                      <div className="text-gray-400 text-xs mb-1">Time</div>
-                      <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
-                      <div className="text-green-400 text-xs font-semibold">Win: {scale}.00%</div>
+                    {tradingDirection === "buy_up" ? "Buy Up" : "Buy Down"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Current Price */}
+              <div className="mb-3">
+                <div className="text-gray-400 text-sm mb-1">Current price</div>
+                <div className="text-white text-xl font-bold">{formatNumberWithCommas(currentPrice, 4)}</div>
+              </div>
+
+              {/* Trading Time */}
+              <div className="mb-3">
+                <div className="flex items-center gap-2 mb-2 relative">
+                  {/* Label */}
+                  <span className="text-white font-semibold text-sm">Trading Time</span>
+
+                  {/* Info Button */}
+                  <div
+                    className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center cursor-pointer"
+                    onClick={() => setShowTooltip(!showTooltip)}
+                  >
+                    <span className="text-white text-xs font-bold">i</span>
+                  </div>
+
+                  {/* Tooltip */}
+                  {showTooltip && (
+                    <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
+                      Guaranteed Win <br /> 100% Success Rate
                     </div>
-                  </button>
-                ))}
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { time: 60, scale: 20 },
+                    { time: 120, scale: 30 },
+                    { time: 180, scale: 50 },
+                  ].map(({ time, scale }) => (
+                    <button
+                      key={time}
+                      onClick={() => setSelectedTradingTime(time)}
+                      className={`p-2 rounded-lg transition-all ${
+                        selectedTradingTime === time
+                          ? "bg-blue-600 border-2 border-blue-400"
+                          : "bg-slate-700 border-2 border-slate-600 hover:border-slate-500"
+                      }`}
+                    >
+                      <div className="text-center">
+                        <div className="text-gray-400 text-xs mb-1">Time</div>
+                        <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
+                        <div className="text-green-400 text-xs font-semibold">Win: {scale}.00%</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Balance and Earnings - FIXED: Format balances with commas */}
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
+                <div className="text-white">
+                  Available Balance:{" "} 
+                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(getAvailableBalance(), 4)}</span>{" "}
+                  <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
+                </div>
+                <div className="text-white">
+                  Expected Earnings:{" "}
+                  <span className="text-blue-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
+                </div>
+              </div>
+
+              {/* Frozen Balance Warning */}
+              {userProfile?.frozen_balance > 0 && (
+                <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
+                  Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used for trading
+                </div>
+              )}
+
+              {/* Amount Input */}
+              <div className="mb-4">
+                <input
+                  type="number"
+                  value={orderAmount}
+                  onChange={(e) => setOrderAmount(e.target.value)}
+                  placeholder="0"
+                  className="w-full bg-slate-800 border-2 border-slate-600 rounded-full px-6 py-3 text-white text-center text-lg font-semibold focus:border-blue-400 focus:outline-none transition-colors"
+                  min="0"
+                  step="0.01"
+                />
               </div>
             </div>
-
-            {/* Balance and Earnings - FIXED: Format balances with commas */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
-              <div className="text-white">
-                Available Balance:{" "} 
-                <span className="text-green-400 font-semibold">{formatNumberWithCommas(getAvailableBalance(), 4)}</span>{" "}
-                <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
-              </div>
-              <div className="text-white">
-                Expected Earnings:{" "}
-                <span className="text-blue-400 font-semibold">{formatNumberWithCommas(calculateExpectedEarnings(), 2)}</span>
-              </div>
+            
+            {/* Fixed button at bottom */}
+            <div className="p-4 sm:p-6 border-t border-slate-700 bg-slate-900">
+              <button
+                onClick={handleOrderSubmit}
+                disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
+                className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingOrder ? "Submitting..." : "Order Confirmation"}
+              </button>
             </div>
-
-            {/* Frozen Balance Warning */}
-            {userProfile?.frozen_balance > 0 && (
-              <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used for trading
-              </div>
-            )}
-
-            {/* Amount Input */}
-            <div className="mb-4">
-              <input
-                type="number"
-                value={orderAmount}
-                onChange={(e) => setOrderAmount(e.target.value)}
-                placeholder="0"
-                className="w-full bg-slate-800 border-2 border-slate-600 rounded-full px-6 py-3 text-white text-center text-lg font-semibold focus:border-blue-400 focus:outline-none transition-colors"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            {/* Order Confirmation Button */}
-            <button
-              onClick={handleOrderSubmit}
-              disabled={isSubmittingOrder || !orderAmount || Number.parseFloat(orderAmount) <= 0}
-              className="w-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 text-black py-3 rounded-full font-bold text-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmittingOrder ? "Submitting..." : "Order Confirmation"}
-            </button>
           </div>
         </div>
       )}
@@ -869,10 +872,7 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Auto-Win Badge */}
-                      <div className="px-2 py-1 rounded text-xs bg-green-500 text-white">
-                        Auto-Win ✓
-                      </div>
+                      
                       {/* Trading time badge */}
                       <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
                         {order.trading_time}s
@@ -1509,7 +1509,6 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
           { icon: "🛡️", label: "Authentication", action: handleAuthenticationClick },
           { icon: "💬", label: "User Message", action: handleUserMessageClick },
           { icon: "❓", label: "Help Center" },
-          { icon: "⚙️", label: "Settings", action: handleSettingsClick },
           { icon: "🚪", label: "Logout", action: handleLogout },
         ].map((item, index) => (
           <div
@@ -2109,7 +2108,7 @@ const HomePage = () => {
       return
     }
 
-    // FIXED: Available balance is only the available_balance field (frozen balance does not reduce available balance)
+    // FIXED: Available balance is only the available_balance field (frozen balance doesn't reduce available balance)
     const availableBalance = profile?.available_balance || 0
     
     if (Number.parseFloat(withdrawalAmount) > availableBalance) {

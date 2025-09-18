@@ -965,7 +965,7 @@ const OrderPage = () => {
                         {order.trading_time}s
                       </div>
                       <div className="px-2 py-1 rounded text-xs text-white bg-green-500">
-                        ✅ Won
+                        ✓ Won
                       </div>
                     </div>
                   </div>
@@ -985,17 +985,13 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Result</div>
-                      <div className="text-green-600 font-semibold">✅ Won</div>
+                      <div className="text-green-600 font-semibold">✓ Won</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Total Winnings</div>
                       <div className="text-green-600 font-semibold">{formatNumberWithCommas(order.actual_earnings || order.expected_earnings, 4)} R</div>
                     </div>
-                    <div>
-                      <div className="text-black font-bold">Profit Made</div>
-                      <div className="text-green-600 font-semibold">+{formatNumberWithCommas((order.actual_earnings || order.expected_earnings) - order.amount, 4)} R</div>
-                    </div>
-                  </div>
+                   
 
                   <div className="mt-3 text-xs text-black font-bold">
                     Closed: {order.closed_at ? new Date(order.closed_at).toLocaleString() : "N/A"}

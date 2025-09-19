@@ -1,30 +1,23 @@
-"use client"; // important for hooks
-
-import { useEffect } from "react";
+'use client'
+import { useEffect } from 'react'
 
 export default function DisableZoom() {
   useEffect(() => {
-    const preventZoomKeys = (e: KeyboardEvent) => {
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "+" || e.key === "-" || e.key === "=" || e.key === "0")
-      ) {
-        e.preventDefault();
-      }
-    };
+    const handler = (e: TouchEvent) => {
+      if (e.touches.length > 1) e.preventDefault()        // pinch
+    }
+    const dblTap = (e: TouchEvent) => e.preventDefault()  // double tap
 
-    const preventWheelZoom = (e: WheelEvent) => {
-      if (e.ctrlKey) e.preventDefault();
-    };
-
-    window.addEventListener("keydown", preventZoomKeys, { passive: false });
-    window.addEventListener("wheel", preventWheelZoom, { passive: false });
+    document.addEventListener('touchmove', handler, { passive: false })
+    document.addEventListener('dblclick', e => e.preventDefault())
+    document.addEventListener('touchend', dblTap, { passive: false })
 
     return () => {
-      window.removeEventListener("keydown", preventZoomKeys);
-      window.removeEventListener("wheel", preventWheelZoom);
-    };
-  }, []);
+      document.removeEventListener('touchmove', handler)
+      document.removeEventListener('dblclick', e => e.preventDefault())
+      document.removeEventListener('touchend', dblTap)
+    }
+  }, [])
 
-  return null; // nothing to render
+  return null
 }

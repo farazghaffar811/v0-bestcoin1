@@ -20,23 +20,32 @@ export const metadata: Metadata = {
       },
     ],
   },
+  // You can keep this if you want, but we’ll also force a meta tag below
   viewport: {
     width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
-    userScalable: 'no', // disables pinch zoom on mobile
+    userScalable: 'no',
   },
 }
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
     <html lang="en">
+      {/* ✅ Explicit meta viewport to guarantee mobile browsers respect it */}
+      <Head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+        />
+      </Head>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        {/* ✅ Disable zoom for keyboard & mousewheel */}
+        {/* ✅ This script blocks pinch & double-tap zoom */}
         <DisableZoom />
-
         {children}
         <Analytics />
       </body>

@@ -1212,8 +1212,8 @@ const AssetPage = ({
         <div className="grid grid-cols-3 gap-4 sm:gap-8">
           <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+             <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
                 alt="Recharge"
                 className="w-6 h-6"
               />
@@ -1234,8 +1234,8 @@ const AssetPage = ({
 
           <button onClick={onCustomerSupportClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+             <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
                 alt="Customer Service"
                 className="w-6 h-6"
               />
@@ -2478,8 +2478,8 @@ const HomePage = () => {
               <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                   <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
                 alt="Recharge"
                 className="w-6 h-6"
               />
@@ -2500,8 +2500,8 @@ const HomePage = () => {
 
                 <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+                  <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
                 alt="Customer Service"
                 className="w-6 h-6"
               />

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
 import { Home, X } from "lucide-react"
 import { toast, Toaster } from "sonner"
+import { CreditCard, ShieldCheck, MessageSquare, HelpCircle, LogOut } from "lucide-react";
 
 interface CryptoPrice {
   id: string
@@ -725,10 +726,10 @@ const MarketPage = ({
 
               {/* FIXED: Show profit breakdown clearly */}
               <div className="bg-slate-800 rounded-lg p-3 mb-3 text-sm">
-                <div className="text-green-400 font-medium mb-2">💰 Profit Breakdown:</div>
+                <div className="text-green-400 font-medium mb-2"> Profit Breakdown💰:</div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-gray-400">Your Stake:</span>
+                    <span className="text-gray-400">Your order:</span>
                     <span className="text-white ml-2">{formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} R</span>
                   </div>
                   <div>
@@ -976,7 +977,7 @@ const OrderPage = () => {
                       <div className="text-gray-800">{formatNumberWithCommas(order.entry_price, 4)}</div>
                     </div>
                     <div>
-                      <div className="text-black font-bold">Original Stake</div>
+                      <div className="text-black font-bold">Amount</div>
                       <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
                     </div>
                     <div>
@@ -988,7 +989,7 @@ const OrderPage = () => {
                       <div className="text-green-600 font-semibold">✓ Won</div>
                     </div>
                     <div>
-                      <div className="text-black font-bold">Total Winnings</div>
+                      <div className="text-black font-bold">Actual Earnings</div>
                       <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} R</div>
                     </div>
                   </div>
@@ -1535,31 +1536,32 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
       </div>
 
       {/* Menu Items */}
-      <div className="px-4 py-2 space-y-1">
-        {[
-          { icon: "💳", label: "Collection Information", action: handleCollectionInfoClick },
-          { icon: "🛡️", label: "Authentication", action: handleAuthenticationClick },
-          { icon: "💬", label: "User Message", action: handleUserMessageClick },
-          { icon: "❓", label: "Help Center" },
-          { icon: "🚪", label: "Logout", action: handleLogout },
-        ].map((item, index) => (
-          <div
-            key={index}
-            onClick={item.action}
-            className={`bg-white rounded-lg p-4 shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors ${item.action ? "cursor-pointer" : ""}`}
-          >
-            <div className="flex items-center gap-4">
-              <span className="text-2xl">{item.icon}</span>
-              <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
-            </div>
-            {!item.action && (
-              <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-              </svg>
-            )}
-          </div>
-        ))}
+     
+<div className="px-4 py-2 space-y-1">
+  {[
+    { icon: <CreditCard className="w-6 h-6 text-blue-500" />, label: "Collection Information", action: handleCollectionInfoClick },
+    { icon: <ShieldCheck className="w-6 h-6 text-green-500" />, label: "Authentication", action: handleAuthenticationClick },
+    { icon: <MessageSquare className="w-6 h-6 text-purple-500" />, label: "User Message", action: handleUserMessageClick },
+    { icon: <HelpCircle className="w-6 h-6 text-gray-500" />, label: "Help Center" },
+    { icon: <LogOut className="w-6 h-6 text-red-500" />, label: "Logout", action: handleLogout },
+  ].map((item, index) => (
+    <div
+      key={index}
+      onClick={item.action}
+      className={`bg-white rounded-lg p-4 shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors ${item.action ? "cursor-pointer" : ""}`}
+    >
+      <div className="flex items-center gap-4">
+        {item.icon}
+        <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
       </div>
+      {!item.action && (
+        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+        </svg>
+      )}
+    </div>
+  ))}
+</div>
     </div>
   )
 }

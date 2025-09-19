@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { createBrowserClient } from "@/lib/supabase/browser"
+import { MessageCircle } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -74,14 +74,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header Icons */}
       <div className="flex justify-end items-center p-6">
-        <button
-          onClick={handleCustomerSupport}
-          className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
-        >
-          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z" />
-          </svg>
-        </button>
+       <button
+  onClick={handleCustomerSupport}
+  className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
+  type="button"
+>
+  <MessageCircle className="w-5 h-5 text-white" />
+</button>
       </div>
 
       {/* Main Content */}

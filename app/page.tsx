@@ -2478,18 +2478,22 @@ const HomePage = () => {
               <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
+                    <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                alt="Recharge"
+                className="w-6 h-6"
+              />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Recharge</span>
                 </button>
 
                 <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-                    </svg>
+                    <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
+                alt="Withdrawal"
+                className="w-6 h-6"
+              />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
                 </button>

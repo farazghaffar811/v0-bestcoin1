@@ -48,7 +48,6 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     const supabase = createClient()
-    const supabase = createBrowserClient()
     setError(null)
 
     try {

@@ -4,11 +4,14 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
+// ✅ Correct path to your component
+import DisableZoom from './components/DisableZoom'
+
 export const metadata: Metadata = {
   title: 'BEST',
   description: 'High Level Trading Platform',
   generator: 'v0.app',
-   icons: {
+  icons: {
     icon: [
       {
         url: 'https://res.cloudinary.com/dwnt025iw/image/upload/v1758170169/favicon_l1kb1v.png',
@@ -17,22 +20,23 @@ export const metadata: Metadata = {
       },
     ],
   },
-   viewport: {
-    width: "device-width",
+  viewport: {
+    width: 'device-width',
     initialScale: 1,
     maximumScale: 1,
-    userScalable: "no",
+    userScalable: 'no', // disables pinch zoom on mobile
   },
 }
- 
+
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+        {/* ✅ Disable zoom for keyboard & mousewheel */}
+        <DisableZoom />
+
         {children}
         <Analytics />
       </body>

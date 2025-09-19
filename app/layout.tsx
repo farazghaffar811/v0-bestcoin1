@@ -5,7 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 // ✅ Correct path to your component
-import DisableZoom from './components/DisableZoom'
+import DisableZoom from "@/components/DisableZoom"
 
 export const metadata: Metadata = {
   title: 'BEST',

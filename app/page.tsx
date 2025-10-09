@@ -1149,7 +1149,9 @@ const AssetPage = ({
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
           <div className="text-2xl sm:text-3xl font-bold mb-2">
             {formatNumberWithCommas(convertedTotalBalance, 4)}{" "}
-            <span className="text-lg font-normal">{selectedCurrency}</span>
+            <span className="text-lg font-normal">
+              {getCurrencySymbol(selectedCurrency)} {selectedCurrency}
+            </span>
           </div>
           <div className="relative">
             <div
@@ -1157,7 +1159,8 @@ const AssetPage = ({
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
               <span>
-                ≈ {formatNumberWithCommas(convertedTotalBalance, 4)} {getCurrencySymbol(selectedCurrency)}
+                ≈ {formatNumberWithCommas(convertedTotalBalance, 4)} {getCurrencySymbol(selectedCurrency)}{" "}
+                {selectedCurrency}
                 {isLoadingRates && <span className="ml-1 text-xs">(updating...)</span>}
               </span>
               <svg
@@ -1210,12 +1213,13 @@ const AssetPage = ({
         {/* Available / Frozen balance text */}
         <div className="text-sm opacity-90 px-4 pb-4">
           <div className="mb-1">
-            Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)} {selectedCurrency}
+            Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)}{" "}
+            {getCurrencySymbol(selectedCurrency)} {selectedCurrency}
           </div>
           {frozenBalance > 0 && (
             <div className="text-yellow-300">
-              Frozen Balance: {formatNumberWithCommas(convertedFrozenBalance, 4)} {selectedCurrency} (Cannot be used for
-              trading)
+              Frozen Balance: {formatNumberWithCommas(convertedFrozenBalance, 4)} {getCurrencySymbol(selectedCurrency)}{" "}
+              {selectedCurrency} (Cannot be used for trading)
             </div>
           )}
         </div>
@@ -1226,33 +1230,21 @@ const AssetPage = ({
         <div className="grid grid-cols-3 gap-4 sm:gap-8">
           <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="/images/design-mode/download1.png"
-                alt="Recharge"
-                className="w-6 h-6"
-              />
+              <img src="/images/design-mode/download1.png" alt="Recharge" className="w-6 h-6" />
             </div>
             <span className="text-sm text-gray-800 font-medium">Recharge</span>
           </button>
 
           <button onClick={onWithdrawalClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="/images/design-mode/download2.png"
-                alt="Withdrawal"
-                className="w-6 h-6"
-              />
+              <img src="/images/design-mode/download2.png" alt="Withdrawal" className="w-6 h-6" />
             </div>
             <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
           </button>
 
           <button onClick={onCustomerSupportClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-              <img
-                src="/images/design-mode/download.png.jpeg"
-                alt="Customer Service"
-                className="w-6 h-6"
-              />
+              <img src="/images/design-mode/download.png.jpeg" alt="Customer Service" className="w-6 h-6" />
             </div>
             <span className="text-sm text-gray-800 font-medium">Customer Service</span>
           </button>
@@ -1267,7 +1259,7 @@ const AssetPage = ({
           </div>
           <span className="font-medium text-gray-900">{selectedCurrency}</span>
           <span className="text-xs text-gray-500 ml-2">
-            {/* Display rate relative to ZAR if not SAR */}
+            {/* Keep rate info base as ZAR (DB base). No balance displays in ZAR. */}
             {selectedCurrency !== "ZAR" &&
               exchangeRates[selectedCurrency] !== undefined &&
               `1 ZAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency}`}
@@ -1532,11 +1524,7 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
       >
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-            <img
-              src="/images/design-mode/avatar.f708a1f.svg"
-              alt="User Avatar"
-              className="w-12 h-12 object-cover"
-            />
+            <img src="/images/design-mode/avatar.f708a1f.svg" alt="User Avatar" className="w-12 h-12 object-cover" />
           </div>
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
@@ -2514,33 +2502,21 @@ const HomePage = () => {
               <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <img
-                      src="/images/design-mode/download1.png"
-                      alt="Recharge"
-                      className="w-6 h-6"
-                    />
+                    <img src="/images/design-mode/download1.png" alt="Recharge" className="w-6 h-6" />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Recharge</span>
                 </button>
 
                 <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <img
-                      src="/images/design-mode/download2.png"
-                      alt="Withdrawal"
-                      className="w-6 h-6"
-                    />
+                    <img src="/images/design-mode/download2.png" alt="Withdrawal" className="w-6 h-6" />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
                 </button>
 
                 <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                    <img
-                      src="/images/design-mode/download.png.jpeg"
-                      alt="Customer Service"
-                      className="w-6 h-6"
-                    />
+                    <img src="/images/design-mode/download.png.jpeg" alt="Customer Service" className="w-6 h-6" />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Customer Service</span>
                 </button>

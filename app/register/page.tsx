@@ -80,14 +80,15 @@ export default function RegisterPage() {
       
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-16">
-        {/* CBOE Title */}
+       {/* CBOE Title */}
 <h1 className="text-4xl font-bold mb-16 flex items-center justify-center">
   <img
-    src="/images/design-mode/logo_super_scjghk_v2cehs.png"
+    src="/images/design-mode/logo_super_scjghk_v2cehs(1).png"
     alt="BEST Logo"
-    className="w-32 h-auto"
+    className="w-40 h-auto drop-shadow-[0_0_15px_rgba(255,165,0,0.7)]"
   />
 </h1>
+
 
 
         <form onSubmit={handleRegister} className="w-full max-w-md space-y-6">

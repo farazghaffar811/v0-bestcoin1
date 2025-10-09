@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: 'https://res.cloudinary.com/dwnt025iw/image/upload/v1758170169/favicon_l1kb1v.png',
+        url: 'https://res.cloudinary.com/dwnt025iw/image/upload/v1758664941/favicon_jmc1ta.jpg',
         type: 'image/png',
         sizes: '32x32',
       },

@@ -80,9 +80,13 @@ export default function RegisterPage() {
       
 
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-16">
-         {/* CBOE Title */}
-       <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 mb-16">
-  BEST
+        {/* CBOE Title */}
+<h1 className="text-4xl font-bold mb-16 flex items-center justify-center">
+  <img
+    src="/images/design-mode/logo_super_scjghk_v2cehs.png"
+    alt="BEST Logo"
+    className="w-32 h-auto"
+  />
 </h1>
 
 

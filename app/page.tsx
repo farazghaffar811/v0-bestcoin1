@@ -1227,7 +1227,7 @@ const AssetPage = ({
           <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+                src="/images/design-mode/download1.png"
                 alt="Recharge"
                 className="w-6 h-6"
               />
@@ -1238,7 +1238,7 @@ const AssetPage = ({
           <button onClick={onWithdrawalClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
+                src="/images/design-mode/download2.png"
                 alt="Withdrawal"
                 className="w-6 h-6"
               />
@@ -1249,7 +1249,7 @@ const AssetPage = ({
           <button onClick={onCustomerSupportClick} className="flex flex-col items-center gap-2">
             <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                src="/images/design-mode/download.png.jpeg"
                 alt="Customer Service"
                 className="w-6 h-6"
               />
@@ -1533,7 +1533,7 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
             <img
-              src="https://blocnix.top/static/images/avatar.f708a1f.svg"
+              src="/images/design-mode/avatar.f708a1f.svg"
               alt="User Avatar"
               className="w-12 h-12 object-cover"
             />
@@ -2515,7 +2515,7 @@ const HomePage = () => {
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
                     <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+                      src="/images/design-mode/download1.png"
                       alt="Recharge"
                       className="w-6 h-6"
                     />
@@ -2526,7 +2526,7 @@ const HomePage = () => {
                 <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
                     <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
+                      src="/images/design-mode/download2.png"
                       alt="Withdrawal"
                       className="w-6 h-6"
                     />
@@ -2537,7 +2537,7 @@ const HomePage = () => {
                 <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
                     <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                      src="/images/design-mode/download.png.jpeg"
                       alt="Customer Service"
                       className="w-6 h-6"
                     />
@@ -2706,7 +2706,7 @@ const HomePage = () => {
               className={`flex flex-col items-center py-2 ${activeNav === "market" ? "text-cyan-500" : "text-gray-500"}`}
             >
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/jy-cE3iJPz5tVy8uo4AkVuvrdVIJHlxAy.png"
+                src="/images/design-mode/jy.png"
                 alt="Market"
                 className="w-6 h-6"
                 style={{

@@ -28,7 +28,7 @@ export async function POST() {
       credit_score: 1000,
       available_balance: 0.0,
       uid: "ADMIN001",
-      preferred_currency: "SAR", // Updated preferred currency to SAR
+      preferred_currency: "USD",
     })
 
     if (profileError) {

@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       uid: `UID${Date.now()}`,
       credit_score: 100,
       available_balance: 0,
-      preferred_currency: "SAR", // Updated default preferred currency
+      preferred_currency: "USDT",
     })
 
     if (profileError) {

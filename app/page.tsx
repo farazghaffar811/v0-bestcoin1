@@ -733,20 +733,20 @@ const MarketPage = ({
                   <div>
                     <span className="text-gray-400">Your order:</span>
                     <span className="text-white ml-2">
-                      {formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} R
+                      {formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} {"﷼"}
                     </span>
                   </div>
                   <div>
                     <span className="text-gray-400">Profit:</span>
                     <span className="text-green-400 ml-2">
-                      {formatNumberWithCommas(Math.abs(calculateProfitAmount()), 2)} R
+                      {formatNumberWithCommas(Math.abs(calculateProfitAmount()), 2)} {"﷼"}
                     </span>
                   </div>
                 </div>
                 <div className="border-t border-slate-600 mt-2 pt-2">
                   <span className="text-gray-400">Total Return:</span>
                   <span className="text-green-400 ml-2 font-semibold">
-                    {formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)} R
+                    {formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)} {"﷼"}
                   </span>
                 </div>
               </div>
@@ -754,8 +754,8 @@ const MarketPage = ({
               {/* Frozen Balance Warning */}
               {userProfile?.frozen_balance > 0 && (
                 <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                  Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used
-                  for trading
+                  Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} {"﷼"} is currently frozen and cannot be
+                  used for trading
                 </div>
               )}
 
@@ -1026,14 +1026,15 @@ const AssetPage = ({
   const [selectedCurrency, setSelectedCurrency] = useState("SAR")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    SAR: 1.0, // Base currency
-    USDT: 0.27, // approximate, USDT pegged to USD
-    USD: 0.27,
+    ZAR: 1.0, // amounts in DB are in ZAR (base)
+    SAR: 0.19, // fallback approx ZAR->SAR
+    USDT: 0.054, // leave as-is
+    USD: 0.054,
   })
   const [isLoadingRates, setIsLoadingRates] = useState(false)
 
   const currencies = [
-    { code: "SAR", name: "Saudi Riyal", symbol: "ر.س" },
+    { code: "SAR", name: "Saudi Riyal", symbol: "﷼" },
     { code: "USDT", name: "Tether USD", symbol: "₮" },
     { code: "USD", name: "US Dollar", symbol: "$" },
   ]
@@ -1050,34 +1051,36 @@ const AssetPage = ({
       setIsLoadingRates(true)
       console.log("[v0] Fetching exchange rates...")
 
-      // Using a free exchange rate API
-      const response = await fetch("https://api.exchangerate-api.com/v4/latest/SAR")
+      // Base remains ZAR (DB amounts), we convert to target (SAR/USDT/USD)
+      const response = await fetch("https://api.exchangerate-api.com/v4/latest/ZAR")
 
       if (response.ok) {
         const data = await response.json()
         console.log("[v0] Exchange rates fetched:", data.rates)
 
         setExchangeRates({
-          SAR: 1.0, // Base currency (amounts stored in DB are in SAR)
-          USDT: data.rates.USD || 0.27, // ZAR to USDT (assuming USDT pegged to USD)
-          USD: data.rates.USD || 0.27, // ZAR to USD
+          ZAR: 1.0,
+          SAR: data.rates.SAR || 0.19, // ZAR to SAR rate
+          USDT: data.rates.USD || 0.054, // assuming USDT≈USD
+          USD: data.rates.USD || 0.054,
         })
 
         console.log("[v0] Exchange rates updated:", {
-          SAR: 1.0,
-          USDT: data.rates.USD || 0.27,
-          USD: data.rates.USD || 0.27,
+          ZAR: 1.0,
+          SAR: data.rates.SAR || 0.19,
+          USDT: data.rates.USD || 0.054,
+          USD: data.rates.USD || 0.054,
         })
       } else {
         throw new Error("Failed to fetch exchange rates")
       }
     } catch (error) {
       console.log("[v0] Error fetching exchange rates:", error)
-      // Keep default rates if API fails
       setExchangeRates({
-        SAR: 1.0, // Base currency
-        USDT: 0.27,
-        USD: 0.27,
+        ZAR: 1.0,
+        SAR: 0.19, // Fallback ZAR to SAR rate
+        USDT: 0.054,
+        USD: 0.054,
       })
     } finally {
       setIsLoadingRates(false)
@@ -1089,12 +1092,13 @@ const AssetPage = ({
   const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
   const totalBalance = availableBalance + frozenBalance // Total = available + frozen
 
-  // Convert balances based on selected currency
   const getConvertedAmount = (amount: number) => {
-    if (selectedCurrency === "SAR") {
+    if (selectedCurrency === "ZAR") {
       return amount // ZAR is the base currency (no conversion needed)
     }
-    return amount * exchangeRates[selectedCurrency]
+    // Ensure the rate exists for the selected currency before multiplying
+    const rate = exchangeRates[selectedCurrency] || 0
+    return amount * rate
   }
 
   const convertedAvailableBalance = getConvertedAmount(availableBalance)
@@ -1116,13 +1120,13 @@ const AssetPage = ({
     setSelectedCurrency(currencyCode)
     setIsDropdownOpen(false)
 
-    // currency code checks
-    const newAvailableBalance =
-      currencyCode === "SAR" ? availableBalance : availableBalance * exchangeRates[currencyCode]
-    const newTotalBalance = currencyCode === "SAR" ? totalBalance : totalBalance * exchangeRates[currencyCode]
+    // No need to recalculate these here as they are derived from availableBalance/totalBalance
+    // using getConvertedAmount which will be called when the UI renders.
+    // const newAvailableBalance = currencyCode === 'ZAR' ? availableBalance : availableBalance * exchangeRates[currencyCode]
+    // const newTotalBalance = currencyCode === 'ZAR' ? totalBalance : totalBalance * exchangeRates[currencyCode]
 
-    console.log("[v0] Converted available balance:", newAvailableBalance)
-    console.log("[v0] Converted total balance:", newTotalBalance)
+    // console.log('[v0] Converted available balance:', newAvailableBalance)
+    // console.log('[v0] Converted total balance:', newTotalBalance)
   }
 
   return (
@@ -1188,10 +1192,10 @@ const AssetPage = ({
                         <div className="font-medium">
                           {formatNumberWithCommas(getConvertedAmount(totalBalance), 4)} {currency.symbol}
                         </div>
-                        {/* text content "1 ZAR =" -> "1 SAR =" */}
-                        {currency.code !== "SAR" && (
+                        {/* Display rate only if not ZAR */}
+                        {currency.code !== "ZAR" && exchangeRates[currency.code] !== undefined && (
                           <div className="text-xs opacity-75">
-                            1 SAR = {formatNumberWithCommas(exchangeRates[currency.code], 4)} {currency.code}
+                            1 ZAR = {formatNumberWithCommas(exchangeRates[currency.code], 4)} {currency.code}
                           </div>
                         )}
                       </div>
@@ -1204,7 +1208,7 @@ const AssetPage = ({
         </div>
 
         {/* Available / Frozen balance text */}
-        <div className="text-sm opacity-90">
+        <div className="text-sm opacity-90 px-4 pb-4">
           <div className="mb-1">
             Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)} {selectedCurrency}
           </div>
@@ -1256,16 +1260,17 @@ const AssetPage = ({
       </div>
 
       {/* ✅ Responsive Currency Balance Section */}
-      <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
+      <div className="bg-white mx-4 rounded-lg shadow-sm p-4 mt-4">
         <div className="flex items-center mb-4 flex-wrap">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
             {getCurrencySymbol(selectedCurrency)}
           </div>
           <span className="font-medium text-gray-900">{selectedCurrency}</span>
-          {/* text content "1 ZAR =" -> "1 SAR =" */}
           <span className="text-xs text-gray-500 ml-2">
-            {selectedCurrency !== "SAR" &&
-              `(1 SAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency})`}
+            {/* Display rate relative to ZAR if not SAR */}
+            {selectedCurrency !== "ZAR" &&
+              exchangeRates[selectedCurrency] !== undefined &&
+              `1 ZAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency}`}
           </span>
         </div>
 
@@ -1308,14 +1313,12 @@ const AssetPage = ({
       </div>
 
       {/* Exchange Rate Information */}
-      {/* currency check ZAR -> SAR */}
-      {selectedCurrency !== "SAR" && (
+      {selectedCurrency !== "ZAR" && (
         <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
           <div className="text-sm text-blue-800">
             <div className="font-medium mb-1">Current Exchange Rate</div>
-            {/* text content "1 ZAR =" -> "1 SAR =" */}
             <div>
-              1 SAR = {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)} {selectedCurrency}
+              1 ZAR = {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)} {selectedCurrency}
             </div>
             <div className="text-xs mt-1 opacity-75">
               Rates updated every 5 minutes
@@ -1537,19 +1540,18 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
           </div>
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
-            <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
+            <div className="text-sm opacity-90">{profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
             <div className="text-sm font-medium text-yellow-300">
               Credit Score: {formatNumberWithCommas(profile?.credit_score || 0, 0)}
             </div>
             <div className="text-sm opacity-90">
               {/* FIXED: Clear separation of available and frozen balance display with comma formatting */}
-              {/* balance labels fallback ZAR -> SAR */}
               <div>
-                Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "SAR"}
+                Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "ZAR"}
               </div>
               {frozenBalance > 0 && (
                 <div className="text-yellow-300">
-                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "SAR"} (Cannot use)
+                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
                 </div>
               )}
             </div>
@@ -1752,7 +1754,7 @@ const AddCollectionInfoPage = ({
 }) => {
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
-    currency: "SAR",
+    currency: "ZAR",
     account_holder_name: "",
     bind_bank: "",
     bank_card_number: "",
@@ -1809,7 +1811,6 @@ const AddCollectionInfoPage = ({
         {/* Binding Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Binding Type</label>
-          {/* currency badge ZAR -> SAR */}
           <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">Bank Card</div>
         </div>
 
@@ -1818,8 +1819,7 @@ const AddCollectionInfoPage = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Currency
           </label>
-          {/* currency badge ZAR -> SAR */}
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">SAR</div>
+          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">ZAR</div>
         </div>
 
         {/* Account Holder Name */}
@@ -1904,7 +1904,7 @@ const HomePage = () => {
   const [withdrawalAmount, setWithdrawalAmount] = useState("")
   const [isSubmittingWithdrawal, setIsSubmittingWithdrawal] = useState(false)
   const [bankDetails, setBankDetails] = useState<any[]>([])
-  const [isLoadingBankDetails, setIsLoadingBankDetails] = useState(true)
+  const [isLoadingBankDetails, setIsLoadingBankDetails] = useState(false)
 
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredCryptos, setFilteredCryptos] = useState<CryptoPrice[]>([])
@@ -2343,13 +2343,12 @@ const HomePage = () => {
             {/* Available Balance - FIXED: Only show available balance, mention frozen separately with comma formatting */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
-              {/* fallback currency labels in Asset/Withdraw sections */}
               <div className="text-2xl font-bold text-gray-900">
-                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "SAR"}
+                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "ZAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-orange-600 mt-1">
-                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "SAR"}{" "}
+                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "ZAR"}{" "}
                   (Cannot withdraw)
                 </div>
               )}
@@ -2429,8 +2428,7 @@ const HomePage = () => {
                         <div key={withdrawal.id} className="border rounded-lg p-3">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">
-                              {/* fallback currency labels in Asset/Withdraw sections */}
-                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "SAR"}
+                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "ZAR"}
                             </div>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -2583,7 +2581,7 @@ const HomePage = () => {
                         <button
                           key={crypto.id}
                           onClick={() => {
-                            handleCryptoSelect(crypto.symbol.toUpperCase())
+                            handleCryptoSelect(crypto.id) // Use crypto.id for selection
                           }}
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
                         >

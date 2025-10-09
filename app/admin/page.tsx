@@ -1015,7 +1015,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {user.preferred_currency || "SAR"}
+                                {user.preferred_currency || "USD"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -1150,7 +1150,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.payout ? `${trade.payout.toFixed(4)} SAR` : "-"}
+                                {trade.payout ? `${trade.payout.toFixed(4)} R` : "-"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(trade.created_at).toLocaleDateString()}

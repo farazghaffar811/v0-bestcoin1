@@ -97,7 +97,12 @@ function AdminDashboardContent() {
   const [passwordUser, setPasswordUser] = useState<any>(null)
   const [newPassword, setNewPassword] = useState("")
   const [isChangingPassword, setIsChangingPassword] = useState(false)
-  const [editData, setEditData] = useState<EditUserData>({ credit_score: 0, available_balance: 0, frozen_balance: 0, withdrawal_prohibited: false })
+  const [editData, setEditData] = useState<EditUserData>({
+    credit_score: 0,
+    available_balance: 0,
+    frozen_balance: 0,
+    withdrawal_prohibited: false,
+  })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
     binding_type: "",
@@ -121,20 +126,18 @@ function AdminDashboardContent() {
   const [announcementMessage, setAnnouncementMessage] = useState("")
 
   // Filter functions
-  const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(searchEmail.toLowerCase())
+  const filteredUsers = users.filter((user) => user.email.toLowerCase().includes(searchEmail.toLowerCase()))
+
+  const filteredTrades = trades.filter((trade) =>
+    trade.profiles.email.toLowerCase().includes(searchEmail.toLowerCase()),
   )
 
-  const filteredTrades = trades.filter(trade => 
-    trade.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
+  const filteredBankDetails = bankDetails.filter((detail) =>
+    detail.profiles.email.toLowerCase().includes(searchEmail.toLowerCase()),
   )
 
-  const filteredBankDetails = bankDetails.filter(detail => 
-    detail.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
-  )
-
-  const filteredWithdrawals = withdrawals.filter(withdrawal => 
-    withdrawal.profiles.email.toLowerCase().includes(searchEmail.toLowerCase())
+  const filteredWithdrawals = withdrawals.filter((withdrawal) =>
+    withdrawal.profiles.email.toLowerCase().includes(searchEmail.toLowerCase()),
   )
 
   const handleSendAnnouncement = (user: any) => {
@@ -677,13 +680,13 @@ function AdminDashboardContent() {
             </h2>
             <p className="text-gray-600 mt-1">
               {activeTab === "users"
-                ? `Total Users: ${filteredUsers.length} ${searchEmail ? `(filtered from ${users.length})` : ''}`
+                ? `Total Users: ${filteredUsers.length} ${searchEmail ? `(filtered from ${users.length})` : ""}`
                 : activeTab === "trades"
-                  ? `Total Trades: ${filteredTrades.length} ${searchEmail ? `(filtered from ${trades.length})` : ''}`
+                  ? `Total Trades: ${filteredTrades.length} ${searchEmail ? `(filtered from ${trades.length})` : ""}`
                   : activeTab === "bank-details"
-                    ? `Total Bank Details: ${filteredBankDetails.length} ${searchEmail ? `(filtered from ${bankDetails.length})` : ''}`
+                    ? `Total Bank Details: ${filteredBankDetails.length} ${searchEmail ? `(filtered from ${bankDetails.length})` : ""}`
                     : activeTab === "withdrawals"
-                      ? `Total Withdrawals: ${filteredWithdrawals.length} ${searchEmail ? `(filtered from ${withdrawals.length})` : ''}`
+                      ? `Total Withdrawals: ${filteredWithdrawals.length} ${searchEmail ? `(filtered from ${withdrawals.length})` : ""}`
                       : "Manage customer support telegram link"}
             </p>
           </div>
@@ -739,12 +742,17 @@ function AdminDashboardContent() {
                     />
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                        />
                       </svg>
                     </div>
                   </div>
                 </div>
-                
+
                 {activeTab === "withdrawals" ? (
                   /* Withdrawal List table section */
                   <div className="overflow-x-auto">
@@ -791,7 +799,7 @@ function AdminDashboardContent() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {withdrawal.amount.toFixed(2)} ZAR
+                                {withdrawal.amount.toFixed(2)} SAR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -843,7 +851,9 @@ function AdminDashboardContent() {
                     {filteredWithdrawals.length === 0 && !isLoading && (
                       <div className="text-center py-12">
                         <p className="text-gray-500">
-                          {searchEmail ? "No withdrawal requests found matching your search" : "No withdrawal requests found"}
+                          {searchEmail
+                            ? "No withdrawal requests found matching your search"
+                            : "No withdrawal requests found"}
                         </p>
                       </div>
                     )}
@@ -896,7 +906,9 @@ function AdminDashboardContent() {
                                   <div className="text-sm text-gray-500">UID: {detail.profiles.uid}</div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.binding_type}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {detail.binding_type}
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.currency}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.account_holder_name}
@@ -1003,7 +1015,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {user.preferred_currency || "USD"}
+                                {user.preferred_currency || "SAR"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -1103,7 +1115,9 @@ function AdminDashboardContent() {
                                   <div className="text-sm text-gray-500">UID: {trade.profiles.uid}</div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.crypto_symbol}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {trade.crypto_symbol}
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
                                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1119,7 +1133,9 @@ function AdminDashboardContent() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {trade.profit_percentage}%
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{trade.trading_time}s</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {trade.trading_time}s
+                              </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
                                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -1134,7 +1150,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.payout ? `${trade.payout.toFixed(4)} R` : "-"}
+                                {trade.payout ? `${trade.payout.toFixed(4)} SAR` : "-"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(trade.created_at).toLocaleDateString()}
@@ -1170,7 +1186,7 @@ function AdminDashboardContent() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600">Amount</div>
-                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} ZAR</div>
+                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} SAR</div>
               </div>
 
               {editingWithdrawal.bank_details && (
@@ -1530,14 +1546,16 @@ function AdminDashboardContent() {
 // Main component with Suspense boundary
 export default function AdminDashboard() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          <p className="text-gray-600">Loading Admin Dashboard...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="text-gray-600">Loading Admin Dashboard...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <AdminDashboardContent />
     </Suspense>
   )

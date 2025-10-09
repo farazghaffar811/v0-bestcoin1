@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
 import { Home, X } from "lucide-react"
 import { toast, Toaster } from "sonner"
-import { CreditCard, ShieldCheck, MessageSquare, HelpCircle, LogOut } from "lucide-react";
+import { CreditCard, ShieldCheck, MessageSquare, HelpCircle, LogOut } from "lucide-react"
 
 interface CryptoPrice {
   id: string
@@ -24,10 +24,10 @@ interface TradeData {
 }
 
 // Helper function to format numbers with commas
-const formatNumberWithCommas = (number: number, decimals: number = 4): string => {
-  return number.toLocaleString('en-US', {
+const formatNumberWithCommas = (number: number, decimals = 4): string => {
+  return number.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
   })
 }
 
@@ -44,7 +44,7 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
 
       console.log("Sanitized Symbol:", lowerSymbol)
       console.log("Final Icon URL:", iconUrl)
-      
+
       setIconSrc(iconUrl)
       setHasError(false)
     }
@@ -463,9 +463,9 @@ const MarketPage = ({
     }
     return symbolMap[crypto] || "BINANCE:BTCUSDT"
   }
-  
-  const [showTooltip, setShowTooltip] = useState(false);
-  
+
+  const [showTooltip, setShowTooltip] = useState(false)
+
   return (
     <div className="min-h-screen bg-slate-900 text-white">
       {/* Header */}
@@ -603,7 +603,7 @@ const MarketPage = ({
           {liveTradeData.map((trade, index) => (
             <div
               key={`${trade.time}-${index}`}
-               className="grid grid-cols-4 gap-2 p-3 text-xs border-b border-gray-700 last:border-b-0"
+              className="grid grid-cols-4 gap-2 p-3 text-xs border-b border-gray-700 last:border-b-0"
             >
               <div className="text-center text-white">{trade.time}</div>
               <div
@@ -619,18 +619,18 @@ const MarketPage = ({
       </div>
 
       {/* Trading Buttons - Fixed at bottom like navbar */}
-       <div className="fixed bottom-0 left-0 right-0 px-8 py-2 z-50">
+      <div className="fixed bottom-0 left-0 right-0 px-8 py-2 z-50">
         <div className="flex justify-between gap-4">
           <button
             onClick={() => handleTradingClick("buy_up")}
             className="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
           >
-           <div className="text-lg">Buy Up</div>
+            <div className="text-lg">Buy Up</div>
           </button>
           <button
             onClick={() => handleTradingClick("buy_down")}
             className="bg-red-500 hover:bg-red-600 text-white py-2 px-6 rounded-lg font-semibold transition-colors w-44"
-            >
+          >
             <div className="text-lg">Buy Down</div>
           </button>
         </div>
@@ -677,13 +677,11 @@ const MarketPage = ({
                   <span className="text-white font-semibold text-sm">Trading Time</span>
 
                   {/* Tooltip */}
-                {showTooltip && (
-                  <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
-                    Participation <br /> Win/Loss Ratio
-                  </div>
-                )}
-
-                 
+                  {showTooltip && (
+                    <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
+                      Participation <br /> Win/Loss Ratio
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
@@ -714,13 +712,17 @@ const MarketPage = ({
               {/* Balance and Earnings - FIXED: Format balances with commas and show total winnings without signs */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
                 <div className="text-white">
-                  Available Balance:{" "} 
-                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(getAvailableBalance(), 4)}</span>{" "}
+                  Available Balance:{" "}
+                  <span className="text-green-400 font-semibold">
+                    {formatNumberWithCommas(getAvailableBalance(), 4)}
+                  </span>{" "}
                   <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
                 </div>
                 <div className="text-white">
                   Total Winnings:{" "}
-                  <span className="text-green-400 font-semibold">{formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)}</span>
+                  <span className="text-green-400 font-semibold">
+                    {formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)}
+                  </span>
                 </div>
               </div>
 
@@ -730,23 +732,30 @@ const MarketPage = ({
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-gray-400">Your order:</span>
-                    <span className="text-white ml-2">{formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} R</span>
+                    <span className="text-white ml-2">
+                      {formatNumberWithCommas(Number.parseFloat(orderAmount || "0"), 2)} R
+                    </span>
                   </div>
                   <div>
                     <span className="text-gray-400">Profit:</span>
-                    <span className="text-green-400 ml-2">{formatNumberWithCommas(Math.abs(calculateProfitAmount()), 2)} R</span>
+                    <span className="text-green-400 ml-2">
+                      {formatNumberWithCommas(Math.abs(calculateProfitAmount()), 2)} R
+                    </span>
                   </div>
                 </div>
                 <div className="border-t border-slate-600 mt-2 pt-2">
                   <span className="text-gray-400">Total Return:</span>
-                  <span className="text-green-400 ml-2 font-semibold">{formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)} R</span>
+                  <span className="text-green-400 ml-2 font-semibold">
+                    {formatNumberWithCommas(Math.abs(calculateExpectedEarnings()), 2)} R
+                  </span>
                 </div>
               </div>
 
               {/* Frozen Balance Warning */}
               {userProfile?.frozen_balance > 0 && (
                 <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
-                  Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used for trading
+                  Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} R is currently frozen and cannot be used
+                  for trading
                 </div>
               )}
 
@@ -763,7 +772,7 @@ const MarketPage = ({
                 />
               </div>
             </div>
-            
+
             {/* Fixed button at bottom */}
             <div className="p-4 sm:p-6 border-t border-slate-700 bg-slate-900">
               <button
@@ -793,14 +802,14 @@ const OrderPage = () => {
         setError(null)
 
         // First close any expired orders (auto-win feature enabled)
-        const closeResponse = await fetch("/api/orders/close", { 
+        const closeResponse = await fetch("/api/orders/close", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            auto_win: true // UPDATED: Always set to auto-win
-          })
+            auto_win: true, // UPDATED: Always set to auto-win
+          }),
         })
         if (!closeResponse.ok) {
           throw new Error(`Failed to close orders: ${closeResponse.status}`)
@@ -902,13 +911,9 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      
                       {/* Trading time badge */}
-                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
-                        {order.trading_time}s
-                      </div>
+                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">{order.trading_time}s</div>
                       <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Active</div>
-                      
                     </div>
                   </div>
 
@@ -927,7 +932,9 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Expected Total Return</div>
-                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.expected_earnings), 4)} R</div>
+                      <div className="text-green-600 font-semibold">
+                        {formatNumberWithCommas(Math.abs(order.expected_earnings), 4)} R
+                      </div>
                     </div>
                   </div>
 
@@ -962,12 +969,8 @@ const OrderPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       {/* Trading time badge */}
-                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">
-                        {order.trading_time}s
-                      </div>
-                      <div className="px-2 py-1 rounded text-xs text-white bg-green-500">
-                        ✓ Won
-                      </div>
+                      <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">{order.trading_time}s</div>
+                      <div className="px-2 py-1 rounded text-xs text-white bg-green-500">✓ Won</div>
                     </div>
                   </div>
 
@@ -990,7 +993,9 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Actual Earnings</div>
-                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} R</div>
+                      <div className="text-green-600 font-semibold">
+                        {formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} R
+                      </div>
                     </div>
                   </div>
 
@@ -1007,28 +1012,28 @@ const OrderPage = () => {
   )
 }
 
-const AssetPage = ({ 
-  profile, 
-  onRechargeClick, 
-  onWithdrawalClick, 
-  onCustomerSupportClick 
-}: { 
+const AssetPage = ({
+  profile,
+  onRechargeClick,
+  onWithdrawalClick,
+  onCustomerSupportClick,
+}: {
   profile: any
   onRechargeClick: () => void
   onWithdrawalClick: () => void
   onCustomerSupportClick: () => void
 }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState("ZAR")
+  const [selectedCurrency, setSelectedCurrency] = useState("SAR")
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    ZAR: 1.0, // ZAR is now the base currency (amounts in DB are in ZAR)
-    USDT: 0.054, // ZAR to USDT rate (1 ZAR = 0.054 USDT approx)
-    USD: 0.054   // ZAR to USD rate
+    SAR: 1.0, // Base currency
+    USDT: 0.27, // approximate, USDT pegged to USD
+    USD: 0.27,
   })
   const [isLoadingRates, setIsLoadingRates] = useState(false)
 
   const currencies = [
-    { code: "ZAR", name: "South African Rand", symbol: "R" },
+    { code: "SAR", name: "Saudi Riyal", symbol: "ر.س" },
     { code: "USDT", name: "Tether USD", symbol: "₮" },
     { code: "USD", name: "US Dollar", symbol: "$" },
   ]
@@ -1043,36 +1048,36 @@ const AssetPage = ({
   const fetchExchangeRates = async () => {
     try {
       setIsLoadingRates(true)
-      console.log('[v0] Fetching exchange rates...')
-      
+      console.log("[v0] Fetching exchange rates...")
+
       // Using a free exchange rate API
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/ZAR')
-      
+      const response = await fetch("https://api.exchangerate-api.com/v4/latest/SAR")
+
       if (response.ok) {
         const data = await response.json()
-        console.log('[v0] Exchange rates fetched:', data.rates)
-        
+        console.log("[v0] Exchange rates fetched:", data.rates)
+
         setExchangeRates({
-          ZAR: 1.0, // Base currency (amounts stored in DB are in ZAR)
-          USDT: data.rates.USD || 0.054, // ZAR to USDT (assuming USDT pegged to USD)
-          USD: data.rates.USD || 0.054  // ZAR to USD
+          SAR: 1.0, // Base currency (amounts stored in DB are in SAR)
+          USDT: data.rates.USD || 0.27, // ZAR to USDT (assuming USDT pegged to USD)
+          USD: data.rates.USD || 0.27, // ZAR to USD
         })
-        
-        console.log('[v0] Exchange rates updated:', {
-          ZAR: 1.0,
-          USDT: data.rates.USD || 0.054,
-          USD: data.rates.USD || 0.054
+
+        console.log("[v0] Exchange rates updated:", {
+          SAR: 1.0,
+          USDT: data.rates.USD || 0.27,
+          USD: data.rates.USD || 0.27,
         })
       } else {
-        throw new Error('Failed to fetch exchange rates')
+        throw new Error("Failed to fetch exchange rates")
       }
     } catch (error) {
-      console.log('[v0] Error fetching exchange rates:', error)
+      console.log("[v0] Error fetching exchange rates:", error)
       // Keep default rates if API fails
       setExchangeRates({
-        ZAR: 1.0, // Base currency
-        USDT: 0.054,
-        USD: 0.054
+        SAR: 1.0, // Base currency
+        USDT: 0.27,
+        USD: 0.27,
       })
     } finally {
       setIsLoadingRates(false)
@@ -1080,13 +1085,13 @@ const AssetPage = ({
   }
 
   // FIXED: Separated available and frozen balances - they should never be combined for available balance calculation
-  const availableBalance = profile?.available_balance || 0  // Only available balance
-  const frozenBalance = profile?.frozen_balance || 0        // Separate frozen balance
-  const totalBalance = availableBalance + frozenBalance    // Total = available + frozen
+  const availableBalance = profile?.available_balance || 0 // Only available balance
+  const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
+  const totalBalance = availableBalance + frozenBalance // Total = available + frozen
 
   // Convert balances based on selected currency
   const getConvertedAmount = (amount: number) => {
-    if (selectedCurrency === 'ZAR') {
+    if (selectedCurrency === "SAR") {
       return amount // ZAR is the base currency (no conversion needed)
     }
     return amount * exchangeRates[selectedCurrency]
@@ -1098,264 +1103,232 @@ const AssetPage = ({
 
   // Get currency symbol
   const getCurrencySymbol = (currencyCode: string) => {
-    const currency = currencies.find(c => c.code === currencyCode)
+    const currency = currencies.find((c) => c.code === currencyCode)
     return currency?.symbol || currencyCode
   }
 
   const handleCurrencyChange = (currencyCode: string) => {
-    console.log('[v0] Currency changed from', selectedCurrency, 'to', currencyCode)
-    console.log('[v0] Current exchange rates:', exchangeRates)
-    console.log('[v0] Available balance before conversion:', availableBalance)
-    console.log('[v0] Total balance before conversion:', totalBalance)
-    
+    console.log("[v0] Currency changed from", selectedCurrency, "to", currencyCode)
+    console.log("[v0] Current exchange rates:", exchangeRates)
+    console.log("[v0] Available balance before conversion:", availableBalance)
+    console.log("[v0] Total balance before conversion:", totalBalance)
+
     setSelectedCurrency(currencyCode)
     setIsDropdownOpen(false)
-    
-    const newAvailableBalance = currencyCode === 'ZAR' ? availableBalance : availableBalance * exchangeRates[currencyCode]
-    const newTotalBalance = currencyCode === 'ZAR' ? totalBalance : totalBalance * exchangeRates[currencyCode]
-    
-    console.log('[v0] Converted available balance:', newAvailableBalance)
-    console.log('[v0] Converted total balance:', newTotalBalance)
+
+    // currency code checks
+    const newAvailableBalance =
+      currencyCode === "SAR" ? availableBalance : availableBalance * exchangeRates[currencyCode]
+    const newTotalBalance = currencyCode === "SAR" ? totalBalance : totalBalance * exchangeRates[currencyCode]
+
+    console.log("[v0] Converted available balance:", newAvailableBalance)
+    console.log("[v0] Converted total balance:", newTotalBalance)
   }
 
   return (
-  <div className="min-h-screen bg-gray-50">
-    <div
-      className="px-4 py-8 sm:py-12 text-white relative"
-      style={{
-        backgroundImage:
-          "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fund_header.0e0b665e-TVAYzlPrZkwu8NA0Pts2ihlrbuEcuj.png')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <div className="text-center mb-6">
-        <h1 className="text-lg font-medium">Asset Information</h1>
-      </div>
-
-      <div className="mb-4">
-        <h2 className="text-lg font-medium mb-2">Total Assets</h2>
-        <div className="text-2xl sm:text-3xl font-bold mb-2">
-          {formatNumberWithCommas(convertedTotalBalance, 4)}{" "}
-          <span className="text-lg font-normal">{selectedCurrency}</span>
+    <div className="min-h-screen bg-gray-50">
+      <div
+        className="px-4 py-8 sm:py-12 text-white relative"
+        style={{
+          backgroundImage:
+            "url('https://hebbkx1anhila5yf.public.blob.vercel-storage.com/fund_header.0e0b665e-TVAYzlPrZkwu8NA0Pts2ihlrbuEcuj.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="text-center mb-6">
+          <h1 className="text-lg font-medium">Asset Information</h1>
         </div>
-        <div className="relative">
-          <div
-            className="flex items-center text-sm opacity-90 cursor-pointer"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <span>
-              ≈ {formatNumberWithCommas(convertedTotalBalance, 4)}{" "}
-              {getCurrencySymbol(selectedCurrency)}
-              {isLoadingRates && (
-                <span className="ml-1 text-xs">(updating...)</span>
-              )}
-            </span>
-            <svg
-              className={`w-4 h-4 ml-1 transition-transform ${
-                isDropdownOpen ? "rotate-180" : ""
-              }`}
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414-1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
 
-          {isDropdownOpen && (
-            <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[200px] z-10">
-              {currencies.map((currency) => (
-                <button
-                  key={currency.code}
-                  className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                    selectedCurrency === currency.code
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700"
-                  }`}
-                  onClick={() => handleCurrencyChange(currency.code)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-medium">{currency.code}</div>
-                      <div className="text-xs opacity-75">{currency.name}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium">
-                        {formatNumberWithCommas(
-                          getConvertedAmount(totalBalance),
-                          4
-                        )}{" "}
-                        {currency.symbol}
+        <div className="mb-4">
+          <h2 className="text-lg font-medium mb-2">Total Assets</h2>
+          <div className="text-2xl sm:text-3xl font-bold mb-2">
+            {formatNumberWithCommas(convertedTotalBalance, 4)}{" "}
+            <span className="text-lg font-normal">{selectedCurrency}</span>
+          </div>
+          <div className="relative">
+            <div
+              className="flex items-center text-sm opacity-90 cursor-pointer"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            >
+              <span>
+                ≈ {formatNumberWithCommas(convertedTotalBalance, 4)} {getCurrencySymbol(selectedCurrency)}
+                {isLoadingRates && <span className="ml-1 text-xs">(updating...)</span>}
+              </span>
+              <svg
+                className={`w-4 h-4 ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414-1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+
+            {isDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[200px] z-10">
+                {currencies.map((currency) => (
+                  <button
+                    key={currency.code}
+                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
+                      selectedCurrency === currency.code ? "bg-blue-50 text-blue-600" : "text-gray-700"
+                    }`}
+                    onClick={() => handleCurrencyChange(currency.code)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">{currency.code}</div>
+                        <div className="text-xs opacity-75">{currency.name}</div>
                       </div>
-                      {currency.code !== "ZAR" && (
-                        <div className="text-xs opacity-75">
-                          1 ZAR ={" "}
-                          {formatNumberWithCommas(
-                            exchangeRates[currency.code],
-                            4
-                          )}{" "}
-                          {currency.code}
+                      <div className="text-right">
+                        <div className="font-medium">
+                          {formatNumberWithCommas(getConvertedAmount(totalBalance), 4)} {currency.symbol}
                         </div>
-                      )}
+                        {/* text content "1 ZAR =" -> "1 SAR =" */}
+                        {currency.code !== "SAR" && (
+                          <div className="text-xs opacity-75">
+                            1 SAR = {formatNumberWithCommas(exchangeRates[currency.code], 4)} {currency.code}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Available / Frozen balance text */}
+        <div className="text-sm opacity-90">
+          <div className="mb-1">
+            Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)} {selectedCurrency}
+          </div>
+          {frozenBalance > 0 && (
+            <div className="text-yellow-300">
+              Frozen Balance: {formatNumberWithCommas(convertedFrozenBalance, 4)} {selectedCurrency} (Cannot be used for
+              trading)
             </div>
           )}
         </div>
       </div>
 
-      {/* Available / Frozen balance text */}
-      <div className="text-sm opacity-90">
-        <div className="mb-1">
-          Available Balance:{" "}
-          {formatNumberWithCommas(convertedAvailableBalance, 4)}{" "}
-          {selectedCurrency}
+      {/* Action Buttons */}
+      <div className="bg-white px-4 py-6 border-t border-gray-100">
+        <div className="grid grid-cols-3 gap-4 sm:gap-8">
+          <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+                alt="Recharge"
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-sm text-gray-800 font-medium">Recharge</span>
+          </button>
+
+          <button onClick={onWithdrawalClick} className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
+                alt="Withdrawal"
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
+          </button>
+
+          <button onClick={onCustomerSupportClick} className="flex flex-col items-center gap-2">
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                alt="Customer Service"
+                className="w-6 h-6"
+              />
+            </div>
+            <span className="text-sm text-gray-800 font-medium">Customer Service</span>
+          </button>
         </div>
-        {frozenBalance > 0 && (
-          <div className="text-yellow-300">
-            Frozen Balance:{" "}
-            {formatNumberWithCommas(convertedFrozenBalance, 4)}{" "}
-            {selectedCurrency} (Cannot be used for trading)
-          </div>
-        )}
       </div>
-    </div>
 
-    {/* Action Buttons */}
-    <div className="bg-white px-4 py-6 border-t border-gray-100">
-      <div className="grid grid-cols-3 gap-4 sm:gap-8">
-        <button
-          onClick={onRechargeClick}
-          className="flex flex-col items-center gap-2"
-        >
-          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
-              alt="Recharge"
-              className="w-6 h-6"
-            />
+      {/* ✅ Responsive Currency Balance Section */}
+      <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
+        <div className="flex items-center mb-4 flex-wrap">
+          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+            {getCurrencySymbol(selectedCurrency)}
           </div>
-          <span className="text-sm text-gray-800 font-medium">Recharge</span>
-        </button>
-
-        <button
-          onClick={onWithdrawalClick}
-          className="flex flex-col items-center gap-2"
-        >
-          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
-              alt="Withdrawal"
-              className="w-6 h-6"
-            />
-          </div>
-          <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
-        </button>
-
-        <button
-          onClick={onCustomerSupportClick}
-          className="flex flex-col items-center gap-2"
-        >
-          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
-              alt="Customer Service"
-              className="w-6 h-6"
-            />
-          </div>
-          <span className="text-sm text-gray-800 font-medium">
-            Customer Service
+          <span className="font-medium text-gray-900">{selectedCurrency}</span>
+          {/* text content "1 ZAR =" -> "1 SAR =" */}
+          <span className="text-xs text-gray-500 ml-2">
+            {selectedCurrency !== "SAR" &&
+              `(1 SAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency})`}
           </span>
-        </button>
-      </div>
-    </div>
+        </div>
 
-    {/* ✅ Responsive Currency Balance Section */}
-    <div className="bg-white mx-4 rounded-lg shadow-sm p-4">
-      <div className="flex items-center mb-4 flex-wrap">
-        <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-          {getCurrencySymbol(selectedCurrency)}
-        </div>
-        <span className="font-medium text-gray-900">{selectedCurrency}</span>
-        <span className="text-xs text-gray-500 ml-2">
-          {selectedCurrency !== "ZAR" &&
-            `(1 ZAR = ${formatNumberWithCommas(
-              exchangeRates[selectedCurrency],
-              4
-            )} ${selectedCurrency})`}
-        </span>
-      </div>
-
-      {/* ✅ Flex layout for small screens */}
-      <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
-        <div className="flex-1">
-          <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
-            {formatNumberWithCommas(convertedAvailableBalance, 4)}
+        {/* ✅ Flex layout for small screens */}
+        <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
+          <div className="flex-1">
+            <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
+              {formatNumberWithCommas(convertedAvailableBalance, 4)}
+            </div>
+            <div className="text-xs sm:text-sm text-gray-500">Available Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(For Trading)</div>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500">
-            Available Balance
+          <div className="flex-1">
+            <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
+              {formatNumberWithCommas(convertedFrozenBalance, 4)}
+            </div>
+            <div className="text-xs sm:text-sm text-gray-500">Frozen Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
           </div>
-          <div className="text-xs text-gray-400 mt-1">(For Trading)</div>
-        </div>
-        <div className="flex-1">
-          <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
-            {formatNumberWithCommas(convertedFrozenBalance, 4)}
+          <div className="flex-1">
+            <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
+              {formatNumberWithCommas(convertedTotalBalance, 4)}
+            </div>
+            <div className="text-xs sm:text-sm text-gray-500">Total Balance</div>
+            <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
           </div>
-          <div className="text-xs sm:text-sm text-gray-500">Frozen Balance</div>
-          <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
-        </div>
-        <div className="flex-1">
-          <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
-            {formatNumberWithCommas(convertedTotalBalance, 4)}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-500">Total Balance</div>
-          <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
         </div>
       </div>
-    </div>
 
-    {/* Balance Information */}
-    <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
-      <div className="text-sm text-blue-800">
-        <div className="font-medium mb-2">Balance Information</div>
-        <div className="space-y-1">
-          <div>• Available Balance: Can be used for trading and withdrawals</div>
-          <div>• Frozen Balance: Currently locked and cannot be used</div>
-          <div>• Total Balance: Sum of available and frozen balances</div>
-        </div>
-      </div>
-    </div>
-
-    {/* Exchange Rate Information */}
-    {selectedCurrency !== "ZAR" && (
+      {/* Balance Information */}
       <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
         <div className="text-sm text-blue-800">
-          <div className="font-medium mb-1">Current Exchange Rate</div>
-          <div>
-            1 ZAR ={" "}
-            {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)}{" "}
-            {selectedCurrency}
-          </div>
-          <div className="text-xs mt-1 opacity-75">
-            Rates updated every 5 minutes
-            {isLoadingRates && <span> • Updating...</span>}
+          <div className="font-medium mb-2">Balance Information</div>
+          <div className="space-y-1">
+            <div>• Available Balance: Can be used for trading and withdrawals</div>
+            <div>• Frozen Balance: Currently locked and cannot be used</div>
+            <div>• Total Balance: Sum of available and frozen balances</div>
           </div>
         </div>
       </div>
-    )}
 
-    {/* Bottom padding for navigation */}
-    <div className="h-20"></div>
-  </div>
-);
+      {/* Exchange Rate Information */}
+      {/* currency check ZAR -> SAR */}
+      {selectedCurrency !== "SAR" && (
+        <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
+          <div className="text-sm text-blue-800">
+            <div className="font-medium mb-1">Current Exchange Rate</div>
+            {/* text content "1 ZAR =" -> "1 SAR =" */}
+            <div>
+              1 SAR = {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)} {selectedCurrency}
+            </div>
+            <div className="text-xs mt-1 opacity-75">
+              Rates updated every 5 minutes
+              {isLoadingRates && <span> • Updating...</span>}
+            </div>
+          </div>
+        </div>
+      )}
 
+      {/* Bottom padding for navigation */}
+      <div className="h-20"></div>
+    </div>
+  )
 }
 
 const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogout: () => void }) => {
@@ -1539,8 +1512,8 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   }
 
   // FIXED: Separated available and frozen balances properly with comma formatting
-  const availableBalance = profile?.available_balance || 0  // Only available balance
-  const frozenBalance = profile?.frozen_balance || 0        // Separate frozen balance
+  const availableBalance = profile?.available_balance || 0 // Only available balance
+  const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1556,22 +1529,27 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
       >
         <div className="flex items-center gap-4 mb-6">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-           <img
-    src="https://blocnix.top/static/images/avatar.f708a1f.svg"
-    alt="User Avatar"
-    className="w-12 h-12 object-cover"
-  />
+            <img
+              src="https://blocnix.top/static/images/avatar.f708a1f.svg"
+              alt="User Avatar"
+              className="w-12 h-12 object-cover"
+            />
           </div>
           <div>
             <div className="text-lg font-medium">{user?.email || "Guest User"}</div>
             <div className="text-sm opacity-90">UID: {profile?.uid || user?.id?.slice(0, 10) || "N/A"}</div>
-            <div className="text-sm font-medium text-yellow-300">Credit Score: {formatNumberWithCommas(profile?.credit_score || 0, 0)}</div>
+            <div className="text-sm font-medium text-yellow-300">
+              Credit Score: {formatNumberWithCommas(profile?.credit_score || 0, 0)}
+            </div>
             <div className="text-sm opacity-90">
               {/* FIXED: Clear separation of available and frozen balance display with comma formatting */}
-              <div>Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "ZAR"}</div>
+              {/* balance labels fallback ZAR -> SAR */}
+              <div>
+                Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "SAR"}
+              </div>
               {frozenBalance > 0 && (
                 <div className="text-yellow-300">
-                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
+                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "SAR"} (Cannot use)
                 </div>
               )}
             </div>
@@ -1580,32 +1558,44 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
       </div>
 
       {/* Menu Items */}
-     
-<div className="px-4 py-2 space-y-1">
-  {[
-    { icon: <CreditCard className="w-6 h-6 text-blue-500" />, label: "Collection Information", action: handleCollectionInfoClick },
-    { icon: <ShieldCheck className="w-6 h-6 text-green-500" />, label: "Authentication", action: handleAuthenticationClick },
-    { icon: <MessageSquare className="w-6 h-6 text-purple-500" />, label: "User Message", action: handleUserMessageClick },
-    { icon: <HelpCircle className="w-6 h-6 text-gray-500" />, label: "Help Center" },
-    { icon: <LogOut className="w-6 h-6 text-red-500" />, label: "Logout", action: handleLogout },
-  ].map((item, index) => (
-    <div
-      key={index}
-      onClick={item.action}
-      className={`bg-white rounded-lg p-4 shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors ${item.action ? "cursor-pointer" : ""}`}
-    >
-      <div className="flex items-center gap-4">
-        {item.icon}
-        <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
+
+      <div className="px-4 py-2 space-y-1">
+        {[
+          {
+            icon: <CreditCard className="w-6 h-6 text-blue-500" />,
+            label: "Collection Information",
+            action: handleCollectionInfoClick,
+          },
+          {
+            icon: <ShieldCheck className="w-6 h-6 text-green-500" />,
+            label: "Authentication",
+            action: handleAuthenticationClick,
+          },
+          {
+            icon: <MessageSquare className="w-6 h-6 text-purple-500" />,
+            label: "User Message",
+            action: handleUserMessageClick,
+          },
+          { icon: <HelpCircle className="w-6 h-6 text-gray-500" />, label: "Help Center" },
+          { icon: <LogOut className="w-6 h-6 text-red-500" />, label: "Logout", action: handleLogout },
+        ].map((item, index) => (
+          <div
+            key={index}
+            onClick={item.action}
+            className={`bg-white rounded-lg p-4 shadow-sm flex items-center justify-between hover:bg-gray-50 transition-colors ${item.action ? "cursor-pointer" : ""}`}
+          >
+            <div className="flex items-center gap-4">
+              {item.icon}
+              <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
+            </div>
+            {!item.action && (
+              <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+              </svg>
+            )}
+          </div>
+        ))}
       </div>
-      {!item.action && (
-        <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-        </svg>
-      )}
-    </div>
-  ))}
-</div>
     </div>
   )
 }
@@ -1630,12 +1620,11 @@ const AuthenticationPage = ({ onBack, user }: { onBack: () => void; user: any })
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-900">Basic Authentication</h2>
-            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
-              Completed
-            </span>
+            <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">Completed</span>
           </div>
           <p className="text-gray-600 text-sm leading-relaxed">
-            Complete basic email or mobile phone authentication, therefore, the fund transaction will be automatically notified by e-mail or mobile phone, and the market dynamics will be immediately tracked
+            Complete basic email or mobile phone authentication, therefore, the fund transaction will be automatically
+            notified by e-mail or mobile phone, and the market dynamics will be immediately tracked
           </p>
         </div>
       </div>
@@ -1763,7 +1752,7 @@ const AddCollectionInfoPage = ({
 }) => {
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
-    currency: "ZAR",
+    currency: "SAR",
     account_holder_name: "",
     bind_bank: "",
     bank_card_number: "",
@@ -1820,6 +1809,7 @@ const AddCollectionInfoPage = ({
         {/* Binding Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Binding Type</label>
+          {/* currency badge ZAR -> SAR */}
           <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">Bank Card</div>
         </div>
 
@@ -1828,7 +1818,8 @@ const AddCollectionInfoPage = ({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Currency
           </label>
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">ZAR</div>
+          {/* currency badge ZAR -> SAR */}
+          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">SAR</div>
         </div>
 
         {/* Account Holder Name */}
@@ -2188,7 +2179,7 @@ const HomePage = () => {
 
     // FIXED: Available balance is only the available_balance field (frozen balance doesn't reduce available balance)
     const availableBalance = profile?.available_balance || 0
-    
+
     if (Number.parseFloat(withdrawalAmount) > availableBalance) {
       toast.error("Insufficient available balance")
       return
@@ -2352,12 +2343,14 @@ const HomePage = () => {
             {/* Available Balance - FIXED: Only show available balance, mention frozen separately with comma formatting */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
+              {/* fallback currency labels in Asset/Withdraw sections */}
               <div className="text-2xl font-bold text-gray-900">
-                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "ZAR"}
+                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "SAR"}
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-orange-600 mt-1">
-                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "ZAR"} (Cannot withdraw)
+                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "SAR"}{" "}
+                  (Cannot withdraw)
                 </div>
               )}
             </div>
@@ -2436,7 +2429,8 @@ const HomePage = () => {
                         <div key={withdrawal.id} className="border rounded-lg p-3">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">
-                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "ZAR"}
+                              {/* fallback currency labels in Asset/Withdraw sections */}
+                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "SAR"}
                             </div>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -2488,8 +2482,8 @@ const HomePage = () => {
         )
       case "asset":
         return (
-          <AssetPage 
-            profile={profile} 
+          <AssetPage
+            profile={profile}
             onRechargeClick={handleRechargeClick}
             onWithdrawalClick={handleWithdrawalClick}
             onCustomerSupportClick={handleCustomerSupportClick}
@@ -2522,11 +2516,11 @@ const HomePage = () => {
               <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                   <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
-                alt="Recharge"
-                className="w-6 h-6"
-              />
+                    <img
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download1-EJYVBA5WTJyiJdYXYi8MtLmJltzUAn.png"
+                      alt="Recharge"
+                      className="w-6 h-6"
+                    />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Recharge</span>
                 </button>
@@ -2534,21 +2528,21 @@ const HomePage = () => {
                 <button onClick={handleWithdrawalClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
                     <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
-                alt="Withdrawal"
-                className="w-6 h-6"
-              />
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download2-Ka6iOeP72HCtxtBiXBCgjrZudjWxwy.png"
+                      alt="Withdrawal"
+                      className="w-6 h-6"
+                    />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Withdrawal</span>
                 </button>
 
                 <button onClick={handleCustomerSupportClick} className="flex flex-col items-center gap-2">
                   <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200">
-                  <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
-                alt="Customer Service"
-                className="w-6 h-6"
-              />
+                    <img
+                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/download.png-ciWPPrRB8NeoUaANHuk43e755LC2lJ.jpeg"
+                      alt="Customer Service"
+                      className="w-6 h-6"
+                    />
                   </div>
                   <span className="text-sm text-gray-800 font-medium">Customer Service</span>
                 </button>
@@ -2656,17 +2650,17 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Toaster 
+      <Toaster
         position="top-center"
         richColors
         closeButton
         duration={3000}
         toastOptions={{
           style: {
-            background: 'white',
-            color: 'black',
-            border: '1px solid #e5e7eb',
-            fontSize: '14px',
+            background: "white",
+            color: "black",
+            border: "1px solid #e5e7eb",
+            fontSize: "14px",
           },
         }}
       />

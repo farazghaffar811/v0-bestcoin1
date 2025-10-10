@@ -172,10 +172,19 @@ textarea,
   background-color: #0f172a !important;
 }
 
-/* Force login button styling with maximum specificity */
+/* Force login button styling with maximum specificity and glowing hover effect */
 html body form button[type="submit"]:not([disabled]) {
-  background: linear-gradient(to right, #0ea5e9, #2563eb, #1e40af) !important; /* sky to blue shades */
-  background-color: #2563eb !important; /* solid fallback color */
+  background: linear-gradient(to right, #0ea5e9, #2563eb, #1e40af) !important; /* sky to blue */
+  background-color: #2563eb !important;
   color: #ffffff !important;
   border: none !important;
+  transition: all 0.3s ease-in-out !important;
+  box-shadow: 0 0 12px rgba(14, 165, 233, 0.4) !important; /* soft glow */
+}
+
+/* Glowing hover animation */
+html body form button[type="submit"]:hover:not([disabled]) {
+  background: linear-gradient(to right, #38bdf8, #3b82f6, #1d4ed8) !important; /* brighter sky-blue gradient */
+  box-shadow: 0 0 18px rgba(14, 165, 233, 0.7) !important;
+  transform: scale(1.02) !important;
 }

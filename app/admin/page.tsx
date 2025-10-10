@@ -1128,7 +1128,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.amount.toFixed(4)} R
+                                {trade.amount.toFixed(4)} SAR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {trade.profit_percentage}%
@@ -1150,7 +1150,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.payout ? `${trade.payout.toFixed(4)} R` : "-"}
+                                {trade.payout ? `${trade.payout.toFixed(4)} SAR` : "-"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(trade.created_at).toLocaleDateString()}
@@ -1260,7 +1260,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance (SAR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"
@@ -1302,7 +1302,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance (SAR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"

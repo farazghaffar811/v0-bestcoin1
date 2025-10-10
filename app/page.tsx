@@ -795,6 +795,25 @@ const OrderPage = () => {
   const [activeTab, setActiveTab] = useState<"position" | "closing">("position")
   const [error, setError] = useState<string | null>(null)
 
+  // CHANGE: read SAR rate persisted by AssetPage, fallback to 0.19
+  const [sarRate, setSarRate] = useState<number>(0.19)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("exchangeRates")
+      if (saved) {
+        const rates = JSON.JSON.parse(saved)
+        if (rates?.SAR && typeof rates.SAR === "number") {
+          setSarRate(rates.SAR)
+        }
+      }
+    } catch (e) {
+      console.log("[v0] Unable to load exchangeRates for OrderPage:", e)
+    }
+  }, [])
+
+  // helper to format SAR
+  const asSar = (amount: number) => `${formatNumberWithCommas(amount * sarRate, 4)} ﷼`
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -924,7 +943,8 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
+                      {/* CHANGE: convert amount to SAR and replace R */}
+                      <div className="text-gray-800">{asSar(order.amount)}</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -932,9 +952,8 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Expected Total Return</div>
-                      <div className="text-green-600 font-semibold">
-                        {formatNumberWithCommas(Math.abs(order.expected_earnings), 4)} R
-                      </div>
+                      {/* CHANGE: expected_earnings is ZAR base; show SAR */}
+                      <div className="text-green-600 font-semibold">{asSar(Math.abs(order.expected_earnings))}</div>
                     </div>
                   </div>
 
@@ -981,7 +1000,8 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} R</div>
+                      {/* CHANGE: Amount in SAR */}
+                      <div className="text-gray-800">{asSar(order.amount)}</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -993,8 +1013,9 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Actual Earnings</div>
+                      {/* CHANGE: actual_earnings/expected_earnings in SAR */}
                       <div className="text-green-600 font-semibold">
-                        {formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} R
+                        {asSar(Math.abs(order.actual_earnings || order.expected_earnings))}
                       </div>
                     </div>
                   </div>
@@ -1040,6 +1061,17 @@ const AssetPage = ({
   ]
 
   useEffect(() => {
+    // Initialize exchange rates from localStorage if available
+    const storedRates = localStorage.getItem("exchangeRates")
+    if (storedRates) {
+      try {
+        const parsedRates = JSON.parse(storedRates)
+        setExchangeRates(parsedRates)
+        console.log("[v0] Exchange rates loaded from localStorage:", parsedRates)
+      } catch (e) {
+        console.log("[v0] Error parsing exchangeRates from localStorage:", e)
+      }
+    }
     fetchExchangeRates()
     // Update rates every 5 minutes
     const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
@@ -1051,37 +1083,39 @@ const AssetPage = ({
       setIsLoadingRates(true)
       console.log("[v0] Fetching exchange rates...")
 
-      // Base remains ZAR (DB amounts), we convert to target (SAR/USDT/USD)
       const response = await fetch("https://api.exchangerate-api.com/v4/latest/ZAR")
 
       if (response.ok) {
         const data = await response.json()
         console.log("[v0] Exchange rates fetched:", data.rates)
 
-        setExchangeRates({
+        const nextRates = {
           ZAR: 1.0,
-          SAR: data.rates.SAR || 0.19, // ZAR to SAR rate
-          USDT: data.rates.USD || 0.054, // assuming USDT≈USD
-          USD: data.rates.USD || 0.054,
-        })
-
-        console.log("[v0] Exchange rates updated:", {
-          ZAR: 1.0,
-          SAR: data.rates.SAR || 0.19,
+          SAR: data.rates.SAR || 0.19, // ZAR -> SAR
           USDT: data.rates.USD || 0.054,
           USD: data.rates.USD || 0.054,
-        })
+        }
+
+        setExchangeRates(nextRates)
+        try {
+          localStorage.setItem("exchangeRates", JSON.JSON.stringify(nextRates))
+        } catch (e) {
+          console.log("[v0] Unable to persist exchangeRates:", e)
+        }
+
+        console.log("[v0] Exchange rates updated:", nextRates)
       } else {
         throw new Error("Failed to fetch exchange rates")
       }
     } catch (error) {
       console.log("[v0] Error fetching exchange rates:", error)
-      setExchangeRates({
-        ZAR: 1.0,
-        SAR: 0.19, // Fallback ZAR to SAR rate
-        USDT: 0.054,
-        USD: 0.054,
-      })
+      const fallback = { ZAR: 1.0, SAR: 0.19, USDT: 0.054, USD: 0.054 }
+      setExchangeRates(fallback)
+      try {
+        localStorage.setItem("exchangeRates", JSON.stringify(fallback))
+      } catch (e) {
+        console.log("[v0] Unable to persist fallback exchangeRates:", e)
+      }
     } finally {
       setIsLoadingRates(false)
     }
@@ -1446,6 +1480,21 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   const [showUserMessage, setShowUserMessage] = useState(false)
   const [showAuthentication, setShowAuthentication] = useState(false)
 
+  const [sarRate, setSarRate] = useState<number>(0.19)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("exchangeRates")
+      if (saved) {
+        const rates = JSON.parse(saved)
+        if (rates?.SAR && typeof rates.SAR === "number") {
+          setSarRate(rates.SAR)
+        }
+      }
+    } catch (e) {
+      console.log("[v0] Unable to load exchangeRates from localStorage:", e)
+    }
+  }, [])
+
   const handleSettingsClick = () => {
     setShowSettings(true)
   }
@@ -1507,13 +1556,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   }
 
   // FIXED: Separated available and frozen balances properly with comma formatting
-  const availableBalance = profile?.available_balance || 0 // Only available balance
-  const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
+  const availableBalance = profile?.available_balance || 0
+  const frozenBalance = profile?.frozen_balance || 0
 
-  // NOTE: Base is ZAR; we convert to SAR for display to keep UI consistent with Assets page
-  const ZAR_TO_SAR = 0.19
-  const availableSar = availableBalance * ZAR_TO_SAR
-  const frozenSar = frozenBalance * ZAR_TO_SAR
+  const availableSar = availableBalance * sarRate
+  const frozenSar = frozenBalance * sarRate
 
   return (
     <div className="min-h-screen bg-gray-100">

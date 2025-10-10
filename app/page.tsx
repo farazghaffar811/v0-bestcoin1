@@ -1510,6 +1510,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   const availableBalance = profile?.available_balance || 0 // Only available balance
   const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
 
+  // NOTE: Base is ZAR; we convert to SAR for display to keep UI consistent with Assets page
+  const ZAR_TO_SAR = 0.19
+  const availableSar = availableBalance * ZAR_TO_SAR
+  const frozenSar = frozenBalance * ZAR_TO_SAR
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header with user profile */}
@@ -1535,11 +1540,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             <div className="text-sm opacity-90">
               {/* FIXED: Clear separation of available and frozen balance display with comma formatting */}
               <div>
-                Available: {formatNumberWithCommas(availableBalance, 4)} {profile?.preferred_currency || "ZAR"}
+                Available: {formatNumberWithCommas(availableSar, 4)} <span>﷼ SAR</span>
               </div>
               {frozenBalance > 0 && (
                 <div className="text-yellow-300">
-                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} {profile?.preferred_currency || "ZAR"} (Cannot use)
+                  Frozen: {formatNumberWithCommas(frozenSar, 4)} <span>﷼ SAR</span> (Cannot use)
                 </div>
               )}
             </div>

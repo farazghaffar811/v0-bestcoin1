@@ -83,9 +83,9 @@ export default function RegisterPage() {
        {/* CBOE Title */}
 <h1 className="text-4xl font-bold mb-16 flex items-center justify-center">
   <img
-    src="/images/design-mode/logo_super_scjghk_v2cehs(1).png"
+    src="/images/design-mode/logo_super_scjghk_v2cehs(2).png"
     alt="BEST Logo"
-    className="w-40 h-auto drop-shadow-[0_0_15px_rgba(255,165,0,0.7)]"
+    className="w-60 h-auto drop-shadow-[0_0_15px_rgba(255,165,0,0.7)]"
   />
 </h1>
 

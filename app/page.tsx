@@ -23,7 +23,6 @@ interface TradeData {
   quantity: number
 }
 
-// Helper function to format numbers with commas
 const formatNumberWithCommas = (number: number, decimals = 4): string => {
   return number.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
@@ -54,7 +53,6 @@ const CryptoIcon = ({ symbol, className = "w-6 h-6" }: { symbol: string; classNa
     setHasError(true)
   }
 
-  // Only show icon if we have a valid source and no error
   if (!iconSrc || hasError) {
     return null
   }
@@ -102,11 +100,10 @@ const getCoinGeckoImageId = (id: string): string => {
     monero: "69",
     "ethereum-classic": "453",
     "bitcoin-cash": "1831",
-    litecoin: "2",
     dash: "131",
   }
 
-  return imageIdMap[id] || "1" // Default to Bitcoin's image ID if not found
+  return imageIdMap[id] || "1"
 }
 
 interface MarketPageProps {
@@ -172,30 +169,24 @@ const MarketPage = ({
     setShowTradingModal(true)
   }
 
-  // FIXED: Only return available_balance (frozen balance is completely separate and should not affect available balance)
   const getAvailableBalance = () => {
     if (!userProfile) return 0
     return userProfile.available_balance || 0
   }
 
-  // FIXED: Proper calculation of expected earnings (original amount + profit)
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    // Profit percentages for trading times: 60s=20%, 120s=30%, 180s=50%
     const profitPercentages = { 60: 20, 120: 30, 180: 50 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
-    // Return total expected earnings (order amount + profit) - this is what user gets back when winning
     return orderAmountNum + (orderAmountNum * percentage) / 100
   }
 
-  // FIXED: Calculate just the profit amount (not including original stake)
   const calculateProfitAmount = () => {
     if (!orderAmount) return 0
     const profitPercentages = { 60: 20, 120: 30, 180: 50 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
-    // Return only the profit amount (not including the original stake)
     return (orderAmountNum * percentage) / 100
   }
 
@@ -227,9 +218,9 @@ const MarketPage = ({
           amount: Number.parseFloat(orderAmount),
           trading_time: selectedTradingTime,
           entry_price: currentPrice,
-          expected_earnings: expectedEarnings, // FIXED: Send expected earnings to backend
-          profit_amount: profitAmount, // FIXED: Send profit amount separately
-          auto_win: true, // UPDATED: Always set to true to ensure users always win
+          expected_earnings: expectedEarnings,
+          profit_amount: profitAmount,
+          auto_win: true,
         }),
       })
 
@@ -239,9 +230,7 @@ const MarketPage = ({
         setShowTradingModal(false)
         setOrderAmount("")
         toast.success("Order created successfully!")
-        // Refresh user profile to update balance
         refreshUserProfile()
-        // Navigate to orders page
         window.dispatchEvent(new CustomEvent("navigate-to-orders"))
       } else {
         toast.error(result.error || "Failed to create order")
@@ -283,7 +272,6 @@ const MarketPage = ({
       try {
         console.log("[v0] Initializing TradingView widget...")
 
-        // Clear existing widget
         const container = document.getElementById("tradingview-widget")
         if (container) {
           container.innerHTML = ""
@@ -314,7 +302,7 @@ const MarketPage = ({
           },
           onError: (error: any) => {
             console.error("[v0] TradingView widget error:", error)
-            setWidgetLoaded(true) // Show fallback
+            setWidgetLoaded(true)
           },
         })
 
@@ -345,23 +333,19 @@ const MarketPage = ({
     }
 
     setLiveTradeData((prev) => {
-      const updated = [newTrade, ...prev].slice(0, 8) // Keep only last 8 trades
+      const updated = [newTrade, ...prev].slice(0, 8)
       return updated
     })
   }
 
   useEffect(() => {
-    // Only run on client side
     if (typeof window === "undefined") return
 
-    // Check if script already exists
     const existingScript = document.querySelector('script[src="https://s3.tradingview.com/tv.js"]')
     if (existingScript) {
-      // Script already loaded, initialize widget
       if ((window as any).TradingView) {
         setTimeout(initTradingViewWidget, 100)
       } else {
-        // Wait for script to load
         existingScript.addEventListener("load", () => {
           setTimeout(initTradingViewWidget, 100)
         })
@@ -379,14 +363,12 @@ const MarketPage = ({
     }
     script.onerror = (error) => {
       console.error("[v0] Failed to load TradingView script:", error)
-      setWidgetLoaded(true) // Show fallback
+      setWidgetLoaded(true)
     }
 
-    // Add script to head
     document.head.appendChild(script)
 
     return () => {
-      // Cleanup widget instance
       if (widgetInstance && typeof widgetInstance.remove === "function") {
         try {
           widgetInstance.remove()
@@ -394,7 +376,6 @@ const MarketPage = ({
           console.error("[v0] Error removing widget:", error)
         }
       }
-      // Don't remove script as it might be used by other components
     }
   }, [])
 
@@ -407,7 +388,6 @@ const MarketPage = ({
         })
       } catch (error) {
         console.error("[v0] Error updating widget:", error)
-        // Reinitialize widget if update fails
         initTradingViewWidget()
       }
     }
@@ -415,12 +395,11 @@ const MarketPage = ({
 
   useEffect(() => {
     fetchLiveData()
-    const interval = setInterval(fetchLiveData, 10000) // 10 seconds
+    const interval = setInterval(fetchLiveData, 10000)
     return () => clearInterval(interval)
   }, [selectedCrypto])
 
   useEffect(() => {
-    // Generate initial trade data
     const initialTrades: TradeData[] = []
     for (let i = 0; i < 8; i++) {
       const now = new Date(Date.now() - i * 5000)
@@ -435,7 +414,6 @@ const MarketPage = ({
     }
     setLiveTradeData(initialTrades)
 
-    // Generate new trade data every 2-5 seconds
     const interval = setInterval(
       () => {
         generateTradeData()
@@ -468,7 +446,6 @@ const MarketPage = ({
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-slate-800">
         <div className="flex items-center gap-4">
           <svg
@@ -510,7 +487,6 @@ const MarketPage = ({
         </div>
       </div>
 
-      {/* Price Section */}
       <div className="px-4 py-4 bg-slate-800">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -524,7 +500,6 @@ const MarketPage = ({
           </div>
         </div>
 
-        {/* Market Stats */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="text-gray-400">24H High</div>
@@ -545,7 +520,6 @@ const MarketPage = ({
         </div>
       </div>
 
-      {/* Timeframe Tabs */}
       <div className="px-4 py-3 bg-slate-800 border-b border-slate-700">
         <div className="flex gap-3 sm:gap-6 overflow-x-auto">
           {["1M", "5M", "30M", "1H", "4H", "1D"].map((timeframe) => (
@@ -564,7 +538,6 @@ const MarketPage = ({
         </div>
       </div>
 
-      {/* Chart Section */}
       <div className="bg-slate-800 p-2 sm:p-4 rounded-lg">
         <div className="h-64 sm:h-80 md:h-96 bg-slate-900 rounded relative overflow-hidden">
           <div id="tradingview-widget" className="w-full h-full">
@@ -590,7 +563,6 @@ const MarketPage = ({
         </div>
       </div>
 
-      {/* Trading Data Table - positioned above fixed buttons */}
       <div className="bg-slate-800 mx-2 sm:mx-4 mb-4">
         <div className="grid grid-cols-4 gap-2 p-3 text-xs text-gray-400 border-b border-gray-700">
           <div className="text-center">Time</div>
@@ -618,7 +590,6 @@ const MarketPage = ({
         </div>
       </div>
 
-      {/* Trading Buttons - Fixed at bottom like navbar */}
       <div className="fixed bottom-0 left-0 right-0 px-8 py-2 z-50">
         <div className="flex justify-between gap-4">
           <button
@@ -646,9 +617,7 @@ const MarketPage = ({
           }}
         >
           <div className="bg-slate-900 w-full min-h-[60vh] max-h-[85vh] sm:h-[70%] md:h-[75%] lg:h-[60%] xl:h-[55%] rounded-t-2xl flex flex-col animate-slide-up">
-            {/* Scrollable content area */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-              {/* Header */}
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="text-gray-400 text-sm mb-1">Product Name</div>
@@ -664,19 +633,15 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* Current Price */}
               <div className="mb-3">
                 <div className="text-gray-400 text-sm mb-1">Current price</div>
                 <div className="text-white text-xl font-bold">{formatNumberWithCommas(currentPrice, 4)}</div>
               </div>
 
-              {/* Trading Time */}
               <div className="mb-3">
                 <div className="flex items-center gap-2 mb-2 relative">
-                  {/* Label */}
                   <span className="text-white font-semibold text-sm">Trading Time</span>
 
-                  {/* Tooltip */}
                   {showTooltip && (
                     <div className="absolute left-20 top-0 bg-yellow-400 text-black text-xs font-medium px-2 py-1 rounded shadow-md z-10">
                       Participation <br /> Win/Loss Ratio
@@ -709,14 +674,13 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* Balance and Earnings - FIXED: Format balances with commas and show total winnings without signs */}
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 text-sm gap-2">
                 <div className="text-white">
                   Available Balance:{" "}
                   <span className="text-green-400 font-semibold">
                     {formatNumberWithCommas(getAvailableBalance(), 4)}
                   </span>{" "}
-                  <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">R</span>
+                  <span className="text-green-400 bg-opacity-20 px-1 rounded text-xs">﷼</span>
                 </div>
                 <div className="text-white">
                   Total Winnings:{" "}
@@ -726,7 +690,6 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* FIXED: Show profit breakdown clearly */}
               <div className="bg-slate-800 rounded-lg p-3 mb-3 text-sm">
                 <div className="text-green-400 font-medium mb-2"> Profit Breakdown💰:</div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -751,7 +714,6 @@ const MarketPage = ({
                 </div>
               </div>
 
-              {/* Frozen Balance Warning */}
               {userProfile?.frozen_balance > 0 && (
                 <div className="mb-3 p-2 bg-yellow-900 bg-opacity-50 border border-yellow-600 rounded text-yellow-300 text-xs">
                   Note: {formatNumberWithCommas(userProfile.frozen_balance, 4)} {"﷼"} is currently frozen and cannot be
@@ -759,7 +721,6 @@ const MarketPage = ({
                 </div>
               )}
 
-              {/* Amount Input */}
               <div className="mb-4">
                 <input
                   type="number"
@@ -773,7 +734,6 @@ const MarketPage = ({
               </div>
             </div>
 
-            {/* Fixed button at bottom */}
             <div className="p-4 sm:p-6 border-t border-slate-700 bg-slate-900">
               <button
                 onClick={handleOrderSubmit}
@@ -795,39 +755,19 @@ const OrderPage = () => {
   const [activeTab, setActiveTab] = useState<"position" | "closing">("position")
   const [error, setError] = useState<string | null>(null)
 
-  // CHANGE: read SAR rate persisted by AssetPage, fallback to 0.19
-  const [sarRate, setSarRate] = useState<number>(0.19)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("exchangeRates")
-      if (saved) {
-        const rates = JSON.JSON.parse(saved)
-        if (rates?.SAR && typeof rates.SAR === "number") {
-          setSarRate(rates.SAR)
-        }
-      }
-    } catch (e) {
-      console.log("[v0] Unable to load exchangeRates for OrderPage:", e)
-    }
-  }, [])
-
-  // helper to format SAR
-  const asSar = (amount: number) => `${formatNumberWithCommas(amount * sarRate, 4)} ﷼`
-
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         console.log("[v0] Fetching orders and checking for expired orders...")
         setError(null)
 
-        // First close any expired orders (auto-win feature enabled)
         const closeResponse = await fetch("/api/orders/close", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            auto_win: true, // UPDATED: Always set to auto-win
+            auto_win: true,
           }),
         })
         if (!closeResponse.ok) {
@@ -838,7 +778,6 @@ const OrderPage = () => {
 
         await new Promise((resolve) => setTimeout(resolve, 500))
 
-        // Then fetch updated orders with cache busting
         const response = await fetch(`/api/orders?t=${Date.now()}`, {
           cache: "no-store",
           headers: {
@@ -914,7 +853,6 @@ const OrderPage = () => {
       </div>
 
       {activeTab === "position" ? (
-        /* Position Orders Section */
         <div>
           {positionOrders.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No active position orders</div>
@@ -930,7 +868,6 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Trading time badge */}
                       <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">{order.trading_time}s</div>
                       <div className="px-2 py-1 rounded text-xs bg-blue-500 text-white">Active</div>
                     </div>
@@ -943,8 +880,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      {/* CHANGE: convert amount to SAR and replace R */}
-                      <div className="text-gray-800">{asSar(order.amount)}</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} ﷼</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -952,8 +888,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Expected Total Return</div>
-                      {/* CHANGE: expected_earnings is ZAR base; show SAR */}
-                      <div className="text-green-600 font-semibold">{asSar(Math.abs(order.expected_earnings))}</div>
+                      <div className="text-green-600 font-semibold">{formatNumberWithCommas(Math.abs(order.expected_earnings), 4)} ﷼</div>
                     </div>
                   </div>
 
@@ -971,7 +906,6 @@ const OrderPage = () => {
           )}
         </div>
       ) : (
-        /* Closing Orders Section - FIXED: Hide profit made field and show total winnings without signs */
         <div>
           {closingOrders.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No closing orders</div>
@@ -987,7 +921,6 @@ const OrderPage = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      {/* Trading time badge */}
                       <div className="px-2 py-1 rounded text-xs bg-purple-500 text-white">{order.trading_time}s</div>
                       <div className="px-2 py-1 rounded text-xs text-white bg-green-500">✓ Won</div>
                     </div>
@@ -1000,8 +933,7 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Amount</div>
-                      {/* CHANGE: Amount in SAR */}
-                      <div className="text-gray-800">{asSar(order.amount)}</div>
+                      <div className="text-gray-800">{formatNumberWithCommas(order.amount, 4)} ﷼</div>
                     </div>
                     <div>
                       <div className="text-black font-bold">Trading Time</div>
@@ -1013,9 +945,8 @@ const OrderPage = () => {
                     </div>
                     <div>
                       <div className="text-black font-bold">Actual Earnings</div>
-                      {/* CHANGE: actual_earnings/expected_earnings in SAR */}
                       <div className="text-green-600 font-semibold">
-                        {asSar(Math.abs(order.actual_earnings || order.expected_earnings))}
+                        {formatNumberWithCommas(Math.abs(order.actual_earnings || order.expected_earnings), 4)} ﷼
                       </div>
                     </div>
                   </div>
@@ -1044,124 +975,9 @@ const AssetPage = ({
   onWithdrawalClick: () => void
   onCustomerSupportClick: () => void
 }) => {
-  const [selectedCurrency, setSelectedCurrency] = useState("SAR")
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [exchangeRates, setExchangeRates] = useState<{ [key: string]: number }>({
-    ZAR: 1.0, // amounts in DB are in ZAR (base)
-    SAR: 0.19, // fallback approx ZAR->SAR
-    USDT: 0.054, // leave as-is
-    USD: 0.054,
-  })
-  const [isLoadingRates, setIsLoadingRates] = useState(false)
-
-  const currencies = [
-    { code: "SAR", name: "Saudi Riyal", symbol: "﷼" },
-    { code: "USDT", name: "Tether USD", symbol: "₮" },
-    { code: "USD", name: "US Dollar", symbol: "$" },
-  ]
-
-  useEffect(() => {
-    // Initialize exchange rates from localStorage if available
-    const storedRates = localStorage.getItem("exchangeRates")
-    if (storedRates) {
-      try {
-        const parsedRates = JSON.parse(storedRates)
-        setExchangeRates(parsedRates)
-        console.log("[v0] Exchange rates loaded from localStorage:", parsedRates)
-      } catch (e) {
-        console.log("[v0] Error parsing exchangeRates from localStorage:", e)
-      }
-    }
-    fetchExchangeRates()
-    // Update rates every 5 minutes
-    const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const fetchExchangeRates = async () => {
-    try {
-      setIsLoadingRates(true)
-      console.log("[v0] Fetching exchange rates...")
-
-      const response = await fetch("https://api.exchangerate-api.com/v4/latest/ZAR")
-
-      if (response.ok) {
-        const data = await response.json()
-        console.log("[v0] Exchange rates fetched:", data.rates)
-
-        const nextRates = {
-          ZAR: 1.0,
-          SAR: data.rates.SAR || 0.19, // ZAR -> SAR
-          USDT: data.rates.USD || 0.054,
-          USD: data.rates.USD || 0.054,
-        }
-
-        setExchangeRates(nextRates)
-        try {
-          localStorage.setItem("exchangeRates", JSON.JSON.stringify(nextRates))
-        } catch (e) {
-          console.log("[v0] Unable to persist exchangeRates:", e)
-        }
-
-        console.log("[v0] Exchange rates updated:", nextRates)
-      } else {
-        throw new Error("Failed to fetch exchange rates")
-      }
-    } catch (error) {
-      console.log("[v0] Error fetching exchange rates:", error)
-      const fallback = { ZAR: 1.0, SAR: 0.19, USDT: 0.054, USD: 0.054 }
-      setExchangeRates(fallback)
-      try {
-        localStorage.setItem("exchangeRates", JSON.stringify(fallback))
-      } catch (e) {
-        console.log("[v0] Unable to persist fallback exchangeRates:", e)
-      }
-    } finally {
-      setIsLoadingRates(false)
-    }
-  }
-
-  // FIXED: Separated available and frozen balances - they should never be combined for available balance calculation
-  const availableBalance = profile?.available_balance || 0 // Only available balance
-  const frozenBalance = profile?.frozen_balance || 0 // Separate frozen balance
-  const totalBalance = availableBalance + frozenBalance // Total = available + frozen
-
-  const getConvertedAmount = (amount: number) => {
-    if (selectedCurrency === "ZAR") {
-      return amount // ZAR is the base currency (no conversion needed)
-    }
-    // Ensure the rate exists for the selected currency before multiplying
-    const rate = exchangeRates[selectedCurrency] || 0
-    return amount * rate
-  }
-
-  const convertedAvailableBalance = getConvertedAmount(availableBalance)
-  const convertedTotalBalance = getConvertedAmount(totalBalance)
-  const convertedFrozenBalance = getConvertedAmount(frozenBalance)
-
-  // Get currency symbol
-  const getCurrencySymbol = (currencyCode: string) => {
-    const currency = currencies.find((c) => c.code === currencyCode)
-    return currency?.symbol || currencyCode
-  }
-
-  const handleCurrencyChange = (currencyCode: string) => {
-    console.log("[v0] Currency changed from", selectedCurrency, "to", currencyCode)
-    console.log("[v0] Current exchange rates:", exchangeRates)
-    console.log("[v0] Available balance before conversion:", availableBalance)
-    console.log("[v0] Total balance before conversion:", totalBalance)
-
-    setSelectedCurrency(currencyCode)
-    setIsDropdownOpen(false)
-
-    // No need to recalculate these here as they are derived from availableBalance/totalBalance
-    // using getConvertedAmount which will be called when the UI renders.
-    // const newAvailableBalance = currencyCode === 'ZAR' ? availableBalance : availableBalance * exchangeRates[currencyCode]
-    // const newTotalBalance = currencyCode === 'ZAR' ? totalBalance : totalBalance * exchangeRates[currencyCode]
-
-    // console.log('[v0] Converted available balance:', newAvailableBalance)
-    // console.log('[v0] Converted total balance:', newTotalBalance)
-  }
+  const availableBalance = profile?.available_balance || 0
+  const frozenBalance = profile?.frozen_balance || 0
+  const totalBalance = availableBalance + frozenBalance
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1182,84 +998,28 @@ const AssetPage = ({
         <div className="mb-4">
           <h2 className="text-lg font-medium mb-2">Total Assets</h2>
           <div className="text-2xl sm:text-3xl font-bold mb-2">
-            {formatNumberWithCommas(convertedTotalBalance, 4)}{" "}
+            {formatNumberWithCommas(totalBalance, 4)}{" "}
             <span className="text-lg font-normal">
-              {getCurrencySymbol(selectedCurrency)} {selectedCurrency}
+              ﷼ SAR
             </span>
           </div>
-          <div className="relative">
-            <div
-              className="flex items-center text-sm opacity-90 cursor-pointer"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <span>
-                ≈ {formatNumberWithCommas(convertedTotalBalance, 4)} {getCurrencySymbol(selectedCurrency)}{" "}
-                {selectedCurrency}
-                {isLoadingRates && <span className="ml-1 text-xs">(updating...)</span>}
-              </span>
-              <svg
-                className={`w-4 h-4 ml-1 transition-transform ${isDropdownOpen ? "rotate-180" : ""}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414-1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-
-            {isDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 min-w-[200px] z-10">
-                {currencies.map((currency) => (
-                  <button
-                    key={currency.code}
-                    className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                      selectedCurrency === currency.code ? "bg-blue-50 text-blue-600" : "text-gray-700"
-                    }`}
-                    onClick={() => handleCurrencyChange(currency.code)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="font-medium">{currency.code}</div>
-                        <div className="text-xs opacity-75">{currency.name}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium">
-                          {formatNumberWithCommas(getConvertedAmount(totalBalance), 4)} {currency.symbol}
-                        </div>
-                        {/* Display rate only if not ZAR */}
-                        {currency.code !== "ZAR" && exchangeRates[currency.code] !== undefined && (
-                          <div className="text-xs opacity-75">
-                            1 ZAR = {formatNumberWithCommas(exchangeRates[currency.code], 4)} {currency.code}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="text-sm opacity-90">
+            ≈ {formatNumberWithCommas(totalBalance, 4)} ﷼ SAR
           </div>
         </div>
 
-        {/* Available / Frozen balance text */}
         <div className="text-sm opacity-90 px-4 pb-4">
           <div className="mb-1">
-            Available Balance: {formatNumberWithCommas(convertedAvailableBalance, 4)}{" "}
-            {getCurrencySymbol(selectedCurrency)} {selectedCurrency}
+            Available Balance: {formatNumberWithCommas(availableBalance, 4)} ﷼ SAR
           </div>
           {frozenBalance > 0 && (
             <div className="text-yellow-300">
-              Frozen Balance: {formatNumberWithCommas(convertedFrozenBalance, 4)} {getCurrencySymbol(selectedCurrency)}{" "}
-              {selectedCurrency} (Cannot be used for trading)
+              Frozen Balance: {formatNumberWithCommas(frozenBalance, 4)} ﷼ SAR (Cannot be used for trading)
             </div>
           )}
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="bg-white px-4 py-6 border-t border-gray-100">
         <div className="grid grid-cols-3 gap-4 sm:gap-8">
           <button onClick={onRechargeClick} className="flex flex-col items-center gap-2">
@@ -1285,40 +1045,33 @@ const AssetPage = ({
         </div>
       </div>
 
-      {/* ✅ Responsive Currency Balance Section */}
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4 mt-4">
         <div className="flex items-center mb-4 flex-wrap">
           <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-            {getCurrencySymbol(selectedCurrency)}
+            ﷼
           </div>
-          <span className="font-medium text-gray-900">{selectedCurrency}</span>
-          <span className="text-xs text-gray-500 ml-2">
-            {/* Keep rate info base as ZAR (DB base). No balance displays in ZAR. */}
-            {selectedCurrency !== "ZAR" &&
-              exchangeRates[selectedCurrency] !== undefined &&
-              `1 ZAR = ${formatNumberWithCommas(exchangeRates[selectedCurrency], 4)} ${selectedCurrency}`}
-          </span>
+          <span className="font-medium text-gray-900">SAR</span>
+          <span className="text-xs text-gray-500 ml-2">Saudi Riyal</span>
         </div>
 
-        {/* ✅ Flex layout for small screens */}
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
           <div className="flex-1">
             <div className="text-base sm:text-lg font-semibold text-blue-500 mb-1">
-              {formatNumberWithCommas(convertedAvailableBalance, 4)}
+              {formatNumberWithCommas(availableBalance, 4)}
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Available Balance</div>
             <div className="text-xs text-gray-400 mt-1">(For Trading)</div>
           </div>
           <div className="flex-1">
             <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
-              {formatNumberWithCommas(convertedFrozenBalance, 4)}
+              {formatNumberWithCommas(frozenBalance, 4)}
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Frozen Balance</div>
             <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
           </div>
           <div className="flex-1">
             <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
-              {formatNumberWithCommas(convertedTotalBalance, 4)}
+              {formatNumberWithCommas(totalBalance, 4)}
             </div>
             <div className="text-xs sm:text-sm text-gray-500">Total Balance</div>
             <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
@@ -1326,7 +1079,6 @@ const AssetPage = ({
         </div>
       </div>
 
-      {/* Balance Information */}
       <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
         <div className="text-sm text-blue-800">
           <div className="font-medium mb-2">Balance Information</div>
@@ -1334,27 +1086,11 @@ const AssetPage = ({
             <div>• Available Balance: Can be used for trading and withdrawals</div>
             <div>• Frozen Balance: Currently locked and cannot be used</div>
             <div>• Total Balance: Sum of available and frozen balances</div>
+            <div>• All balances are in Saudi Riyal (SAR)</div>
           </div>
         </div>
       </div>
 
-      {/* Exchange Rate Information */}
-      {selectedCurrency !== "ZAR" && (
-        <div className="bg-blue-50 mx-4 mt-4 rounded-lg p-4">
-          <div className="text-sm text-blue-800">
-            <div className="font-medium mb-1">Current Exchange Rate</div>
-            <div>
-              1 ZAR = {formatNumberWithCommas(exchangeRates[selectedCurrency], 6)} {selectedCurrency}
-            </div>
-            <div className="text-xs mt-1 opacity-75">
-              Rates updated every 5 minutes
-              {isLoadingRates && <span> • Updating...</span>}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Bottom padding for navigation */}
       <div className="h-20"></div>
     </div>
   )
@@ -1367,7 +1103,6 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-200">
         <button onClick={onBack} className="p-2">
           <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1378,7 +1113,6 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
         <div className="w-10"></div>
       </div>
 
-      {/* Exit Login Button */}
       <div className="px-4 mt-8">
         <button
           onClick={handleExitLogin}
@@ -1429,7 +1163,6 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-200">
         <button onClick={onBack} className="p-2">
           <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1440,7 +1173,6 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
         <div className="w-10"></div>
       </div>
 
-      {/* Messages */}
       <div className="px-4 py-6">
         {loading ? (
           <div className="text-center py-8">Loading messages...</div>
@@ -1479,21 +1211,6 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   const [showAddCollection, setShowAddCollection] = useState(false)
   const [showUserMessage, setShowUserMessage] = useState(false)
   const [showAuthentication, setShowAuthentication] = useState(false)
-
-  const [sarRate, setSarRate] = useState<number>(0.19)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("exchangeRates")
-      if (saved) {
-        const rates = JSON.parse(saved)
-        if (rates?.SAR && typeof rates.SAR === "number") {
-          setSarRate(rates.SAR)
-        }
-      }
-    } catch (e) {
-      console.log("[v0] Unable to load exchangeRates from localStorage:", e)
-    }
-  }, [])
 
   const handleSettingsClick = () => {
     setShowSettings(true)
@@ -1555,16 +1272,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
     return <AuthenticationPage onBack={handleBackFromAuthentication} user={user} />
   }
 
-  // FIXED: Separated available and frozen balances properly with comma formatting
   const availableBalance = profile?.available_balance || 0
   const frozenBalance = profile?.frozen_balance || 0
 
-  const availableSar = availableBalance * sarRate
-  const frozenSar = frozenBalance * sarRate
-
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header with user profile */}
       <div
         className="py-8 sm:py-12 px-4 text-white relative"
         style={{
@@ -1585,21 +1297,18 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
               Credit Score: {formatNumberWithCommas(profile?.credit_score || 0, 0)}
             </div>
             <div className="text-sm opacity-90">
-              {/* FIXED: Clear separation of available and frozen balance display with comma formatting */}
               <div>
-                Available: {formatNumberWithCommas(availableSar, 4)} <span>﷼ SAR</span>
+                Available: {formatNumberWithCommas(availableBalance, 4)} <span>﷼ SAR</span>
               </div>
               {frozenBalance > 0 && (
                 <div className="text-yellow-300">
-                  Frozen: {formatNumberWithCommas(frozenSar, 4)} <span>﷼ SAR</span> (Cannot use)
+                  Frozen: {formatNumberWithCommas(frozenBalance, 4)} <span>﷼ SAR</span> (Cannot use)
                 </div>
               )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Menu Items */}
 
       <div className="px-4 py-2 space-y-1">
         {[
@@ -1645,7 +1354,6 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
 const AuthenticationPage = ({ onBack, user }: { onBack: () => void; user: any }) => {
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white px-4 py-4 flex items-center justify-between border-b border-gray-200">
         <button onClick={onBack} className="p-2">
           <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1656,9 +1364,7 @@ const AuthenticationPage = ({ onBack, user }: { onBack: () => void; user: any })
         <div className="w-10"></div>
       </div>
 
-      {/* Content */}
       <div className="p-4">
-        {/* Basic Authentication Section */}
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-900">Basic Authentication</h2>
@@ -1721,7 +1427,6 @@ const CollectionInfoPage = ({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
         <button onClick={onBack} className="p-2">
           <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1732,7 +1437,6 @@ const CollectionInfoPage = ({
         <div className="w-10"></div>
       </div>
 
-      {/* Content */}
       <div className="p-4 pb-24">
         {isLoading ? (
           <div className="text-center py-8">
@@ -1770,7 +1474,6 @@ const CollectionInfoPage = ({
         )}
       </div>
 
-      {/* Add Collection Button - Always visible */}
       <div className="fixed bottom-4 left-4 right-4 z-10">
         <button
           onClick={onAddCollection}
@@ -1794,7 +1497,7 @@ const AddCollectionInfoPage = ({
 }) => {
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
-    currency: "ZAR",
+    currency: "SAR",
     account_holder_name: "",
     bind_bank: "",
     bank_card_number: "",
@@ -1835,7 +1538,6 @@ const AddCollectionInfoPage = ({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white border-b">
         <button onClick={onBack} className="p-2">
           <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
@@ -1846,23 +1548,19 @@ const AddCollectionInfoPage = ({
         <div className="w-10"></div>
       </div>
 
-      {/* Form */}
       <div className="p-4 space-y-6 pb-24">
-        {/* Binding Type */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Binding Type</label>
           <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">Bank Card</div>
         </div>
 
-        {/* Currency */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Currency
           </label>
-          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">ZAR</div>
+          <div className="bg-yellow-400 text-black px-4 py-2 rounded-lg inline-block font-medium">SAR</div>
         </div>
 
-        {/* Account Holder Name */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Account Holder Name
@@ -1876,7 +1574,6 @@ const AddCollectionInfoPage = ({
           />
         </div>
 
-        {/* Bind Bank */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Bind Bank
@@ -1890,7 +1587,6 @@ const AddCollectionInfoPage = ({
           />
         </div>
 
-        {/* Bank Card Number */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <span className="text-red-500">*</span>Bank Card Number
@@ -1959,12 +1655,11 @@ const HomePage = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Add real-time profile updates using polling
   useEffect(() => {
     if (user?.id && profile) {
       const profileRefreshInterval = setInterval(() => {
         fetchProfile(user.id)
-      }, 5000) // Refresh every 5 seconds for real-time updates
+      }, 5000)
 
       return () => clearInterval(profileRefreshInterval)
     }
@@ -2217,7 +1912,6 @@ const HomePage = () => {
       return
     }
 
-    // FIXED: Available balance is only the available_balance field (frozen balance doesn't reduce available balance)
     const availableBalance = profile?.available_balance || 0
 
     if (Number.parseFloat(withdrawalAmount) > availableBalance) {
@@ -2242,7 +1936,7 @@ const HomePage = () => {
         toast.success("Withdrawal request submitted successfully")
         setWithdrawalAmount("")
         fetchWithdrawals()
-        await refreshUserProfile() // Refresh balance
+        await refreshUserProfile()
       } else {
         const error = await response.json()
         toast.error(error.error || "Failed to submit withdrawal request")
@@ -2307,11 +2001,9 @@ const HomePage = () => {
     }
 
     if (showWithdrawalPage) {
-      // Check if withdrawal is prohibited for this user
       if (profile?.withdrawal_prohibited) {
         return (
           <div className="min-h-screen bg-gray-50">
-            {/* Header */}
             <div className="bg-white shadow-sm">
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
@@ -2323,7 +2015,6 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Withdrawal Prohibited Message */}
             <div className="p-4 flex items-center justify-center min-h-[400px]">
               <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
                 <div className="mb-6">
@@ -2355,12 +2046,10 @@ const HomePage = () => {
         )
       }
 
-      // FIXED: Available balance is only the available_balance field (frozen balance doesn't reduce available balance)
       const availableBalance = profile?.available_balance || 0
 
       return (
         <div className="min-h-screen bg-gray-50">
-          {/* Header */}
           <div className="bg-white shadow-sm">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
@@ -2378,23 +2067,19 @@ const HomePage = () => {
             </div>
           </div>
 
-          {/* Withdrawal Form */}
           <div className="p-4 space-y-6">
-            {/* Available Balance - FIXED: Only show available balance, mention frozen separately with comma formatting */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
               <div className="text-2xl font-bold text-gray-900">
-                {formatNumberWithCommas(availableBalance, 2)} {profile?.preferred_currency || "ZAR"}
+                {formatNumberWithCommas(availableBalance, 2)} ﷼ SAR
               </div>
               {profile?.frozen_balance > 0 && (
                 <div className="text-sm text-orange-600 mt-1">
-                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} {profile?.preferred_currency || "ZAR"}{" "}
-                  (Cannot withdraw)
+                  Frozen: {formatNumberWithCommas(profile.frozen_balance, 2)} ﷼ SAR (Cannot withdraw)
                 </div>
               )}
             </div>
 
-            {/* Withdrawal Amount */}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <label className="block text-sm font-medium text-gray-700 mb-2">Withdrawal Amount</label>
               <input
@@ -2406,7 +2091,6 @@ const HomePage = () => {
               />
             </div>
 
-            {/* Bank Details */}
             {bankDetails.length > 0 && (
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="text-sm font-medium text-gray-700 mb-2">Withdrawal Account</div>
@@ -2424,7 +2108,6 @@ const HomePage = () => {
               </div>
             )}
 
-            {/* Submit Button */}
             <button
               onClick={handleWithdrawalSubmit}
               disabled={
@@ -2451,7 +2134,6 @@ const HomePage = () => {
             )}
           </div>
 
-          {/* Withdrawal History Modal */}
           {showWithdrawalHistory && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
@@ -2468,7 +2150,7 @@ const HomePage = () => {
                         <div key={withdrawal.id} className="border rounded-lg p-3">
                           <div className="flex justify-between items-start mb-2">
                             <div className="font-medium">
-                              {formatNumberWithCommas(withdrawal.amount, 2)} {profile?.preferred_currency || "ZAR"}
+                              {formatNumberWithCommas(withdrawal.amount, 2)} ﷼ SAR
                             </div>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -2532,7 +2214,6 @@ const HomePage = () => {
       default:
         return (
           <div className="min-h-screen bg-gray-50">
-            {/* Top Price Cards */}
             <div className="bg-white px-4 py-6">
               <div className="grid grid-cols-3 gap-2 sm:gap-4">
                 {cryptoPrices.slice(0, 3).map((crypto) => (
@@ -2549,7 +2230,6 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="bg-white px-4 py-6 border-t border-gray-100">
               <div className="grid grid-cols-3 gap-4 sm:gap-8">
                 <button onClick={handleRechargeClick} className="flex flex-col items-center gap-2">
@@ -2575,9 +2255,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Crypto List */}
             <div className="bg-white mt-2">
-              {/* Search Input */}
               <div className="relative px-4 py-3">
                 <input
                   type="text"
@@ -2601,7 +2279,6 @@ const HomePage = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
 
-                {/* Search Results */}
                 {searchQuery && (
                   <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg max-h-60 overflow-y-auto z-50">
                     {filteredCryptos.length > 0 ? (
@@ -2609,7 +2286,7 @@ const HomePage = () => {
                         <button
                           key={crypto.id}
                           onClick={() => {
-                            handleCryptoSelect(crypto.id) // Use crypto.id for selection
+                            handleCryptoSelect(crypto.id)
                           }}
                           className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 border-b border-gray-100 last:border-b-0"
                         >
@@ -2657,7 +2334,6 @@ const HomePage = () => {
               ))}
             </div>
 
-            {/* Bottom padding to account for fixed navigation */}
             <div className="h-20"></div>
           </div>
         )
@@ -2692,7 +2368,6 @@ const HomePage = () => {
       />
       {renderCurrentPage()}
 
-      {/* Bottom Navigation */}
       {activeNav !== "market" && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40">
           <div className="grid grid-cols-5 py-2">

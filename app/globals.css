@@ -174,8 +174,10 @@ textarea,
 
 /* Force login button styling with maximum specificity */
 html body form button[type="submit"]:not([disabled]) {
-  background: linear-gradient(to right, #facc15, #f97316, #ef4444) !important;
-  background-color: #ef4444 !important;
+  background: linear-gradient(to right, #0ea5e9, #2563eb, #1e40af) !important; /* sky to blue shades */
+  background-color: #2563eb !important; /* solid fallback color */
   color: #ffffff !important;
   border: none !important;
+}
+
 }

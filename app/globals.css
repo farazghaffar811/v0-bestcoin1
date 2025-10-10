@@ -132,24 +132,38 @@
   }
 }
 
+/* ✅ Sky → Blue Gradient for Login & Register Buttons */
 @layer components {
-  /* High specificity rules to force proper button contrast */
   form button[type="submit"],
   button[type="submit"],
-  .login-button {
-    background: linear-gradient(to right, #facc15, #f97316, #ef4444) !important;
-    background-color: #ef4444 !important;
-    color: #ffffff !important;
-    border: none !important;
-  }
-}
-
-@layer utilities {
-  /* Utility class for login buttons */
+  .login-button,
+  .register-button,
   .btn-login {
-    background: linear-gradient(to right, #facc15, #f97316, #ef4444) !important;
+    background: linear-gradient(to right, #0ea5e9, #2563eb, #1e40af) !important; /* sky to blue */
+    background-color: #2563eb !important;
     color: #ffffff !important;
     border: none !important;
+    border-radius: 9999px !important; /* pill shape */
+    font-weight: 600 !important;
+    box-shadow: 0 0 12px rgba(14, 165, 233, 0.4) !important;
+    transition: all 0.3s ease-in-out !important;
+  }
+
+  form button[type="submit"]:hover,
+  button[type="submit"]:hover,
+  .login-button:hover,
+  .register-button:hover,
+  .btn-login:hover {
+    background: linear-gradient(to right, #38bdf8, #3b82f6, #1d4ed8) !important;
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.8) !important;
+    transform: scale(1.03) !important;
+  }
+
+  form button[type="submit"][disabled],
+  button[type="submit"][disabled] {
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
   }
 }
 
@@ -170,33 +184,4 @@ textarea,
 
 .tradingview-widget-container {
   background-color: #0f172a !important;
-}
-
-/* ✅ Force login button styling (Sky → Blue gradient with glow) */
-html body form button[type="submit"]:not([disabled]) {
-  background: linear-gradient(to right, #0ea5e9, #2563eb, #1e40af) !important; /* sky-500 → blue-600 → blue-900 */
-  background-color: #2563eb !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 9999px !important; /* full rounded (pill style) */
-  font-weight: 600 !important;
-  padding: 1rem !important;
-  width: 100% !important;
-  box-shadow: 0 0 12px rgba(14, 165, 233, 0.4) !important; /* soft blue glow */
-  transition: all 0.3s ease-in-out !important;
-  cursor: pointer !important;
-}
-
-/* ✨ Glowing hover animation */
-html body form button[type="submit"]:hover:not([disabled]) {
-  background: linear-gradient(to right, #38bdf8, #3b82f6, #1d4ed8) !important; /* lighter sky-blue */
-  box-shadow: 0 0 20px rgba(14, 165, 233, 0.8) !important; /* stronger glow */
-  transform: scale(1.03) !important;
-}
-
-/* 🚫 Disabled state (for better UX) */
-html body form button[type="submit"][disabled] {
-  opacity: 0.6 !important;
-  cursor: not-allowed !important;
-  box-shadow: none !important;
 }

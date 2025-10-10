@@ -1,12 +1,11 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { MessageCircle } from "lucide-react";
+import { MessageCircle } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -74,38 +73,19 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header Icons */}
       <div className="flex justify-end items-center p-6">
-     {/*  <button
-    onClick={handleCustomerSupport}
-    className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center hover:bg-blue-600 transition-colors"
-    type="button"
-  >
-     Example: Using a proper Lucide icon 
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-5 h-5 text-white"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path d="M21 15a2 2 0 0 1-2 2h-4l-4 4v-4H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z" />
-    </svg>
-  </button>*/}
+        {/* (Optional Telegram button commented out) */}
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 -mt-16">
-       
-      {/* CBOE Title */}
-<h1 className="text-4xl font-bold mb-16 flex items-center justify-center">
-  <img
-    src="/images/design-mode/logo_super_scjghk_v2cehs(2).png"
-    alt="BEST Logo"
-    className="w-60 h-auto drop-shadow-[0_0_15px_rgba(255,165,0,0.7)]"
-  />
-</h1>
-
-
+        {/* Logo */}
+        <h1 className="text-4xl font-bold mb-16 flex items-center justify-center">
+          <img
+            src="/images/design-mode/logo_super_scjghk_v2cehs(2).png"
+            alt="BEST Logo"
+            className="w-60 h-auto drop-shadow-[0_0_15px_rgba(255,165,0,0.7)]"
+          />
+        </h1>
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-6">
@@ -122,7 +102,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Your Email"
               required
-              className="w-full pl-12 pr-4 py-4 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full pl-12 pr-4 py-4 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
@@ -139,7 +119,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password length 6-30"
               required
-              className="w-full pl-12 pr-12 py-4 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full pl-12 pr-12 py-4 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <button
               type="button"
@@ -173,14 +153,10 @@ export default function LoginPage() {
           {/* Error Display */}
           {error && <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">{error}</div>}
 
-          {/* Login Button */}
+          {/* Login Button (Updated Gradient: Sky & Blue) */}
           <button
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-sky-600 via-blue-600 to-sky-700 text-white font-semibold rounded-full hover:from-sky-800 hover:via-blue-700 hover:to-sky-700 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-            style={{
-              background: "linear-gradient(to right, #facc15, #f97316, #ef4444)",
-              color: "#ffffff",
-            }}
+            className="w-full py-4 bg-gradient-to-r from-sky-500 via-blue-600 to-sky-700 text-white font-semibold rounded-full hover:from-sky-600 hover:via-blue-700 hover:to-sky-800 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
           >
             Login
           </button>

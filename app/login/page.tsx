@@ -176,7 +176,7 @@ export default function LoginPage() {
           {/* Login Button */}
           <button
             type="submit"
-            className="w-full py-4 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white font-semibold rounded-full hover:from-yellow-500 hover:via-orange-600 hover:to-red-600 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+            className="w-full py-4 bg-gradient-to-r from-sky-600 via-blue-600 to-sky-700 text-white font-semibold rounded-full hover:from-sky-800 hover:via-blue-700 hover:to-sky-700 hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
             style={{
               background: "linear-gradient(to right, #facc15, #f97316, #ef4444)",
               color: "#ffffff",

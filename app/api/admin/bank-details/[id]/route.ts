@@ -1,9 +1,9 @@
-// src/app/api/admin/bank-details/[id]/route.ts
 export const dynamic = "force-dynamic"
 
 import { createAdminClient, createClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
+// 🟩 GET — Fetch a specific bank detail
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = await createClient()
@@ -34,14 +34,13 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-// ✅ Add this PATCH route for editing
+// 🟧 PATCH — update record
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
     const supabase = await createAdminClient()
     const { id } = params
     const body = await req.json()
 
-    // Update the specific record
     const { error } = await supabase
       .from("bank_details")
       .update(body)
@@ -54,4 +53,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     console.error("[BankDetails PATCH Error]:", err)
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
+}
+
+// 🟦 PUT — alias to PATCH (for your admin dashboard)
+export async function PUT(req: Request, ctx: any) {
+  return PATCH(req, ctx)
+}
+
+// 🟪 OPTIONS — handle CORS preflight safely (optional)
+export async function OPTIONS() {
+  return NextResponse.json({}, { status: 200 })
 }

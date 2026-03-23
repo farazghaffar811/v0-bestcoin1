@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS bank_details (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   binding_type VARCHAR(50) DEFAULT 'Bank Card',
-  currency VARCHAR(10) DEFAULT 'ZAR',
+  currency VARCHAR(10) DEFAULT 'SAR',
   account_holder_name VARCHAR(255) NOT NULL,
   bind_bank VARCHAR(255) NOT NULL,
   bank_card_number VARCHAR(20) NOT NULL,

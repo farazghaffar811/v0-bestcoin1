@@ -1449,13 +1449,13 @@ const CollectionInfoPage = ({
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-sm font-medium">
-                      {detail.bind_bank?.charAt(0).toUpperCase() || "B"}
+                      {(detail.bank_name || detail.bind_bank)?.charAt(0).toUpperCase() || "B"}
                     </span>
                   </div>
-                  <span className="text-gray-800 font-medium">{detail.bind_bank?.toLowerCase() || "Unknown Bank"}</span>
+                  <span className="text-gray-800 font-medium">{(detail.bank_name || detail.bind_bank)?.toLowerCase() || "Unknown Bank"}</span>
                 </div>
                 <span className="text-gray-500">
-                  {detail.bank_card_number.slice(0, 4)}****{detail.bank_card_number.slice(-4)}
+                  {(detail.account_number || detail.bank_card_number)?.slice(0, 4)}****{(detail.account_number || detail.bank_card_number)?.slice(-4)}
                 </span>
               </div>
             ))}
@@ -1498,9 +1498,10 @@ const AddCollectionInfoPage = ({
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
     currency: "INR",
-    account_holder_name: "",
-    bind_bank: "",
-    bank_card_number: "",
+    holder_name: "",
+    bank_name: "",
+    account_number: "",
+    ifsc_code: "",
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -1508,7 +1509,7 @@ const AddCollectionInfoPage = ({
   }
 
   const handleSave = async () => {
-    if (!formData.account_holder_name || !formData.bind_bank || !formData.bank_card_number) {
+    if (!formData.holder_name || !formData.bank_name || !formData.account_number || !formData.ifsc_code) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -1563,25 +1564,25 @@ const AddCollectionInfoPage = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Account Holder Name
+            <span className="text-red-500">*</span>Holder's Name
           </label>
           <input
             type="text"
-            value={formData.account_holder_name}
-            onChange={(e) => setFormData({ ...formData, account_holder_name: e.target.value })}
+            value={formData.holder_name}
+            onChange={(e) => setFormData({ ...formData, holder_name: e.target.value })}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter account holder name"
+            placeholder="Enter holder's name"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Bind Bank
+            <span className="text-red-500">*</span>Bank Name
           </label>
           <input
             type="text"
-            value={formData.bind_bank}
-            onChange={(e) => setFormData({ ...formData, bind_bank: e.target.value })}
+            value={formData.bank_name}
+            onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Enter bank name"
           />
@@ -1589,14 +1590,28 @@ const AddCollectionInfoPage = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Bank Card Number
+            <span className="text-red-500">*</span>A/C No
           </label>
           <input
             type="text"
-            value={formData.bank_card_number}
-            onChange={(e) => setFormData({ ...formData, bank_card_number: e.target.value })}
+            value={formData.account_number}
+            onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter bank card number"
+            placeholder="Enter account number"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <span className="text-red-500">*</span>IFSC Code
+          </label>
+          <input
+            type="text"
+            value={formData.ifsc_code}
+            onChange={(e) => setFormData({ ...formData, ifsc_code: e.target.value.toUpperCase() })}
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter IFSC code"
+            maxLength={11}
           />
         </div>
 
@@ -2097,12 +2112,12 @@ const HomePage = () => {
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-green-600 font-medium text-sm">
-                      {bankDetails[0]?.bind_bank?.charAt(0)?.toUpperCase()}
+                      {(bankDetails[0]?.bank_name || bankDetails[0]?.bind_bank)?.charAt(0)?.toUpperCase()}
                     </span>
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium text-gray-900">{bankDetails[0]?.bind_bank}</div>
-                    <div className="text-sm text-gray-500">****{bankDetails[0]?.bank_card_number?.slice(-4)}</div>
+                    <div className="font-medium text-gray-900">{bankDetails[0]?.bank_name || bankDetails[0]?.bind_bank}</div>
+                    <div className="text-sm text-gray-500">****{(bankDetails[0]?.account_number || bankDetails[0]?.bank_card_number)?.slice(-4)}</div>
                   </div>
                 </div>
               </div>

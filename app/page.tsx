@@ -1051,7 +1051,7 @@ const AssetPage = ({
             ₹
           </div>
           <span className="font-medium text-gray-900">INR</span>
-          <span className="text-xs text-gray-500 ml-2">Saudi Riyal</span>
+          
         </div>
 
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
@@ -1086,7 +1086,7 @@ const AssetPage = ({
             <div>• Available Balance: Can be used for trading and withdrawals</div>
             <div>• Frozen Balance: Currently locked and cannot be used</div>
             <div>• Total Balance: Sum of available and frozen balances</div>
-            <div>• All balances are in Saudi Riyal (INR)</div>
+            <div>• All balances are in (INR)</div>
           </div>
         </div>
       </div>

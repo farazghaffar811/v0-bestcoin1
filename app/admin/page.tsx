@@ -799,7 +799,7 @@ function AdminDashboardContent() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {withdrawal.amount.toFixed(2)} SAR
+                                {withdrawal.amount.toFixed(2)} INR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -1128,7 +1128,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.amount.toFixed(4)} SAR
+                                {trade.amount.toFixed(4)} INR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {trade.profit_percentage}%
@@ -1150,7 +1150,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.payout ? `${trade.payout.toFixed(4)} SAR` : "-"}
+                                {trade.payout ? `${trade.payout.toFixed(4)} INR` : "-"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(trade.created_at).toLocaleDateString()}
@@ -1186,7 +1186,7 @@ function AdminDashboardContent() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600">Amount</div>
-                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} SAR</div>
+                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} INR</div>
               </div>
 
               {editingWithdrawal.bank_details && (
@@ -1260,7 +1260,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance (SAR)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance (INR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"
@@ -1302,7 +1302,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance (SAR)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance (INR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"

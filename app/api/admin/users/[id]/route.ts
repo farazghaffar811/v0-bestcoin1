@@ -55,7 +55,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         available_balance,
         frozen_balance: frozen_balance || 0,
         withdrawal_prohibited: withdrawal_prohibited || false,
-        preferred_currency: "SAR", // Updated default preferred_currency to 'SAR'
+        preferred_currency: "INR", // Updated default preferred_currency to 'SAR'
         role: "user",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),

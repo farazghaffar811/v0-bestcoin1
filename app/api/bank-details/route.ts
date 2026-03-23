@@ -55,10 +55,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { binding_type, currency, account_holder_name, bind_bank, bank_card_number } = body
+    const { binding_type, currency, holder_name, bank_name, account_number, ifsc_code } = body
 
     // Validate required fields
-    if (!binding_type || !currency || !account_holder_name || !bind_bank || !bank_card_number) {
+    if (!binding_type || !currency || !holder_name || !bank_name || !account_number || !ifsc_code) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
 
@@ -69,9 +69,10 @@ export async function POST(request: Request) {
         user_id: user.id,
         binding_type,
         currency,
-        account_holder_name,
-        bind_bank,
-        bank_card_number,
+        holder_name,
+        bank_name,
+        account_number,
+        ifsc_code,
       })
       .select()
       .single()

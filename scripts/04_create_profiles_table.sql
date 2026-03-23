@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   uid TEXT UNIQUE,
   credit_score INTEGER DEFAULT 100,
   available_balance DECIMAL(15,4) DEFAULT 0.0000,
-  preferred_currency TEXT DEFAULT 'ZAR',
+  preferred_currency TEXT DEFAULT 'SAR',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

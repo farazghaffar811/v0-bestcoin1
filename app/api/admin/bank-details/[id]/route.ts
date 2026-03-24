@@ -37,7 +37,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 // 🟧 PATCH — update record
 export async function PATCH(req: Request, { params }: { params: { id: string } }) {
   try {
-    const supabase = await createAdminClient()
+    const supabase = createAdminClient()
     const { id } = params
     const body = await req.json()
 

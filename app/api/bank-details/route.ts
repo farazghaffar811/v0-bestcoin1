@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic"
 
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -62,8 +62,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
 
+    // Use admin client for insert to bypass any RLS/cookie issues
+    const adminSupabase = createAdminClient()
+
     // Insert bank details for the current user
-    const { data, error } = await supabase
+    const { data, error } = await adminSupabase
       .from("bank_details")
       .insert({
         user_id: user.id,

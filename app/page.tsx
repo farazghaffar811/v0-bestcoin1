@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
-import { Home, X } from "lucide-react"
+import { Chrome as Home, X } from "lucide-react"
 import { toast, Toaster } from "sonner"
-import { CreditCard, ShieldCheck, MessageSquare, HelpCircle, LogOut } from "lucide-react"
+import { CreditCard, ShieldCheck, MessageSquare, CircleHelp as HelpCircle, LogOut } from "lucide-react"
 
 interface CryptoPrice {
   id: string
@@ -438,8 +438,50 @@ const MarketPage = ({
       EOSUSDT: "BINANCE:EOSUSDT",
       BTSUSDT: "BINANCE:BTSUSDT",
       LINKUSDT: "BINANCE:LINKUSDT",
+      bitcoin: "BINANCE:BTCUSDT",
+      ethereum: "BINANCE:ETHUSDT",
+      dogecoin: "BINANCE:DOGEUSDT",
+      chiliz: "BINANCE:CHZUSDT",
+      "psg-fan-token": "BINANCE:PSGUSDT",
+      "atletico-madrid": "BINANCE:ATMUSDT",
+      "juventus-fan-token": "BINANCE:JUVUSDT",
+      kusama: "BINANCE:KSMUSDT",
+      litecoin: "BINANCE:LTCUSDT",
+      eos: "BINANCE:EOSUSDT",
+      bitshares: "BINANCE:BTSUSDT",
+      chainlink: "BINANCE:LINKUSDT",
     }
     return symbolMap[crypto] || "BINANCE:BTCUSDT"
+  }
+
+  const getDisplaySymbol = (crypto: string) => {
+    const symbolMap: { [key: string]: string } = {
+      bitcoin: "BTC/USDT",
+      BTCUSDT: "BTC/USDT",
+      ethereum: "ETH/USDT",
+      ETHUSDT: "ETH/USDT",
+      dogecoin: "DOGE/USDT",
+      DOGEUSDT: "DOGE/USDT",
+      chiliz: "CHZ/USDT",
+      CHZUSDT: "CHZ/USDT",
+      "psg-fan-token": "PSG/USDT",
+      PSGUSDT: "PSG/USDT",
+      "atletico-madrid": "ATM/USDT",
+      ATMUSDT: "ATM/USDT",
+      "juventus-fan-token": "JUV/USDT",
+      JUVUSDT: "JUV/USDT",
+      kusama: "KSM/USDT",
+      KSMUSDT: "KSM/USDT",
+      litecoin: "LTC/USDT",
+      LTCUSDT: "LTC/USDT",
+      eos: "EOS/USDT",
+      EOSUSDT: "EOS/USDT",
+      bitshares: "BTS/USDT",
+      BTSUSDT: "BTS/USDT",
+      chainlink: "LINK/USDT",
+      LINKUSDT: "LINK/USDT",
+    }
+    return symbolMap[crypto] || "BTC/USDT"
   }
 
   const [showTooltip, setShowTooltip] = useState(false)
@@ -461,7 +503,7 @@ const MarketPage = ({
           </svg>
           <div className="relative">
             <button className="flex items-center gap-2" onClick={() => onCryptoChange(selectedCrypto)}>
-              <span className="text-lg font-semibold">{selectedCrypto}</span>
+              <span className="text-lg font-semibold">{getDisplaySymbol(selectedCrypto)}</span>
               <svg
                 className={`w-4 h-4 transition-transform ${false ? "rotate-180" : ""}`}
                 fill="currentColor"
@@ -526,11 +568,10 @@ const MarketPage = ({
             <button
               key={timeframe}
               onClick={() => onTimeframeChange(timeframe)}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors whitespace-nowrap ${
-                selectedTimeframe === timeframe
+              className={`text-sm font-medium pb-2 border-b-2 transition-colors whitespace-nowrap ${selectedTimeframe === timeframe
                   ? "text-blue-400 border-blue-400"
                   : "text-gray-400 border-transparent hover:text-white"
-              }`}
+                }`}
             >
               {timeframe}
             </button>
@@ -621,7 +662,7 @@ const MarketPage = ({
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="text-gray-400 text-sm mb-1">Product Name</div>
-                  <div className="text-white font-semibold text-lg">BTC/USDT</div>
+                  <div className="text-white font-semibold text-lg">{getDisplaySymbol(selectedCrypto)}</div>
                 </div>
                 <div className="flex-1 text-right">
                   <div className="text-gray-400 text-sm mb-1">Direction</div>
@@ -658,11 +699,10 @@ const MarketPage = ({
                     <button
                       key={time}
                       onClick={() => setSelectedTradingTime(time)}
-                      className={`p-2 rounded-lg transition-all ${
-                        selectedTradingTime === time
+                      className={`p-2 rounded-lg transition-all ${selectedTradingTime === time
                           ? "bg-blue-600 border-2 border-blue-400"
                           : "bg-slate-700 border-2 border-slate-600 hover:border-slate-500"
-                      }`}
+                        }`}
                     >
                       <div className="text-center">
                         <div className="text-gray-400 text-xs mb-1">Time</div>
@@ -836,17 +876,15 @@ const OrderPage = () => {
       <div className="flex border-b border-gray-300 mb-6">
         <button
           onClick={() => setActiveTab("position")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
-            activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
         >
           Position Orders ({positionOrders.length})
         </button>
         <button
           onClick={() => setActiveTab("closing")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
-            activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
         >
           Closing Orders ({closingOrders.length})
         </button>
@@ -1051,7 +1089,7 @@ const AssetPage = ({
             ₹
           </div>
           <span className="font-medium text-gray-900">INR</span>
-          
+
         </div>
 
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
@@ -1183,9 +1221,8 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
             {announcements.map((announcement) => (
               <div
                 key={announcement.id}
-                className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${
-                  announcement.is_read ? "border-gray-300" : "border-blue-500"
-                }`}
+                className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${announcement.is_read ? "border-gray-300" : "border-blue-500"
+                  }`}
                 onClick={() => !announcement.is_read && markAsRead(announcement.id)}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -1630,7 +1667,7 @@ const AddCollectionInfoPage = ({
 
 const HomePage = () => {
   const [activeNav, setActiveNav] = useState("home")
-  const [selectedCrypto, setSelectedCrypto] = useState("BTCUSDT")
+  const [selectedCrypto, setSelectedCrypto] = useState("bitcoin")
   const [selectedTimeframe, setSelectedTimeframe] = useState("1M")
   const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -2168,13 +2205,12 @@ const HomePage = () => {
                               {formatNumberWithCommas(withdrawal.amount, 2)} ₹ INR
                             </div>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                withdrawal.status === "approved"
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${withdrawal.status === "approved"
                                   ? "bg-green-100 text-green-800"
                                   : withdrawal.status === "rejected"
                                     ? "bg-red-100 text-red-800"
                                     : "bg-yellow-100 text-yellow-800"
-                              }`}
+                                }`}
                             >
                               {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
                             </span>
@@ -2208,7 +2244,7 @@ const HomePage = () => {
             selectedCrypto={selectedCrypto}
             selectedTimeframe="1M"
             onCryptoChange={(crypto) => setSelectedCrypto(crypto)}
-            onTimeframeChange={() => {}}
+            onTimeframeChange={() => { }}
             resetAllStates={resetAllStates}
             setActiveNav={setActiveNav}
             userProfile={profile}

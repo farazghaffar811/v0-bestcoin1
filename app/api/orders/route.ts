@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { direction, amount, trading_time, entry_price } = await request.json()
+    const { direction, amount, trading_time, entry_price, product_name } = await request.json()
 
     // Validate input
     if (!direction || !amount || !trading_time || !entry_price) {
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         expected_earnings,
         expires_at: expires_at.toISOString(),
         result: "pending",
+        product_name: product_name || "BTC/USDT",
       })
       .select()
       .single()

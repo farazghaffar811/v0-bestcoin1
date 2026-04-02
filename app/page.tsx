@@ -220,6 +220,7 @@ const MarketPage = ({
           entry_price: currentPrice,
           expected_earnings: expectedEarnings,
           profit_amount: profitAmount,
+          product_name: getDisplaySymbol(selectedCrypto),
           auto_win: true,
         }),
       })
@@ -790,10 +791,42 @@ const MarketPage = ({
   )
 }
 
-const OrderPage = () => {
+const OrderPage = ({ selectedCrypto = "bitcoin" }: { selectedCrypto?: string }) => {
   const [orders, setOrders] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<"position" | "closing">("position")
   const [error, setError] = useState<string | null>(null)
+
+  const getDisplaySymbol = (crypto: string) => {
+    const symbolMap: { [key: string]: string } = {
+      bitcoin: "BTC/USDT",
+      BTCUSDT: "BTC/USDT",
+      ethereum: "ETH/USDT",
+      ETHUSDT: "ETH/USDT",
+      dogecoin: "DOGE/USDT",
+      DOGEUSDT: "DOGE/USDT",
+      chiliz: "CHZ/USDT",
+      CHZUSDT: "CHZ/USDT",
+      "psg-fan-token": "PSG/USDT",
+      PSGUSDT: "PSG/USDT",
+      "atletico-madrid": "ATM/USDT",
+      ATMUSDT: "ATM/USDT",
+      "juventus-fan-token": "JUV/USDT",
+      JUVUSDT: "JUV/USDT",
+      kusama: "KSM/USDT",
+      KSMUSDT: "KSM/USDT",
+      litecoin: "LTC/USDT",
+      LTCUSDT: "LTC/USDT",
+      eos: "EOS/USDT",
+      EOSUSDT: "EOS/USDT",
+      bitshares: "BTS/USDT",
+      BTSUSDT: "BTS/USDT",
+      chainlink: "LINK/USDT",
+      LINKUSDT: "LINK/USDT",
+    }
+    return symbolMap[crypto] || "BTC/USDT"
+  }
+
+  const currentSymbol = getDisplaySymbol(selectedCrypto)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -900,7 +933,7 @@ const OrderPage = () => {
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
-                      <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
+                      <div className="font-semibold text-gray-800">{order.product_name || currentSymbol}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
@@ -953,7 +986,7 @@ const OrderPage = () => {
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
-                      <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
+                      <div className="font-semibold text-gray-800">{order.product_name || currentSymbol}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
@@ -1015,7 +1048,6 @@ const AssetPage = ({
 }) => {
   const availableBalance = profile?.available_balance || 0
   const frozenBalance = profile?.frozen_balance || 0
-  const totalBalance = availableBalance + frozenBalance
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1034,27 +1066,22 @@ const AssetPage = ({
         </div>
 
         <div className="mb-4">
-          <h2 className="text-lg font-medium mb-2">Total Assets</h2>
+          <h2 className="text-lg font-medium mb-2">Available Balance</h2>
           <div className="text-2xl sm:text-3xl font-bold mb-2">
-            {formatNumberWithCommas(totalBalance, 4)}{" "}
+            {formatNumberWithCommas(availableBalance, 4)}{" "}
             <span className="text-lg font-normal">
               ₹ INR
             </span>
           </div>
           <div className="text-sm opacity-90">
-            ≈ {formatNumberWithCommas(totalBalance, 4)} ₹ INR
+            ≈ {formatNumberWithCommas(availableBalance, 4)} ₹ INR
           </div>
         </div>
 
         <div className="text-sm opacity-90 px-4 pb-4">
-          <div className="mb-1">
-            Available Balance: {formatNumberWithCommas(availableBalance, 4)} ₹ INR
+          <div className="text-yellow-300">
+            Frozen Amount: {formatNumberWithCommas(frozenBalance, 4)} ₹ INR (Cannot be used for trading)
           </div>
-          {frozenBalance > 0 && (
-            <div className="text-yellow-300">
-              Frozen Balance: {formatNumberWithCommas(frozenBalance, 4)} ₹ INR (Cannot be used for trading)
-            </div>
-          )}
         </div>
       </div>
 
@@ -1104,15 +1131,8 @@ const AssetPage = ({
             <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
               {formatNumberWithCommas(frozenBalance, 4)}
             </div>
-            <div className="text-xs sm:text-sm text-gray-500">Frozen Balance</div>
+            <div className="text-xs sm:text-sm text-gray-500">Frozen Amount</div>
             <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
-          </div>
-          <div className="flex-1">
-            <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
-              {formatNumberWithCommas(totalBalance, 4)}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">Total Balance</div>
-            <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
           </div>
         </div>
       </div>
@@ -1122,8 +1142,7 @@ const AssetPage = ({
           <div className="font-medium mb-2">Balance Information</div>
           <div className="space-y-1">
             <div>• Available Balance: Can be used for trading and withdrawals</div>
-            <div>• Frozen Balance: Currently locked and cannot be used</div>
-            <div>• Total Balance: Sum of available and frozen balances</div>
+            <div>• Frozen Amount: Currently locked and cannot be used</div>
             <div>• All balances are in (INR)</div>
           </div>
         </div>
@@ -2237,7 +2256,7 @@ const HomePage = () => {
 
     switch (activeNav) {
       case "order":
-        return <OrderPage />
+        return <OrderPage selectedCrypto={selectedCrypto} />
       case "market":
         return (
           <MarketPage

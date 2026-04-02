@@ -53,8 +53,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         uid: Math.floor(Math.random() * 9000000000) + 1000000000, // Generate random UID
         credit_score,
         available_balance,
-        frozen_balance: frozen_balance || 0,
-        withdrawal_prohibited: withdrawal_prohibited || false,
+        frozen_balance: frozen_balance ?? 0,
+        withdrawal_prohibited: withdrawal_prohibited ?? false,
         preferred_currency: "INR", // Updated default preferred_currency to 'SAR'
         role: "user",
         created_at: new Date().toISOString(),
@@ -85,7 +85,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const updateData = {
       credit_score,
       available_balance,
-      frozen_balance: frozen_balance || 0,
+      frozen_balance: frozen_balance ?? 0,
       withdrawal_prohibited:
         withdrawal_prohibited !== undefined ? withdrawal_prohibited : existingProfile.withdrawal_prohibited,
       updated_at: new Date().toISOString(),

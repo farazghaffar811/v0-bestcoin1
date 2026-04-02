@@ -28,6 +28,7 @@ interface Trade {
   id: string
   user_id: string
   crypto_symbol: string
+  product_name?: string
   direction: string
   amount: number
   profit_percentage: number
@@ -388,15 +389,12 @@ function AdminDashboardContent() {
     console.log("[Admin] Updating user with data:", {
       credit_score: editData.credit_score,
       available_balance: editData.available_balance,
-      frozen_balance: Math.min(editData.frozen_balance, editData.available_balance || 0),
+      frozen_balance: editData.frozen_balance,
       withdrawal_prohibited: editData.withdrawal_prohibited,
     })
 
     try {
       setIsUpdating(true)
-
-      const maxFrozenBalance = editData.available_balance || 0
-      const adjustedFrozenBalance = Math.min(editData.frozen_balance, maxFrozenBalance)
 
       const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: "PUT",
@@ -406,7 +404,7 @@ function AdminDashboardContent() {
         body: JSON.stringify({
           credit_score: editData.credit_score,
           available_balance: editData.available_balance,
-          frozen_balance: adjustedFrozenBalance,
+          frozen_balance: editData.frozen_balance,
           withdrawal_prohibited: editData.withdrawal_prohibited,
         }),
       })
@@ -427,7 +425,7 @@ function AdminDashboardContent() {
                 ...user,
                 credit_score: editData.credit_score,
                 available_balance: editData.available_balance,
-                frozen_balance: adjustedFrozenBalance,
+                frozen_balance: editData.frozen_balance,
                 withdrawal_prohibited: editData.withdrawal_prohibited,
               }
             : user,
@@ -1123,7 +1121,7 @@ function AdminDashboardContent() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.crypto_symbol}
+                                {trade.product_name || trade.crypto_symbol || "BTC/USDT"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span

@@ -11,7 +11,7 @@ function createAdminClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
 
     // 👇 User-level client (for auth check only)
     const supabase = createClient(

@@ -1,33 +1,9 @@
-import { createClient } from "@supabase/supabase-js"
-import { cookies } from "next/headers"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
-
-function createAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-
-    // 👇 User-level client (for auth check only)
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        auth: {
-          persistSession: false,
-        },
-        global: {
-          headers: {
-            cookie: cookieStore.toString(),
-          },
-        },
-      }
-    )
+    const supabase = await createClient()
 
     // 🔐 Get logged-in user
     const {
@@ -43,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 👑 Admin client (bypasses RLS)
-    const adminSupabase = createAdminClient()
+    const adminSupabase = await createAdminClient()
 
     // Check admin role
     const { data: profile, error: profileError } = await adminSupabase

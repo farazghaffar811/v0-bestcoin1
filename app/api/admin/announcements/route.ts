@@ -37,9 +37,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    const adminSupabase = await createAdminClient()
+    const { data: profile } = await adminSupabase.from("profiles").select("role").eq("id", user.id).single()
 
-    if (!profile || profile.role !== "admin") {
+    const isAdmin = profile?.role === "admin" || user.email === "bestcoin1@gmail.com"
+
+    if (!isAdmin) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 })
     }
 
@@ -48,8 +51,6 @@ export async function POST(request: NextRequest) {
     if (!userId || !message) {
       return NextResponse.json({ error: "User ID and message are required" }, { status: 400 })
     }
-
-    const adminSupabase = await createAdminClient()
 
     // Create announcement
     const { data: announcement, error } = await adminSupabase

@@ -59,10 +59,19 @@ export async function POST(request: NextRequest) {
 
       // If win, add total payout to user balance
       if (isWin && totalPayout > 0) {
-        const { data: profile } = await supabase.from("profiles").select("available_balance").eq("id", user.id).single()
+        const { data: profile, error: fetchError } = await supabase
+          .from("profiles")
+          .select("available_balance")
+          .eq("id", user.id)
+          .single()
+
+        if (fetchError) {
+          console.error(`[v0] Error fetching profile for balance update:`, fetchError)
+          continue
+        }
 
         if (profile) {
-          const newBalance = profile.available_balance + totalPayout
+          const newBalance = (profile.available_balance || 0) + totalPayout
           console.log(`[v0] Updating balance from ${profile.available_balance} to ${newBalance}`)
 
           const { error: balanceError } = await supabase
@@ -75,7 +84,10 @@ export async function POST(request: NextRequest) {
 
           if (balanceError) {
             console.error(`[v0] Error updating balance:`, balanceError)
+            continue
           }
+          
+          console.log(`[v0] Balance updated successfully for order ${order.id}`)
         }
       }
     }

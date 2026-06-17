@@ -17,16 +17,42 @@ export async function GET() {
     const adminSupabase = await createAdminClient()
 
     // Get all users from auth.users and join with profiles
-    const { data: authUsers, error: authError2 } = await adminSupabase.auth.admin.listUsers()
-    if (authError2) throw authError2
+    // Fetch with pagination to ensure we get all users
+    let allAuthUsers = []
+    let page = 0
+    let hasMore = true
+
+    while (hasMore) {
+      const { data: authUsers, error: authError2 } = await adminSupabase.auth.admin.listUsers({
+        page,
+        perPage: 100,
+      })
+      
+      if (authError2) {
+        console.error(`[Admin] Error fetching auth users page ${page}:`, authError2)
+        throw authError2
+      }
+
+      if (authUsers?.users) {
+        allAuthUsers = allAuthUsers.concat(authUsers.users)
+        hasMore = authUsers.users.length === 100
+        page++
+      } else {
+        hasMore = false
+      }
+    }
+
+    console.log(`[Admin] Fetched ${allAuthUsers.length} total auth users`)
 
     // Get all profiles using admin client
     const { data: profiles, error: profilesError } = await adminSupabase.from("profiles").select("*")
 
     if (profilesError) throw profilesError
 
+    console.log(`[Admin] Fetched ${profiles?.length || 0} profiles`)
+
     // Combine auth users with their profiles
-    const users = authUsers.users.map((authUser) => {
+    const users = allAuthUsers.map((authUser) => {
       const profile = profiles?.find((p) => p.id === authUser.id)
       return {
         id: authUser.id,

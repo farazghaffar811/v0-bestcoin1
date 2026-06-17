@@ -1700,7 +1700,7 @@ const HomePage = () => {
   const [orders, setOrders] = useState<any[]>([])
   const [activeOrderTab, setActiveOrderTab] = useState<"position" | "closing">("position")
   const [showSettings, setShowSettings] = useState(false)
-  const [telegramLink, setTelegramLink] = useState("https://t.me/support")
+  const [telegramLink, setTelegramLink] = useState("https://t.me/SuperCoinCsr")
   const router = useRouter()
   const supabase = createBrowserClient()
 
@@ -1721,6 +1721,7 @@ const HomePage = () => {
     fetchCryptoPrices()
     fetchTelegramLink()
     fetchBankDetails()
+    fetchWithdrawals()
 
     const interval = setInterval(fetchCryptoPrices, 10000)
     return () => clearInterval(interval)
@@ -1792,7 +1793,7 @@ const HomePage = () => {
       const response = await fetch("/api/settings")
       if (response.ok) {
         const data = await response.json()
-        setTelegramLink(data.telegram_link || "https://t.me/support")
+        setTelegramLink(data.telegram_link || "https://t.me/SuperCoinCsr")
       }
     } catch (error) {
       console.log("[v0] Error fetching telegram link:", error)

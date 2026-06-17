@@ -912,14 +912,14 @@ const OrderPage = ({ selectedCrypto = "bitcoin" }: { selectedCrypto?: string }) 
           className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
             }`}
         >
-          Position Orders ({positionOrders.length})
+          Position Orders
         </button>
         <button
           onClick={() => setActiveTab("closing")}
           className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
             }`}
         >
-          Closing Orders ({closingOrders.length})
+          Closing Orders
         </button>
       </div>
 
@@ -2073,50 +2073,32 @@ const HomePage = () => {
     }
 
     if (showWithdrawalPage) {
-      if (profile?.withdrawal_prohibited) {
-        return (
-          <div className="min-h-screen bg-gray-50">
-            <div className="bg-white shadow-sm">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setShowWithdrawalPage(false)}>
-                    <Home className="w-6 h-6 text-gray-600" />
-                  </button>
-                  <h1 className="text-lg font-semibold text-gray-900">Withdrawal</h1>
-                </div>
+      // Show prohibition message if applicable
+      const prohibitionMessage = profile?.withdrawal_prohibited ? (
+        <div className="mx-4 mt-4 mb-6 bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <X className="w-6 h-6 text-red-600" />
               </div>
             </div>
-
-            <div className="p-4 flex items-center justify-center min-h-[400px]">
-              <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-                <div className="mb-6">
-                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <X className="w-10 h-10 text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Withdrawal Prohibited</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
-                    Withdrawal is prohibited for your account. Please contact customer support for assistance.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <button
-                    onClick={handleCustomerSupportClick}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Contact Support
-                  </button>
-                  <button
-                    onClick={() => setShowWithdrawalPage(false)}
-                    className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
-                    Go Back
-                  </button>
-                </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdrawal Prohibited</h3>
+              <p className="text-gray-600 mb-4">
+                Withdrawal is currently prohibited for your account. Please contact customer support for assistance.
+              </p>
+              <div className="space-y-2">
+                <button
+                  onClick={handleCustomerSupportClick}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Contact Support
+                </button>
               </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      ) : null
 
       const availableBalance = profile?.available_balance || 0
 
@@ -2140,6 +2122,7 @@ const HomePage = () => {
           </div>
 
           <div className="p-4 space-y-6">
+            {prohibitionMessage}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
               <div className="text-2xl font-bold text-gray-900">

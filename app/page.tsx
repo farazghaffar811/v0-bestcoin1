@@ -1182,7 +1182,15 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
   )
 }
 
-const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) => {
+const UserMessagePage = ({
+  onBack,
+  user,
+  onUnreadCountChange,
+}: {
+  onBack: () => void
+  user: any
+  onUnreadCountChange?: (count: number) => void
+}) => {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -1192,7 +1200,9 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
         const response = await fetch("/api/announcements")
         if (response.ok) {
           const data = await response.json()
-          setAnnouncements(data.announcements || [])
+          const nextAnnouncements = data.announcements || []
+          setAnnouncements(nextAnnouncements)
+          onUnreadCountChange?.(nextAnnouncements.filter((announcement: any) => !announcement.is_read).length)
         }
       } catch (error) {
         console.error("Error fetching announcements:", error)
@@ -1212,7 +1222,11 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
         body: JSON.stringify({ announcementId }),
       })
 
-      setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
+      setAnnouncements((prev) => {
+        const nextAnnouncements = prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann))
+        onUnreadCountChange?.(nextAnnouncements.filter((announcement) => !announcement.is_read).length)
+        return nextAnnouncements
+      })
     } catch (error) {
       console.error("Error marking as read:", error)
     }
@@ -1261,7 +1275,19 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
   )
 }
 
-const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () => void; profile: any }) => {
+const MyPage = ({
+  user,
+  handleLogout,
+  profile,
+  unreadMessageCount,
+  onUnreadCountChange,
+}: {
+  user: any
+  handleLogout: () => void
+  profile: any
+  unreadMessageCount: number
+  onUnreadCountChange: (count: number) => void
+}) => {
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
@@ -1321,7 +1347,13 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   }
 
   if (showUserMessage) {
-    return <UserMessagePage onBack={handleBackFromUserMessage} user={user} />
+    return (
+      <UserMessagePage
+        onBack={handleBackFromUserMessage}
+        user={user}
+        onUnreadCountChange={onUnreadCountChange}
+      />
+    )
   }
 
   if (showAuthentication) {
@@ -1382,6 +1414,7 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             icon: <MessageSquare className="w-6 h-6 text-purple-500" />,
             label: "User Message",
             action: handleUserMessageClick,
+            badge: unreadMessageCount,
           },
           { icon: <HelpCircle className="w-6 h-6 text-gray-500" />, label: "Help Center" },
           { icon: <LogOut className="w-6 h-6 text-red-500" />, label: "Logout", action: handleLogout },
@@ -1394,6 +1427,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             <div className="flex items-center gap-4">
               {item.icon}
               <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
+              {!!item.badge && (
+                <span className="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
+              )}
             </div>
             {!item.action && (
               <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1701,6 +1739,7 @@ const HomePage = () => {
   const [activeOrderTab, setActiveOrderTab] = useState<"position" | "closing">("position")
   const [showSettings, setShowSettings] = useState(false)
   const [telegramLink, setTelegramLink] = useState("https://t.me/SuperCoinCsr")
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const router = useRouter()
   const supabase = createBrowserClient()
 
@@ -1726,6 +1765,28 @@ const HomePage = () => {
     const interval = setInterval(fetchCryptoPrices, 10000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (!user?.id) {
+      setUnreadMessageCount(0)
+      return
+    }
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await fetch("/api/announcements", { cache: "no-store" })
+        if (!response.ok) return
+        const data = await response.json()
+        setUnreadMessageCount((data.announcements || []).filter((announcement: any) => !announcement.is_read).length)
+      } catch (error) {
+        console.error("[v0] Error fetching unread messages:", error)
+      }
+    }
+
+    fetchUnreadMessages()
+    const messageInterval = setInterval(fetchUnreadMessages, 10000)
+    return () => clearInterval(messageInterval)
+  }, [user?.id])
 
   useEffect(() => {
     if (user?.id && profile) {
@@ -2264,7 +2325,15 @@ const HomePage = () => {
           />
         )
       case "my":
-        return <MyPage user={user} handleLogout={handleLogout} profile={profile} />
+        return (
+          <MyPage
+            user={user}
+            handleLogout={handleLogout}
+            profile={profile}
+            unreadMessageCount={unreadMessageCount}
+            onUnreadCountChange={setUnreadMessageCount}
+          />
+        )
       default:
         return (
           <div className="min-h-screen bg-gray-50">
@@ -2493,7 +2562,8 @@ const HomePage = () => {
               onClick={() => checkAuthAndNavigate("my")}
               className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <img
+              <div className="relative">
+                <img
                 src={
                   activeNav === "my"
                     ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
@@ -2502,6 +2572,12 @@ const HomePage = () => {
                 alt="My"
                 className="w-6 h-6"
               />
+                {!!unreadMessageCount && (
+                  <span className="absolute -top-2 -right-3 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                    {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs mt-1">My</span>
             </button>
           </div>

@@ -708,7 +708,7 @@ const MarketPage = ({
                       <div className="text-center">
                         <div className="text-gray-400 text-xs mb-1">Time</div>
                         <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
-                        <div className="text-green-400 text-xs font-semibold">Win: {scale}.00%</div>
+                        <div className="text-green-400 text-xs font-semibold">Profit: {scale}.00%</div>
                       </div>
                     </button>
                   ))}

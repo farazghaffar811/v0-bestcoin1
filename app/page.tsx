@@ -693,9 +693,9 @@ const MarketPage = ({
 
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { time: 60, scale: 20 },
-                    { time: 120, scale: 30 },
-                    { time: 180, scale: 50 },
+                    { time: 60, scale: 30 },
+                    { time: 120, scale: 40 },
+                    { time: 180, scale: 60 },
                   ].map(({ time, scale }) => (
                     <button
                       key={time}

@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
 
     // Calculate profit percentage based on trading time
     const profitPercentages = {
-      60: 20.0,
-      120: 30.0,
-      180: 50.0,
+      60: 30.0,
+      120: 40.0,
+      180: 60.0,
     }
 
     const profit_percentage = profitPercentages[trading_time as keyof typeof profitPercentages]

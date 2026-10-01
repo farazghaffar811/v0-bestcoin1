@@ -1020,7 +1020,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {user.preferred_currency || "USD"}
+                                ৳ (BDT)
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span

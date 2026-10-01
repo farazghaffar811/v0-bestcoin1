@@ -1,59 +1,62 @@
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
+import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
-
-async function createAdminClient() {
-  const cookieStore = cookies()
-  return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
-    cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
-      },
-    },
-  })
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-        },
-      },
-    )
+    const supabase = await createClient()
 
+    // 🔐 Get logged-in user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
+
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
-    // Check if user is admin
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-
-    if (!profile || profile.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 })
-    }
-
-    const { userId, message } = await request.json()
-
-    if (!userId || !message) {
-      return NextResponse.json({ error: "User ID and message are required" }, { status: 400 })
-    }
-
+    // 👑 Admin client (bypasses RLS)
     const adminSupabase = await createAdminClient()
 
-    // Create announcement
-    const { data: announcement, error } = await adminSupabase
-      .from("announcements")
+    // Check admin role
+    const { data: profile, error: profileError } = await adminSupabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (profileError) {
+      console.error("Profile fetch error:", profileError)
+    }
+
+    const isAdmin =
+      profile?.role === "admin" ||
+      user.email === "bestcoin1@gmail.com"
+
+    if (!isAdmin) {
+      return NextResponse.json(
+        { error: "Admin access required" },
+        { status: 403 }
+      )
+    }
+
+    // 📩 Parse request body
+    const body = await request.json()
+    const { userId, message } = body
+
+    if (!userId || !message) {
+      return NextResponse.json(
+        { error: "userId and message are required" },
+        { status: 400 }
+      )
+    }
+
+    // 💾 Insert message
+    const { data, error } = await adminSupabase
+      .from("announcements") // or change to "user_messages" if needed
       .insert({
         admin_id: user.id,
         user_id: userId,
@@ -63,13 +66,33 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (error) {
-      console.error("Error creating announcement:", error)
-      return NextResponse.json({ error: "Failed to create announcement" }, { status: 500 })
+      console.error(
+        "Announcement insert error:",
+        JSON.stringify(error, null, 2)
+      )
+
+      return NextResponse.json(
+        {
+          error: "Failed to create announcement",
+          details: error.message,
+        },
+        { status: 500 }
+      )
     }
 
-    return NextResponse.json({ announcement })
-  } catch (error) {
-    console.error("Error in admin announcements API:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({
+      success: true,
+      announcement: data,
+    })
+  } catch (error: any) {
+    console.error("API crash error:", error)
+
+    return NextResponse.json(
+      {
+        error: "Internal server error",
+        details: error?.message,
+      },
+      { status: 500 }
+    )
   }
 }

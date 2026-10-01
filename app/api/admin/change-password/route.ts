@@ -16,10 +16,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Verify admin role
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    // Verify admin role — use adminSupabase to bypass RLS, and also allow email-based admin
+    const { data: profile } = await adminSupabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
 
-    if (profile?.role !== "admin") {
+    const isAdmin =
+      profile?.role === "admin" || user.email === "bestcoin1@gmail.com"
+
+    if (!isAdmin) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 })
     }
 

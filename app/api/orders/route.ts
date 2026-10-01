@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { direction, amount, trading_time, entry_price } = await request.json()
+    const { direction, amount, trading_time, entry_price, product_name } = await request.json()
 
     // Validate input
     if (!direction || !amount || !trading_time || !entry_price) {
@@ -39,9 +39,9 @@ export async function POST(request: NextRequest) {
 
     // Calculate profit percentage based on trading time
     const profitPercentages = {
-      60: 20.0,
-      120: 30.0,
-      180: 50.0,
+      60: 30.0,
+      120: 40.0,
+      180: 60.0,
     }
 
     const profit_percentage = profitPercentages[trading_time as keyof typeof profitPercentages]
@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
         expected_earnings,
         expires_at: expires_at.toISOString(),
         result: "pending",
+        product_name: product_name || "BTC/USDT",
       })
       .select()
       .single()

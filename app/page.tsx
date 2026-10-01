@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/ui/badge"
 import { createBrowserClient } from "@/lib/supabase/browser"
-import { Home, X } from "lucide-react"
+import { Chrome as Home, X } from "lucide-react"
 import { toast, Toaster } from "sonner"
-import { CreditCard, ShieldCheck, MessageSquare, HelpCircle, LogOut } from "lucide-react"
+import { CreditCard, ShieldCheck, MessageSquare, CircleHelp as HelpCircle, LogOut } from "lucide-react"
 
 interface CryptoPrice {
   id: string
@@ -176,7 +176,7 @@ const MarketPage = ({
 
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
+    const profitPercentages = { 60: 30, 120: 40, 180: 60 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     return orderAmountNum + (orderAmountNum * percentage) / 100
@@ -184,7 +184,7 @@ const MarketPage = ({
 
   const calculateProfitAmount = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 60: 20, 120: 30, 180: 50 }
+    const profitPercentages = { 60: 30, 120: 40, 180: 60 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     return (orderAmountNum * percentage) / 100
@@ -220,6 +220,7 @@ const MarketPage = ({
           entry_price: currentPrice,
           expected_earnings: expectedEarnings,
           profit_amount: profitAmount,
+          product_name: getDisplaySymbol(selectedCrypto),
           auto_win: true,
         }),
       })
@@ -438,8 +439,50 @@ const MarketPage = ({
       EOSUSDT: "BINANCE:EOSUSDT",
       BTSUSDT: "BINANCE:BTSUSDT",
       LINKUSDT: "BINANCE:LINKUSDT",
+      bitcoin: "BINANCE:BTCUSDT",
+      ethereum: "BINANCE:ETHUSDT",
+      dogecoin: "BINANCE:DOGEUSDT",
+      chiliz: "BINANCE:CHZUSDT",
+      "psg-fan-token": "BINANCE:PSGUSDT",
+      "atletico-madrid": "BINANCE:ATMUSDT",
+      "juventus-fan-token": "BINANCE:JUVUSDT",
+      kusama: "BINANCE:KSMUSDT",
+      litecoin: "BINANCE:LTCUSDT",
+      eos: "BINANCE:EOSUSDT",
+      bitshares: "BINANCE:BTSUSDT",
+      chainlink: "BINANCE:LINKUSDT",
     }
     return symbolMap[crypto] || "BINANCE:BTCUSDT"
+  }
+
+  const getDisplaySymbol = (crypto: string) => {
+    const symbolMap: { [key: string]: string } = {
+      bitcoin: "BTC/USDT",
+      BTCUSDT: "BTC/USDT",
+      ethereum: "ETH/USDT",
+      ETHUSDT: "ETH/USDT",
+      dogecoin: "DOGE/USDT",
+      DOGEUSDT: "DOGE/USDT",
+      chiliz: "CHZ/USDT",
+      CHZUSDT: "CHZ/USDT",
+      "psg-fan-token": "PSG/USDT",
+      PSGUSDT: "PSG/USDT",
+      "atletico-madrid": "ATM/USDT",
+      ATMUSDT: "ATM/USDT",
+      "juventus-fan-token": "JUV/USDT",
+      JUVUSDT: "JUV/USDT",
+      kusama: "KSM/USDT",
+      KSMUSDT: "KSM/USDT",
+      litecoin: "LTC/USDT",
+      LTCUSDT: "LTC/USDT",
+      eos: "EOS/USDT",
+      EOSUSDT: "EOS/USDT",
+      bitshares: "BTS/USDT",
+      BTSUSDT: "BTS/USDT",
+      chainlink: "LINK/USDT",
+      LINKUSDT: "LINK/USDT",
+    }
+    return symbolMap[crypto] || "BTC/USDT"
   }
 
   const [showTooltip, setShowTooltip] = useState(false)
@@ -461,7 +504,7 @@ const MarketPage = ({
           </svg>
           <div className="relative">
             <button className="flex items-center gap-2" onClick={() => onCryptoChange(selectedCrypto)}>
-              <span className="text-lg font-semibold">{selectedCrypto}</span>
+              <span className="text-lg font-semibold">{getDisplaySymbol(selectedCrypto)}</span>
               <svg
                 className={`w-4 h-4 transition-transform ${false ? "rotate-180" : ""}`}
                 fill="currentColor"
@@ -526,11 +569,10 @@ const MarketPage = ({
             <button
               key={timeframe}
               onClick={() => onTimeframeChange(timeframe)}
-              className={`text-sm font-medium pb-2 border-b-2 transition-colors whitespace-nowrap ${
-                selectedTimeframe === timeframe
+              className={`text-sm font-medium pb-2 border-b-2 transition-colors whitespace-nowrap ${selectedTimeframe === timeframe
                   ? "text-blue-400 border-blue-400"
                   : "text-gray-400 border-transparent hover:text-white"
-              }`}
+                }`}
             >
               {timeframe}
             </button>
@@ -621,7 +663,7 @@ const MarketPage = ({
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
                   <div className="text-gray-400 text-sm mb-1">Product Name</div>
-                  <div className="text-white font-semibold text-lg">BTC/USDT</div>
+                  <div className="text-white font-semibold text-lg">{getDisplaySymbol(selectedCrypto)}</div>
                 </div>
                 <div className="flex-1 text-right">
                   <div className="text-gray-400 text-sm mb-1">Direction</div>
@@ -651,23 +693,22 @@ const MarketPage = ({
 
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { time: 60, scale: 20 },
-                    { time: 120, scale: 30 },
-                    { time: 180, scale: 50 },
+                    { time: 60, scale: 30 },
+                    { time: 120, scale: 40 },
+                    { time: 180, scale: 60 },
                   ].map(({ time, scale }) => (
                     <button
                       key={time}
                       onClick={() => setSelectedTradingTime(time)}
-                      className={`p-2 rounded-lg transition-all ${
-                        selectedTradingTime === time
+                      className={`p-2 rounded-lg transition-all ${selectedTradingTime === time
                           ? "bg-blue-600 border-2 border-blue-400"
                           : "bg-slate-700 border-2 border-slate-600 hover:border-slate-500"
-                      }`}
+                        }`}
                     >
                       <div className="text-center">
                         <div className="text-gray-400 text-xs mb-1">Time</div>
                         <div className="text-blue-400 font-bold text-base sm:text-lg mb-1">{time}S</div>
-                        <div className="text-green-400 text-xs font-semibold">Win: {scale}.00%</div>
+                        <div className="text-green-400 text-xs font-semibold">Profit: {scale}.00%</div>
                       </div>
                     </button>
                   ))}
@@ -750,10 +791,42 @@ const MarketPage = ({
   )
 }
 
-const OrderPage = () => {
+const OrderPage = ({ selectedCrypto = "bitcoin" }: { selectedCrypto?: string }) => {
   const [orders, setOrders] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<"position" | "closing">("position")
   const [error, setError] = useState<string | null>(null)
+
+  const getDisplaySymbol = (crypto: string) => {
+    const symbolMap: { [key: string]: string } = {
+      bitcoin: "BTC/USDT",
+      BTCUSDT: "BTC/USDT",
+      ethereum: "ETH/USDT",
+      ETHUSDT: "ETH/USDT",
+      dogecoin: "DOGE/USDT",
+      DOGEUSDT: "DOGE/USDT",
+      chiliz: "CHZ/USDT",
+      CHZUSDT: "CHZ/USDT",
+      "psg-fan-token": "PSG/USDT",
+      PSGUSDT: "PSG/USDT",
+      "atletico-madrid": "ATM/USDT",
+      ATMUSDT: "ATM/USDT",
+      "juventus-fan-token": "JUV/USDT",
+      JUVUSDT: "JUV/USDT",
+      kusama: "KSM/USDT",
+      KSMUSDT: "KSM/USDT",
+      litecoin: "LTC/USDT",
+      LTCUSDT: "LTC/USDT",
+      eos: "EOS/USDT",
+      EOSUSDT: "EOS/USDT",
+      bitshares: "BTS/USDT",
+      BTSUSDT: "BTS/USDT",
+      chainlink: "LINK/USDT",
+      LINKUSDT: "LINK/USDT",
+    }
+    return symbolMap[crypto] || "BTC/USDT"
+  }
+
+  const currentSymbol = getDisplaySymbol(selectedCrypto)
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -836,19 +909,17 @@ const OrderPage = () => {
       <div className="flex border-b border-gray-300 mb-6">
         <button
           onClick={() => setActiveTab("position")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
-            activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "position" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
         >
-          Position Orders ({positionOrders.length})
+          Position Orders
         </button>
         <button
           onClick={() => setActiveTab("closing")}
-          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${
-            activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
-          }`}
+          className={`flex-1 text-center py-3 font-semibold transition-colors text-sm sm:text-base ${activeTab === "closing" ? "border-b-2 border-blue-500 text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
         >
-          Closing Orders ({closingOrders.length})
+          Closing Orders
         </button>
       </div>
 
@@ -862,7 +933,7 @@ const OrderPage = () => {
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
-                      <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
+                      <div className="font-semibold text-gray-800">{order.product_name || currentSymbol}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
@@ -915,7 +986,7 @@ const OrderPage = () => {
                 <div key={order.id} className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
-                      <div className="font-semibold text-gray-800">{order.product_name || "BTC/USDT"}</div>
+                      <div className="font-semibold text-gray-800">{order.product_name || currentSymbol}</div>
                       <div className={`text-sm ${order.direction === "buy_up" ? "text-green-600" : "text-red-600"}`}>
                         {order.direction === "buy_up" ? "Buy Up" : "Buy Down"}
                       </div>
@@ -977,7 +1048,6 @@ const AssetPage = ({
 }) => {
   const availableBalance = profile?.available_balance || 0
   const frozenBalance = profile?.frozen_balance || 0
-  const totalBalance = availableBalance + frozenBalance
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -996,28 +1066,28 @@ const AssetPage = ({
         </div>
 
         <div className="mb-4">
-          <h2 className="text-lg font-medium mb-2">Total Assets</h2>
+          <h2 className="text-lg font-medium mb-2">Available Balance</h2>
           <div className="text-2xl sm:text-3xl font-bold mb-2">
-            {formatNumberWithCommas(totalBalance, 4)}{" "}
+            {formatNumberWithCommas(availableBalance, 4)}{" "}
             <span className="text-lg font-normal">
               ৳ BDT
             </span>
           </div>
-          <div className="text-sm opacity-90">
-            ≈ {formatNumberWithCommas(totalBalance, 4)} ৳ BDT
-          </div>
+  <div className="text-sm opacity-90">
+  ≈ {formatNumberWithCommas(totalBalance, 4)} ৳ BDT
+  </div>
         </div>
 
-        <div className="text-sm opacity-90 px-4 pb-4">
-          <div className="mb-1">
-            Available Balance: {formatNumberWithCommas(availableBalance, 4)} ৳ BDT
-          </div>
-          {frozenBalance > 0 && (
-            <div className="text-yellow-300">
-              Frozen Balance: {formatNumberWithCommas(frozenBalance, 4)} ৳ BDT (Cannot be used for trading)
-            </div>
-          )}
-        </div>
+  <div className="text-sm opacity-90 px-4 pb-4">
+  <div className="mb-1">
+  Available Balance: {formatNumberWithCommas(availableBalance, 4)} ৳ BDT
+  </div>
+  {frozenBalance > 0 && (
+  <div className="text-yellow-300">
+  Frozen Balance: {formatNumberWithCommas(frozenBalance, 4)} ৳ BDT (Cannot be used for trading)
+  </div>
+  )}
+  </div>
       </div>
 
       <div className="bg-white px-4 py-6 border-t border-gray-100">
@@ -1047,11 +1117,18 @@ const AssetPage = ({
 
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4 mt-4">
         <div className="flex items-center mb-4 flex-wrap">
-          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-            ৳
-          </div>
+  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+  ৳
+  </div>
+  <span className="font-medium text-gray-900">BDT</span>
+  </div>
+<<<<<<< HEAD
           <span className="font-medium text-gray-900">BDT</span>
           
+=======
+          <span className="font-medium text-gray-900">INR</span>
+
+>>>>>>> 574239c6631cb088f2fd468806af9eae5ce3ac85
         </div>
 
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">
@@ -1066,15 +1143,8 @@ const AssetPage = ({
             <div className="text-base sm:text-lg font-semibold text-orange-500 mb-1">
               {formatNumberWithCommas(frozenBalance, 4)}
             </div>
-            <div className="text-xs sm:text-sm text-gray-500">Frozen Balance</div>
+            <div className="text-xs sm:text-sm text-gray-500">Frozen Amount</div>
             <div className="text-xs text-gray-400 mt-1">(Cannot Trade)</div>
-          </div>
-          <div className="flex-1">
-            <div className="text-base sm:text-lg font-semibold text-green-500 mb-1">
-              {formatNumberWithCommas(totalBalance, 4)}
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">Total Balance</div>
-            <div className="text-xs text-gray-400 mt-1">(Available + Frozen)</div>
           </div>
         </div>
       </div>
@@ -1083,11 +1153,11 @@ const AssetPage = ({
         <div className="text-sm text-blue-800">
           <div className="font-medium mb-2">Balance Information</div>
           <div className="space-y-1">
-            <div>• Available Balance: Can be used for trading and withdrawals</div>
-            <div>• Frozen Balance: Currently locked and cannot be used</div>
-            <div>• Total Balance: Sum of available and frozen balances</div>
-            <div>• All balances are in (BDT)</div>
-          </div>
+  <div>• Available Balance: Can be used for trading and withdrawals</div>
+  <div>• Frozen Balance: Currently locked and cannot be used</div>
+  <div>• Total Balance: Sum of available and frozen balances</div>
+  <div>• All balances are in (BDT)</div>
+  </div>
         </div>
       </div>
 
@@ -1125,7 +1195,15 @@ const SettingsPage = ({ onBack, handleLogout }: { onBack: () => void; handleLogo
   )
 }
 
-const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) => {
+const UserMessagePage = ({
+  onBack,
+  user,
+  onUnreadCountChange,
+}: {
+  onBack: () => void
+  user: any
+  onUnreadCountChange?: (count: number) => void
+}) => {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -1135,7 +1213,9 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
         const response = await fetch("/api/announcements")
         if (response.ok) {
           const data = await response.json()
-          setAnnouncements(data.announcements || [])
+          const nextAnnouncements = data.announcements || []
+          setAnnouncements(nextAnnouncements)
+          onUnreadCountChange?.(nextAnnouncements.filter((announcement: any) => !announcement.is_read).length)
         }
       } catch (error) {
         console.error("Error fetching announcements:", error)
@@ -1155,7 +1235,11 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
         body: JSON.stringify({ announcementId }),
       })
 
-      setAnnouncements((prev) => prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann)))
+      setAnnouncements((prev) => {
+        const nextAnnouncements = prev.map((ann) => (ann.id === announcementId ? { ...ann, is_read: true } : ann))
+        onUnreadCountChange?.(nextAnnouncements.filter((announcement) => !announcement.is_read).length)
+        return nextAnnouncements
+      })
     } catch (error) {
       console.error("Error marking as read:", error)
     }
@@ -1183,9 +1267,8 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
             {announcements.map((announcement) => (
               <div
                 key={announcement.id}
-                className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${
-                  announcement.is_read ? "border-gray-300" : "border-blue-500"
-                }`}
+                className={`bg-white rounded-lg p-4 shadow-sm border-l-4 ${announcement.is_read ? "border-gray-300" : "border-blue-500"
+                  }`}
                 onClick={() => !announcement.is_read && markAsRead(announcement.id)}
               >
                 <div className="flex justify-between items-start mb-2">
@@ -1205,7 +1288,19 @@ const UserMessagePage = ({ onBack, user }: { onBack: () => void; user: any }) =>
   )
 }
 
-const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () => void; profile: any }) => {
+const MyPage = ({
+  user,
+  handleLogout,
+  profile,
+  unreadMessageCount,
+  onUnreadCountChange,
+}: {
+  user: any
+  handleLogout: () => void
+  profile: any
+  unreadMessageCount: number
+  onUnreadCountChange: (count: number) => void
+}) => {
   const [showSettings, setShowSettings] = useState(false)
   const [showCollectionInfo, setShowCollectionInfo] = useState(false)
   const [showAddCollection, setShowAddCollection] = useState(false)
@@ -1265,7 +1360,13 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
   }
 
   if (showUserMessage) {
-    return <UserMessagePage onBack={handleBackFromUserMessage} user={user} />
+    return (
+      <UserMessagePage
+        onBack={handleBackFromUserMessage}
+        user={user}
+        onUnreadCountChange={onUnreadCountChange}
+      />
+    )
   }
 
   if (showAuthentication) {
@@ -1326,6 +1427,7 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             icon: <MessageSquare className="w-6 h-6 text-purple-500" />,
             label: "User Message",
             action: handleUserMessageClick,
+            badge: unreadMessageCount,
           },
           { icon: <HelpCircle className="w-6 h-6 text-gray-500" />, label: "Help Center" },
           { icon: <LogOut className="w-6 h-6 text-red-500" />, label: "Logout", action: handleLogout },
@@ -1338,6 +1440,11 @@ const MyPage = ({ user, handleLogout, profile }: { user: any; handleLogout: () =
             <div className="flex items-center gap-4">
               {item.icon}
               <span className="text-base sm:text-lg font-medium text-gray-800">{item.label}</span>
+              {!!item.badge && (
+                <span className="min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-xs font-semibold flex items-center justify-center">
+                  {item.badge > 99 ? "99+" : item.badge}
+                </span>
+              )}
             </div>
             {!item.action && (
               <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -1630,7 +1737,7 @@ const AddCollectionInfoPage = ({
 
 const HomePage = () => {
   const [activeNav, setActiveNav] = useState("home")
-  const [selectedCrypto, setSelectedCrypto] = useState("BTCUSDT")
+  const [selectedCrypto, setSelectedCrypto] = useState("bitcoin")
   const [selectedTimeframe, setSelectedTimeframe] = useState("1M")
   const [cryptoPrices, setCryptoPrices] = useState<CryptoPrice[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -1644,7 +1751,8 @@ const HomePage = () => {
   const [orders, setOrders] = useState<any[]>([])
   const [activeOrderTab, setActiveOrderTab] = useState<"position" | "closing">("position")
   const [showSettings, setShowSettings] = useState(false)
-  const [telegramLink, setTelegramLink] = useState("https://t.me/support")
+  const [telegramLink, setTelegramLink] = useState("https://t.me/SuperCoinCsr")
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0)
   const router = useRouter()
   const supabase = createBrowserClient()
 
@@ -1665,10 +1773,33 @@ const HomePage = () => {
     fetchCryptoPrices()
     fetchTelegramLink()
     fetchBankDetails()
+    fetchWithdrawals()
 
     const interval = setInterval(fetchCryptoPrices, 10000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (!user?.id) {
+      setUnreadMessageCount(0)
+      return
+    }
+
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await fetch("/api/announcements", { cache: "no-store" })
+        if (!response.ok) return
+        const data = await response.json()
+        setUnreadMessageCount((data.announcements || []).filter((announcement: any) => !announcement.is_read).length)
+      } catch (error) {
+        console.error("[v0] Error fetching unread messages:", error)
+      }
+    }
+
+    fetchUnreadMessages()
+    const messageInterval = setInterval(fetchUnreadMessages, 10000)
+    return () => clearInterval(messageInterval)
+  }, [user?.id])
 
   useEffect(() => {
     if (user?.id && profile) {
@@ -1736,7 +1867,7 @@ const HomePage = () => {
       const response = await fetch("/api/settings")
       if (response.ok) {
         const data = await response.json()
-        setTelegramLink(data.telegram_link || "https://t.me/support")
+        setTelegramLink(data.telegram_link || "https://t.me/SuperCoinCsr")
       }
     } catch (error) {
       console.log("[v0] Error fetching telegram link:", error)
@@ -2016,50 +2147,32 @@ const HomePage = () => {
     }
 
     if (showWithdrawalPage) {
-      if (profile?.withdrawal_prohibited) {
-        return (
-          <div className="min-h-screen bg-gray-50">
-            <div className="bg-white shadow-sm">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setShowWithdrawalPage(false)}>
-                    <Home className="w-6 h-6 text-gray-600" />
-                  </button>
-                  <h1 className="text-lg font-semibold text-gray-900">Withdrawal</h1>
-                </div>
+      // Show prohibition message if applicable
+      const prohibitionMessage = profile?.withdrawal_prohibited ? (
+        <div className="mx-4 mt-4 mb-6 bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <X className="w-6 h-6 text-red-600" />
               </div>
             </div>
-
-            <div className="p-4 flex items-center justify-center min-h-[400px]">
-              <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-                <div className="mb-6">
-                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <X className="w-10 h-10 text-red-600" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">Withdrawal Prohibited</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">
-                    Withdrawal is prohibited for your account. Please contact customer support for assistance.
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  <button
-                    onClick={handleCustomerSupportClick}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                  >
-                    Contact Support
-                  </button>
-                  <button
-                    onClick={() => setShowWithdrawalPage(false)}
-                    className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
-                    Go Back
-                  </button>
-                </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Withdrawal Prohibited</h3>
+              <p className="text-gray-600 mb-4">
+                Withdrawal is currently prohibited for your account. Please contact customer support for assistance.
+              </p>
+              <div className="space-y-2">
+                <button
+                  onClick={handleCustomerSupportClick}
+                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Contact Support
+                </button>
               </div>
             </div>
           </div>
-        )
-      }
+        </div>
+      ) : null
 
       const availableBalance = profile?.available_balance || 0
 
@@ -2083,6 +2196,7 @@ const HomePage = () => {
           </div>
 
           <div className="p-4 space-y-6">
+            {prohibitionMessage}
             <div className="bg-white rounded-lg p-4 shadow-sm">
               <div className="text-sm text-gray-600 mb-1">Available Balance (For Withdrawal)</div>
               <div className="text-2xl font-bold text-gray-900">
@@ -2168,13 +2282,12 @@ const HomePage = () => {
                               {formatNumberWithCommas(withdrawal.amount, 2)} ৳ BDT
                             </div>
                             <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                withdrawal.status === "approved"
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${withdrawal.status === "approved"
                                   ? "bg-green-100 text-green-800"
                                   : withdrawal.status === "rejected"
                                     ? "bg-red-100 text-red-800"
                                     : "bg-yellow-100 text-yellow-800"
-                              }`}
+                                }`}
                             >
                               {withdrawal.status.charAt(0).toUpperCase() + withdrawal.status.slice(1)}
                             </span>
@@ -2201,14 +2314,14 @@ const HomePage = () => {
 
     switch (activeNav) {
       case "order":
-        return <OrderPage />
+        return <OrderPage selectedCrypto={selectedCrypto} />
       case "market":
         return (
           <MarketPage
             selectedCrypto={selectedCrypto}
             selectedTimeframe="1M"
             onCryptoChange={(crypto) => setSelectedCrypto(crypto)}
-            onTimeframeChange={() => {}}
+            onTimeframeChange={() => { }}
             resetAllStates={resetAllStates}
             setActiveNav={setActiveNav}
             userProfile={profile}
@@ -2225,7 +2338,15 @@ const HomePage = () => {
           />
         )
       case "my":
-        return <MyPage user={user} handleLogout={handleLogout} profile={profile} />
+        return (
+          <MyPage
+            user={user}
+            handleLogout={handleLogout}
+            profile={profile}
+            unreadMessageCount={unreadMessageCount}
+            onUnreadCountChange={setUnreadMessageCount}
+          />
+        )
       default:
         return (
           <div className="min-h-screen bg-gray-50">
@@ -2454,7 +2575,8 @@ const HomePage = () => {
               onClick={() => checkAuthAndNavigate("my")}
               className={`flex flex-col items-center py-2 ${activeNav === "my" ? "text-cyan-500" : "text-gray-500"}`}
             >
-              <img
+              <div className="relative">
+                <img
                 src={
                   activeNav === "my"
                     ? "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/my-on-1TfoB8HEDNnK0gwhPCamK3TVOOEUWV.png"
@@ -2463,6 +2585,12 @@ const HomePage = () => {
                 alt="My"
                 className="w-6 h-6"
               />
+                {!!unreadMessageCount && (
+                  <span className="absolute -top-2 -right-3 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold flex items-center justify-center">
+                    {unreadMessageCount > 99 ? "99+" : unreadMessageCount}
+                  </span>
+                )}
+              </div>
               <span className="text-xs mt-1">My</span>
             </button>
           </div>

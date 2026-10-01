@@ -1048,6 +1048,7 @@ const AssetPage = ({
 }) => {
   const availableBalance = profile?.available_balance || 0
   const frozenBalance = profile?.frozen_balance || 0
+  const totalBalance = availableBalance + frozenBalance
 
   return (
     <div className="min-h-screen bg-gray-50">

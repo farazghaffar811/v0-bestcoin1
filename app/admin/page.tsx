@@ -57,9 +57,11 @@ interface BankDetail {
   binding_type: string
   currency: string
   holder_name: string
-  bank_name: string
+  routing_number: string
   account_number: string
-  ifsc_code: string
+  bank_name: string
+  bank_branch: string
+  bank_district: string
   created_at: string
   updated_at: string
   profiles: {
@@ -107,12 +109,14 @@ function AdminDashboardContent() {
   })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
-    binding_type: "",
-    currency: "",
+    binding_type: "Bank Card",
+    currency: "BDT",
     holder_name: "",
-    bank_name: "",
+    routing_number: "",
     account_number: "",
-    ifsc_code: "",
+    bank_name: "",
+    bank_branch: "",
+    bank_district: "",
   })
   const [editingWithdrawal, setEditingWithdrawal] = useState<Withdrawal | null>(null)
   const [withdrawalNotes, setWithdrawalNotes] = useState("")
@@ -370,11 +374,13 @@ function AdminDashboardContent() {
     setEditingBankDetail(bankDetail)
     setEditBankData({
       binding_type: bankDetail.binding_type,
-      currency: bankDetail.currency,
+      currency: "BDT",
       holder_name: bankDetail.holder_name,
-      bank_name: bankDetail.bank_name,
+      routing_number: bankDetail.routing_number || "",
       account_number: bankDetail.account_number,
-      ifsc_code: bankDetail.ifsc_code || "",
+      bank_name: bankDetail.bank_name,
+      bank_branch: bankDetail.bank_branch || "",
+      bank_district: bankDetail.bank_district || "",
     })
   }
 
@@ -913,7 +919,7 @@ function AdminDashboardContent() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.binding_type}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.currency}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">BDT</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.holder_name}
                               </td>
@@ -921,7 +927,7 @@ function AdminDashboardContent() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.account_number?.slice(0, 4)}****{detail.account_number?.slice(-4)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.ifsc_code}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.routing_number}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(detail.created_at).toLocaleDateString()}
                               </td>
@@ -1201,7 +1207,9 @@ function AdminDashboardContent() {
                     <div>{editingWithdrawal.bank_details.bank_name || editingWithdrawal.bank_details.bind_bank}</div>
                     <div>{editingWithdrawal.bank_details.holder_name || editingWithdrawal.bank_details.account_holder_name}</div>
                     <div>A/C: ****{(editingWithdrawal.bank_details.account_number || editingWithdrawal.bank_details.bank_card_number)?.slice(-4)}</div>
-                    {editingWithdrawal.bank_details.ifsc_code && <div>IFSC: {editingWithdrawal.bank_details.ifsc_code}</div>}
+                    {editingWithdrawal.bank_details.routing_number && <div>Routing: {editingWithdrawal.bank_details.routing_number}</div>}
+                    {editingWithdrawal.bank_details.bank_branch && <div>Branch: {editingWithdrawal.bank_details.bank_branch}</div>}
+                    {editingWithdrawal.bank_details.bank_district && <div>District: {editingWithdrawal.bank_details.bank_district}</div>}
                   </div>
                 </div>
               )}
@@ -1409,13 +1417,8 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
-                <input
-                  type="text"
-                  value={editBankData.currency}
-                  onChange={(e) => setEditBankData((prev) => ({ ...prev, currency: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
+                <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md">BDT</div>
               </div>
 
               <div>
@@ -1428,37 +1431,23 @@ function AdminDashboardContent() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Bank Name</label>
-                <input
-                  type="text"
-                  value={editBankData.bank_name}
-                  onChange={(e) => setEditBankData((prev) => ({ ...prev, bank_name: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">A/C No</label>
-                <input
-                  type="text"
-                  value={editBankData.account_number}
-                  onChange={(e) => setEditBankData((prev) => ({ ...prev, account_number: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  maxLength={20}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">IFSC Code</label>
-                <input
-                  type="text"
-                  value={editBankData.ifsc_code}
-                  onChange={(e) => setEditBankData((prev) => ({ ...prev, ifsc_code: e.target.value.toUpperCase() }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  maxLength={11}
-                />
-              </div>
+              {[
+                ["routing_number", "Routing Number"],
+                ["account_number", "Account Number"],
+                ["bank_name", "Bank Name"],
+                ["bank_branch", "Bank Branch"],
+                ["bank_district", "Bank District"],
+              ].map(([field, label]) => (
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+                  <input
+                    type="text"
+                    value={editBankData[field as keyof typeof editBankData]}
+                    onChange={(e) => setEditBankData((prev) => ({ ...prev, [field]: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              ))}
             </div>
 
             <div className="flex justify-end space-x-3 mt-6">

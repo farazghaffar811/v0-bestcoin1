@@ -1117,18 +1117,10 @@ const AssetPage = ({
 
       <div className="bg-white mx-4 rounded-lg shadow-sm p-4 mt-4">
         <div className="flex items-center mb-4 flex-wrap">
-  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
-  ৳
-  </div>
-  <span className="font-medium text-gray-900">BDT</span>
-  </div>
-<<<<<<< HEAD
+          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold mr-3">
+            ৳
+          </div>
           <span className="font-medium text-gray-900">BDT</span>
-          
-=======
-          <span className="font-medium text-gray-900">INR</span>
-
->>>>>>> 574239c6631cb088f2fd468806af9eae5ce3ac85
         </div>
 
         <div className="flex flex-col sm:flex-row sm:justify-between gap-4 text-center">

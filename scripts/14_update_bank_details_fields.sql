@@ -9,6 +9,9 @@ ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS holder_name VARCHAR(255);
 ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS bank_name VARCHAR(255);
 ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS account_number VARCHAR(20);
 ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS ifsc_code VARCHAR(20);
+  ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS routing_number VARCHAR(50);
+  ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS bank_branch VARCHAR(255);
+  ALTER TABLE bank_details ADD COLUMN IF NOT EXISTS bank_district VARCHAR(255);
 
 -- Copy data from old columns to new columns
 UPDATE bank_details SET holder_name = account_holder_name WHERE holder_name IS NULL;

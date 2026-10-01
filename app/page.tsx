@@ -1597,11 +1597,13 @@ const AddCollectionInfoPage = ({
 }) => {
   const [formData, setFormData] = useState({
     binding_type: "Bank Card",
-    currency: "BDT",
-    holder_name: "",
-    bank_name: "",
-    account_number: "",
-    ifsc_code: "",
+  currency: "BDT",
+  holder_name: "",
+  routing_number: "",
+  account_number: "",
+  bank_name: "",
+  bank_branch: "",
+  bank_district: "",
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -1609,7 +1611,7 @@ const AddCollectionInfoPage = ({
   }
 
   const handleSave = async () => {
-    if (!formData.holder_name || !formData.bank_name || !formData.account_number || !formData.ifsc_code) {
+    if (!formData.holder_name || !formData.routing_number || !formData.account_number || !formData.bank_name || !formData.bank_branch || !formData.bank_district) {
       toast.error("Please fill in all required fields")
       return
     }
@@ -1675,45 +1677,26 @@ const AddCollectionInfoPage = ({
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>Bank Name
-          </label>
-          <input
-            type="text"
-            value={formData.bank_name}
-            onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter bank name"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>A/C No
-          </label>
-          <input
-            type="text"
-            value={formData.account_number}
-            onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter account number"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            <span className="text-red-500">*</span>IFSC Code
-          </label>
-          <input
-            type="text"
-            value={formData.ifsc_code}
-            onChange={(e) => setFormData({ ...formData, ifsc_code: e.target.value.toUpperCase() })}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter IFSC code"
-            maxLength={11}
-          />
-        </div>
+        {[
+          ["routing_number", "Routing Number", "Enter routing number"],
+          ["account_number", "Account Number", "Enter account number"],
+          ["bank_name", "Bank Name", "Enter bank name"],
+          ["bank_branch", "Bank Branch", "Enter bank branch"],
+          ["bank_district", "Bank District", "Enter bank district"],
+        ].map(([field, label, placeholder]) => (
+          <div key={field}>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="text-red-500">*</span>{label}
+            </label>
+            <input
+              type="text"
+              value={formData[field as keyof typeof formData]}
+              onChange={(e) => handleInputChange(field, e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder={placeholder}
+            />
+          </div>
+        ))}
 
         <div className="pt-6">
           <button

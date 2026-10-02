@@ -176,7 +176,7 @@ const MarketPage = ({
 
   const calculateExpectedEarnings = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 60: 30, 120: 40, 180: 60 }
+    const profitPercentages = { 30: 20, 60: 30, 120: 40, 180: 60 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     return orderAmountNum + (orderAmountNum * percentage) / 100
@@ -184,7 +184,7 @@ const MarketPage = ({
 
   const calculateProfitAmount = () => {
     if (!orderAmount) return 0
-    const profitPercentages = { 60: 30, 120: 40, 180: 60 }
+    const profitPercentages = { 30: 20, 60: 30, 120: 40, 180: 60 }
     const percentage = profitPercentages[selectedTradingTime as keyof typeof profitPercentages] || 20
     const orderAmountNum = Number.parseFloat(orderAmount)
     return (orderAmountNum * percentage) / 100
@@ -691,8 +691,9 @@ const MarketPage = ({
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-4 gap-2">
                   {[
+                    { time: 30, scale: 20 },
                     { time: 60, scale: 30 },
                     { time: 120, scale: 40 },
                     { time: 180, scale: 60 },

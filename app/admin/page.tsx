@@ -57,11 +57,9 @@ interface BankDetail {
   binding_type: string
   currency: string
   holder_name: string
-  routing_number: string
-  account_number: string
   bank_name: string
-  bank_branch: string
-  bank_district: string
+  account_number: string
+  ifsc_code: string
   created_at: string
   updated_at: string
   profiles: {
@@ -109,14 +107,12 @@ function AdminDashboardContent() {
   })
   const [editingBankDetail, setEditingBankDetail] = useState<BankDetail | null>(null)
   const [editBankData, setEditBankData] = useState({
-    binding_type: "Bank Card",
-    currency: "BDT",
+    binding_type: "",
+    currency: "",
     holder_name: "",
-    routing_number: "",
-    account_number: "",
     bank_name: "",
-    bank_branch: "",
-    bank_district: "",
+    account_number: "",
+    ifsc_code: "",
   })
   const [editingWithdrawal, setEditingWithdrawal] = useState<Withdrawal | null>(null)
   const [withdrawalNotes, setWithdrawalNotes] = useState("")
@@ -374,13 +370,11 @@ function AdminDashboardContent() {
     setEditingBankDetail(bankDetail)
     setEditBankData({
       binding_type: bankDetail.binding_type,
-      currency: "BDT",
+      currency: bankDetail.currency,
       holder_name: bankDetail.holder_name,
-      routing_number: bankDetail.routing_number || "",
-      account_number: bankDetail.account_number,
       bank_name: bankDetail.bank_name,
-      bank_branch: bankDetail.bank_branch || "",
-      bank_district: bankDetail.bank_district || "",
+      account_number: bankDetail.account_number,
+      ifsc_code: bankDetail.ifsc_code || "",
     })
   }
 
@@ -806,7 +800,7 @@ function AdminDashboardContent() {
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {withdrawal.amount.toFixed(2)} BDT
+                                {withdrawal.amount.toFixed(2)} INR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -919,7 +913,7 @@ function AdminDashboardContent() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.binding_type}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">BDT</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.currency}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.holder_name}
                               </td>
@@ -927,7 +921,7 @@ function AdminDashboardContent() {
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {detail.account_number?.slice(0, 4)}****{detail.account_number?.slice(-4)}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.routing_number}</td>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{detail.ifsc_code}</td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(detail.created_at).toLocaleDateString()}
                               </td>
@@ -1026,7 +1020,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                ৳ (BDT)
+                                ₹ (INR)
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <span
@@ -1139,7 +1133,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.amount.toFixed(4)} BDT
+                                {trade.amount.toFixed(4)} INR
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {trade.profit_percentage}%
@@ -1161,7 +1155,7 @@ function AdminDashboardContent() {
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {trade.payout ? `${trade.payout.toFixed(4)} BDT` : "-"}
+                                {trade.payout ? `${trade.payout.toFixed(4)} INR` : "-"}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {new Date(trade.created_at).toLocaleDateString()}
@@ -1197,7 +1191,7 @@ function AdminDashboardContent() {
             <div className="space-y-4">
               <div>
                 <div className="text-sm text-gray-600">Amount</div>
-                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} BDT</div>
+                <div className="text-lg font-semibold">{editingWithdrawal.amount.toFixed(2)} INR</div>
               </div>
 
               {editingWithdrawal.bank_details && (
@@ -1207,9 +1201,7 @@ function AdminDashboardContent() {
                     <div>{editingWithdrawal.bank_details.bank_name || editingWithdrawal.bank_details.bind_bank}</div>
                     <div>{editingWithdrawal.bank_details.holder_name || editingWithdrawal.bank_details.account_holder_name}</div>
                     <div>A/C: ****{(editingWithdrawal.bank_details.account_number || editingWithdrawal.bank_details.bank_card_number)?.slice(-4)}</div>
-                    {editingWithdrawal.bank_details.routing_number && <div>Routing: {editingWithdrawal.bank_details.routing_number}</div>}
-                    {editingWithdrawal.bank_details.bank_branch && <div>Branch: {editingWithdrawal.bank_details.bank_branch}</div>}
-                    {editingWithdrawal.bank_details.bank_district && <div>District: {editingWithdrawal.bank_details.bank_district}</div>}
+{editingWithdrawal.bank_details.ifsc_code && <div>IFSC: {editingWithdrawal.bank_details.ifsc_code}</div>}
                   </div>
                 </div>
               )}
@@ -1274,7 +1266,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance (BDT)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Available Balance (INR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"
@@ -1316,7 +1308,7 @@ function AdminDashboardContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance (BDT)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Frozen Balance (INR)</label>
                 <div className="flex items-center space-x-2 mb-2">
                   <input
                     type="number"
@@ -1418,7 +1410,7 @@ function AdminDashboardContent() {
 
               <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Currency</label>
-                <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md">BDT</div>
+                <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md">INR</div>
               </div>
 
               <div>
@@ -1432,11 +1424,9 @@ function AdminDashboardContent() {
               </div>
 
               {[
-                ["routing_number", "Routing Number"],
-                ["account_number", "Account Number"],
                 ["bank_name", "Bank Name"],
-                ["bank_branch", "Bank Branch"],
-                ["bank_district", "Bank District"],
+                ["account_number", "A/C No"],
+                ["ifsc_code", "IFSC Code"],
               ].map(([field, label]) => (
                 <div key={field}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>

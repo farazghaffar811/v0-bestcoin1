@@ -55,7 +55,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         available_balance,
         frozen_balance: frozen_balance ?? 0,
         withdrawal_prohibited: withdrawal_prohibited ?? false,
-        preferred_currency: "BDT",
+        preferred_currency: "INR",
         role: "user",
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
